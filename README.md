@@ -121,7 +121,7 @@ After pushing your first commit to `main`:
 1. Go to your repository on GitHub
 2. Click **Settings** → **Pages**
 3. Under **Source**, select **GitHub Actions**
-4. Your site will be deployed at `https://NeilTaylerFilm.github.io`
+4. Your site will be deployed at `https://neiltaylerfilm.github.io`
 
 ## 🎨 Customization
 
