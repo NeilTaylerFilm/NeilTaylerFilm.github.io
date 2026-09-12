@@ -1,63 +1,139 @@
-# Astro Starter Kit: Blog
+# Neil Tayler Film - Personal Blog
 
-```sh
-npm create astro@latest -- --template blog
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+A personal blog built with [Astro](https://astro.build) and hosted on GitHub Pages.
 
 ## 🚀 Project Structure
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```
+/src
+  /components   # Reusable UI components (Header, Footer, etc.)
+  /content      # Blog posts in Markdown/MDX
+    /blog       # Individual blog posts
+  /layouts      # Page layouts (BlogPost.astro)
+  /pages        # Site pages (index.astro, about.astro, blog/, rss.xml.js)
+  /styles       # CSS styles
+/public         # Static assets (favicon, etc.)
+/.github        # GitHub Actions workflows
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 🛠️ Development
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+### Prerequisites
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+- Node.js (v18 or higher)
+- npm (comes with Node.js)
 
-Any static assets, like images, can be placed in the `public/` directory.
+### Setup
 
-## 🧞 Commands
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-All commands are run from the root of the project, from a terminal:
+### Local Development
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Start the development server:
+```bash
+npm run dev
+```
 
-## 👀 Want to learn more?
+Your site will be available at `http://localhost:4321`. The server will automatically reload when you make changes.
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### Production Build
 
-## Credit
+Generate a production-ready build:
+```bash
+npm run build
+```
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+Preview the production build locally:
+```bash
+npm run preview
+```
+
+## 📝 Creating Blog Posts
+
+Blog posts are stored as Markdown (`.md`) or MDX (`.mdx`) files in `src/content/blog/`.
+
+### Frontmatter
+
+Each post requires frontmatter at the top of the file:
+
+```markdown
+---
+title: "Post Title"
+description: "A brief summary of the post"
+pubDate: "2026-09-12"
+tags:
+  - technology
+  - post-production
+---
+```
+
+### Example Post
+
+See `src/content/blog/hello-world.md` for a sample post. You can delete this file when you're ready to create your own content.
+
+## 🚀 Publishing Changes
+
+This site is configured to automatically deploy to GitHub Pages when you push to the `main` branch.
+
+1. Make your changes locally
+2. Stage your changes:
+   ```bash
+   git add .
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m "Description of changes"
+   ```
+4. Push to GitHub:
+   ```bash
+   git push
+   ```
+
+GitHub Actions will automatically build and deploy your site. You can monitor the progress in the **Actions** tab of your repository.
+
+## 🔧 Configuration
+
+### Site URL
+
+The site URL is configured in `astro.config.mjs`:
+```javascript
+site: 'https://NeilTaylerFilm.github.io',
+```
+
+### Content Schema
+
+Blog post frontmatter is validated by the schema in `src/content.config.ts`:
+- `title` (string, required)
+- `description` (string, required)
+- `pubDate` (date, required)
+- `updatedDate` (date, optional)
+- `heroImage` (image, optional)
+- `tags` (array of strings, optional)
+
+## 🌐 GitHub Pages Setup
+
+After pushing your first commit to `main`:
+
+1. Go to your repository on GitHub
+2. Click **Settings** → **Pages**
+3. Under **Source**, select **GitHub Actions**
+4. Your site will be deployed at `https://NeilTaylerFilm.github.io`
+
+## 🎨 Customization
+
+- **Site title and description**: Edit `src/consts.ts`
+- **Header navigation**: Edit `src/components/Header.astro`
+- **Footer**: Edit `src/components/Footer.astro`
+- **Styles**: Modify CSS in `/src/styles/` or individual components
+- **Layouts**: Edit files in `/src/layouts/`
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+Built with [Astro](https://astro.build) ❤️
