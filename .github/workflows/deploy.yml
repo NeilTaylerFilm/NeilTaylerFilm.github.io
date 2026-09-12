@@ -14,8 +14,9 @@ jobs:
       - name: Checkout your repository using git
         uses: actions/checkout@v4
       - name: Install, build, and upload your site
-        uses: withastro/action@v2
-        # Optional: specify node-version, package-manager, build-cmd if needed
+        uses: withastro/action@v3
+        with:
+          node-version: 20
   deploy:
     needs: build
     runs-on: ubuntu-latest
