@@ -38,7 +38,8 @@ const { Content } = await render(project);
       <Content />
     </div>
     <p class="mono small muted">
-      {String(data.images?.length ?? 0).padStart(2, '0')} photographs / Select a frame to take a closer look
+      {String(data.images?.length ?? 0).padStart(2, '0')} photographs / Select a frame to take a
+      closer look
     </p>
   </header>
   <Gallery images={data.images} title={data.title} />

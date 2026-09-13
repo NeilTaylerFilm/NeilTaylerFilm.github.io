@@ -8,7 +8,7 @@ interface SiteConfig {
   links: { label: string; url: string }[];
 }
 export const site: SiteConfig = {
-  name: 'Neil Tayler',
+  name: 'Neil Tayler Film',
   author: 'Neil Tayler',
   description:
     'Notes on images, ideas and everything in between. Writing and photography by Neil Tayler.',

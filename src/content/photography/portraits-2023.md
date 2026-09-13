@@ -1,10 +1,11 @@
 ---
-title: "Portraits 2023"
-subtitle: "A collection of portrait photography from the past year"
+title: 'Portraits 2023'
+subtitle: 'A collection of portrait photography from the past year'
 date: 2023-12-31
-category: "Portraits"
-cover: "../../assets/photography/portraits-2023/cover.jpg"
-draft: false
+category: 'Portraits'
+cover: '../../assets/photography/portraits-2023/cover.jpg'
+draft: true
+demo: true
 ---
 
 This project is a collection of portrait photography taken throughout 2023. Each session was carefully planned to capture the personality and essence of the subject.
@@ -18,10 +19,10 @@ Portraits are all about connection and storytelling. Through careful attention t
 Below are some highlights from the project. Click on an image to view it in the lightbox.
 
 ![Example portrait 1](../../assets/photography/portraits-2023/image1.jpg)
-*Caption: Sarah, winter session*
+_Caption: Sarah, winter session_
 
 ![Example portrait 2](../../assets/photography/portraits-2023/image2.jpg)
-*Caption: Michael, summer session*
+_Caption: Michael, summer session_
 
 ## Technical notes
 

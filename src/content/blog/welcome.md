@@ -32,7 +32,7 @@ date: '2026-09-12'
 category: 'Technology'
 image: '/assets/../../assets/blog/your-image.jpg'
 excerpt: 'A short description of your article.'
-draft: false
+draft: true
 ---
 ```
 

@@ -12,13 +12,7 @@ const categories = [...new Set(allProjects.map((p) => p.data.category))].sort();
   title="Photography"
   description="Photographs, collected into projects. A place to slow down and look."
 >
-  <div class="page-intro">
-    <p class="eyebrow">A different way of looking</p>
-    <h1>
-      Selected <span class="serif-word">frames.</span>
-    </h1>
-    <p class="intro-description">Places, people, passing moments. A collection in progress.</p>
-  </div>
+  <h1 class="visually-hidden">Photography</h1>
   <PhotographySlideshow />
   <section class="project-section" aria-labelledby="projects-heading">
     <div class="section-heading">

@@ -8,42 +8,10 @@ const categories = [...new Set(allPosts.map((post) => post.data.category))].sort
 ---
 
 <BaseLayout title="Writing & observations">
-  <section class="editorial-intro">
-    <div class="eyebrow">
-      <span class="status-dot"></span>A personal journal{' '}
-      <span class="intro-index">Vol. 01 / An ongoing collection</span>
-    </div>
-    <div class="intro-heading">
-      <h1>
-        Notes from
-        <br />
-        the <span class="serif-word">edit.</span>
-        <span class="cursor" aria-hidden="true"></span>
-      </h1>
-      <div class="intro-aside">
-        <span class="asterisk" aria-hidden="true">
-          ✳
-        </span>
-        <p>
-          On making images.
-          <br />
-          On figuring things out.
-          <br />
-          And everything in between.
-        </p>
-        <a class="text-link" href="/about/">
-          A little about me <span aria-hidden="true">↗</span>
-        </a>
-      </div>
-    </div>
-  </section>
-  <section aria-label="Blog articles">
+  <section class="content-start" aria-label="Blog articles">
     <div class="section-heading">
-      <h2 class="eyebrow">The latest entries</h2>
+      <h1 class="eyebrow">The latest entries</h1>
       <span class="line-decoration" aria-hidden="true"></span>
-      <a class="mono small" href="/rss.xml">
-        Subscribe via RSS ↗
-      </a>
     </div>
     <FeedControls categories={categories} count={allPosts.length} />
     <div class="blog-feed" data-feed>

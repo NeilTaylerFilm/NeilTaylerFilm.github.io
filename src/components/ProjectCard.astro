@@ -16,16 +16,18 @@ const { data } = project;
   data-date={data.date.getTime()}
   data-id={project.id}
 >
-  <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
-    <ResponsiveImage
-      src={data.cover}
-      alt=""
-      sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
-    />
-    <span class="project-open" aria-hidden="true">
-      ↗
-    </span>
-  </a>
+  {data.cover && (
+    <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
+      <ResponsiveImage
+        src={data.cover}
+        alt=""
+        sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
+      />
+      <span class="project-open" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+  )}
   <div class="metadata">
     <span class="category">{data.category}</span>
     <span>/</span>

@@ -2,16 +2,16 @@
 title: 'Between the trees'
 date: 2025-11-04
 category: 'Landscape'
-cover: '/assets/demo/forest.jpg'
+cover: '/images/demo/forest.jpg'
 coverAlt: 'A forest of tall green trees'
 demo: true
 images:
-  - src: '/assets/demo/forest.jpg'
+  - src: '/images/demo/forest.jpg'
     alt: 'Soft sunlight filtering through a dense green forest'
     width: 1600
     height: 1067
     caption: '01 / A quieter path — sample photograph'
-  - src: '/assets/demo/mountain-portrait.jpg'
+  - src: '/images/demo/mountain-portrait.jpg'
     alt: 'Forested slopes overlooking a distant mountain valley beneath a blue sky'
     width: 1000
     height: 1500

@@ -1,52 +1,145 @@
 ---
-// src/components/Gallery.astro
-// A simple responsive image gallery for photography projects
 import ResponsiveImage from './ResponsiveImage.astro';
-
-const { images = [], columns = 3 } = Astro.props;
-
-// Generate CSS grid columns based on the columns prop
-const gridCols = `repeat(${columns}, minmax(0, 1fr))`;
+import { imageInfo } from '../lib/images';
+interface Photo {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption?: string;
+}
+interface Props {
+  images: Photo[];
+  title: string;
+}
+const { images: originals, title } = Astro.props;
+const images = originals.map((photo) => ({ ...photo, ...imageInfo(photo.src) }));
 ---
-<div class="gallery">
-  <div class={`grid grid-cols-1 md:grid-cols-${columns} gap-4`}>
-    {(images || []).map((image, index) => (
-      <figure key={index} class="break-inside-avoid">
+
+<div class="gallery" data-gallery>
+  {images.map((photo, index) => (
+    <figure class:list={['gallery-item', { portrait: photo.height > photo.width }]}>
+      <a
+        href={photo.src}
+        data-gallery-open={index}
+        aria-label={`Enlarge photograph ${index + 1}: ${photo.alt}`}
+      >
         <ResponsiveImage
-          src={image.src}
-          alt={image.alt || ''}
-          width={image.width}
-          height={image.height}
-          priority={index < 3}
+          src={photo.src}
+          alt={photo.alt}
+          width={photo.width}
+          height={photo.height}
+          sizes={
+            index % 3 === 0 ? '(max-width: 1440px) 90vw, 1344px' : '(max-width: 540px) 90vw, 45vw'
+          }
+          loading={index < 2 ? 'eager' : 'lazy'}
         />
-        {image.caption && <figcaption class="text-sm text-muted text-center mt-2">{image.caption}</figcaption>}
-      </figure>
-    ))}
-  </div>
+      </a>
+      {photo.caption && <figcaption>{photo.caption}</figcaption>}
+    </figure>
+  ))}
 </div>
-
-<style>
-  /* Gallery styles */
-  .gallery {
-    width: 100%;
-  }
-
-  .gallery img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 0.5rem;
-  }
-
-  figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--color-muted);
-  }
-
-  @media (max-width: 640px) {
-    .gallery .grid {
-      grid-template-columns: 1fr;
+<dialog
+  class="lightbox"
+  aria-label={`${title} — photograph viewer`}
+  data-lightbox
+  data-images={JSON.stringify(images)}
+>
+  <div class="lightbox-toolbar">
+    <span class="mono" data-lightbox-count role="status" aria-live="polite"></span>
+    <button class="control" data-lightbox-close autofocus aria-label="Close photograph viewer">
+      Close <span aria-hidden="true">×</span>
+    </button>
+  </div>
+  <div class="lightbox-stage">
+    <button class="control square" data-lightbox-prev aria-label="Previous photograph">
+      ←
+    </button>
+    <img data-lightbox-image alt="" />
+    <button class="control square" data-lightbox-next aria-label="Next photograph">
+      →
+    </button>
+  </div>
+  <p class="lightbox-caption" data-lightbox-caption></p>
+</dialog>
+<script>
+  type Photo = { src: string; alt: string; caption?: string; width: number; height: number };
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  if (dialog) {
+    const images: Photo[] = JSON.parse(dialog.dataset.images || '[]');
+    const img = dialog.querySelector<HTMLImageElement>('[data-lightbox-image]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-lightbox-caption]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-lightbox-count]')!;
+    const previous = dialog.querySelector<HTMLButtonElement>('[data-lightbox-prev]')!;
+    const next = dialog.querySelector<HTMLButtonElement>('[data-lightbox-next]')!;
+    let current = 0,
+      opener: HTMLElement | null = null;
+    function show(index: number) {
+      current = (index + images.length) % images.length;
+      const photo = images[current];
+      img.src = photo.src;
+      img.alt = photo.alt;
+      img.width = photo.width;
+      img.height = photo.height;
+      caption.textContent = photo.caption || photo.alt;
+      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(images.length).padStart(2, '0')}`;
     }
+    previous.hidden = next.hidden = images.length < 2;
+    document.querySelectorAll<HTMLAnchorElement>('[data-gallery-open]').forEach((link) =>
+      link.addEventListener('click', (event) => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        opener = link;
+        show(Number(link.dataset.galleryOpen));
+        dialog.showModal();
+        document.body.classList.add('modal-open');
+      }),
+    );
+    previous.addEventListener('click', () => show(current - 1));
+    next.addEventListener('click', () => show(current + 1));
+    dialog.querySelector('[data-lightbox-close]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+      document.body.classList.remove('modal-open');
+      opener?.focus();
+    });
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab') {
+        const controls = Array.from(dialog.querySelectorAll<HTMLButtonElement>('button')).filter(
+          (b) => !b.hidden && !b.disabled,
+        );
+        const first = controls[0],
+          last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        show(current + (event.key === 'ArrowLeft' ? -1 : 1));
+      }
+    });
+    let startX = 0,
+      startY = 0;
+    img.addEventListener(
+      'touchstart',
+      (event) => {
+        startX = event.changedTouches[0].clientX;
+        startY = event.changedTouches[0].clientY;
+      },
+      { passive: true },
+    );
+    img.addEventListener(
+      'touchend',
+      (event) => {
+        const dx = event.changedTouches[0].clientX - startX,
+          dy = event.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) show(current + (dx < 0 ? 1 : -1));
+      },
+      { passive: true },
+    );
   }
-</style>
+</script>

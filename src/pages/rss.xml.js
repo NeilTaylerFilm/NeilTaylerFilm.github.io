@@ -1,22 +1,19 @@
-// src/pages/rss.xml.js
-// RSS feed for blog posts
-import { getCollection } from 'astro:content';
 import rss from '@astrojs/rss';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts.ts';
+import { posts, excerpt } from '../lib/content';
+import { site } from '../config/site';
 
 export async function GET(context) {
-  const posts = await getCollection('blog');
   return rss({
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
+    title: `${site.name} — Journal`,
+    description: site.description,
     site: context.site,
-    items: posts.map((post) => ({
+    items: (await posts()).map((post) => ({
       title: post.data.title,
-      description: post.data.excerpt || post.data.title,
       pubDate: post.data.date,
-      link: `/blog/${post.slug}/`,
-      // Optional: add categories if you want
-      // categories: post.data.tags ?? [],
+      description: excerpt(post.body, post.data.excerpt),
+      link: `/blog/${post.id}/`,
+      categories: [post.data.category],
     })),
+    customData: '<language>en-gb</language>',
   });
 }

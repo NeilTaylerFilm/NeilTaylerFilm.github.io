@@ -23,6 +23,7 @@ const first = featured[0];
     <a
       class="slide-image"
       data-slide-link
+      data-portrait={first.height > first.width ? 'true' : 'false'}
       href={first.project ? `/photography/${first.project}/` : first.src}
       aria-label={
         first.project ? `View project: ${first.project.replaceAll('-', ' ')}` : 'View photograph'
@@ -91,6 +92,7 @@ const first = featured[0];
       img.alt = slide.alt;
       img.width = slide.width;
       img.height = slide.height;
+      link.dataset.portrait = String(slide.height > slide.width);
       link.href = slide.project ? `/photography/${slide.project}/` : slide.src;
       link.setAttribute(
         'aria-label',

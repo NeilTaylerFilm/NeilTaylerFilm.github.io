@@ -1,22 +1,37 @@
 {
-  "name": "majestic-motion",
+  "name": "neil-tayler-editorial",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
-  "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "scripts": {
-    "dev": "astro dev",
+    "images": "node scripts/prepare-images.mjs",
+    "predev": "npm run images",
+    "prebuild": "npm run images",
+    "precheck": "npm run images",
+    "dev": "astro dev --host 127.0.0.1",
     "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "verify": "node scripts/verify-build.mjs",
+    "format": "prettier --write src scripts tests astro.config.ts package.json tsconfig.json README.md .github/workflows/deploy.yml",
+    "format:check": "prettier --check src scripts tests astro.config.ts package.json tsconfig.json README.md .github/workflows/deploy.yml"
   },
   "dependencies": {
-    "@astrojs/mdx": "^8.0.1",
-    "@astrojs/rss": "^4.0.19",
-    "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.3.2",
-    "sharp": "^0.35.0"
+    "astro": "7.3.2",
+    "@astrojs/mdx": "8.0.1",
+    "@astrojs/rss": "4.0.19",
+    "@astrojs/sitemap": "3.7.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.9.3",
+    "sharp": "^0.35.4",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   },
   "allowScripts": {
     "esbuild": true
