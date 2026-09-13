@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" noindex={true}>
+  <section class="not-found">
+    <div class="error-label">
+      <span aria-hidden="true">⌕</span> Error 404 / File not found
+    </div>
+    <h1>
+      This one’s
+      <br />
+      <span class="serif-word accent">out of frame.</span>
+    </h1>
+    <p>
+      The page you’re looking for has moved, or never quite made the final edit. There’s plenty more
+      to explore.
+    </p>
+    <div class="error-actions">
+      <a class="control" href="/">
+        Back to the journal ↗
+      </a>
+      <a class="control" href="/photography/">
+        View photography ↗
+      </a>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,52 @@
+---
+// src/pages/contact.astro
+// Contact page
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_AUTHOR, SOCIAL_LINKS } from '../consts';
+
+const title = 'Contact';
+const description = `Get in touch with ${SITE_AUTHOR}`;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="container">
+    <h1 class="mb-6">{title}</h1>
+    <p class="mb-6">
+      You can reach me through the following channels. Please note that this is a static site, so there is no contact form.
+      For now, you can use the links below to get in touch.
+    </p>
+    <div class="space-y-6">
+      {/* Email */}
+      <div class="flex items-start gap-4">
+        <span class="flex-shrink-0 text-muted">✉️</span>
+        <div>
+          <h2 class="text-lg font-bold mb-2">Email</h2>
+          <p class="text-muted">
+            <!-- Placeholder: replace with your actual email -->
+            your.email@example.com
+          </p>
+        </div>
+      </div>
+      
+      {/* Social links */}
+      <div>
+        <h2 class="text-lg font-bold mb-2">Social</h2>
+        <div class="flex flex-wrap gap-4">
+          {SOCIAL_LINKS.map((link) => (
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-muted hover:text-accent">
+              <span aria-hidden="true">{link.icon}</span>
+              <span>{link.name}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+    
+    {/* Optional: a note about how to get in touch */ }
+    <div class="mt-8 text-center text-sm text-muted">
+      <p>
+        If you'd like to say hello, share feedback, or just connect, feel free to reach out via any of the above.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

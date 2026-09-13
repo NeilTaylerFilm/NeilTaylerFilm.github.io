@@ -1,47 +1,36 @@
 ---
-import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro';
+import { site } from '../config/site';
+import ThemeToggle from './ThemeToggle.astro';
+const path = Astro.url.pathname;
+const nav = [
+  { label: 'Blog', href: '/' },
+  { label: 'Photography', href: '/photography/' },
+  { label: 'About', href: '/about/' },
+  { label: 'Contact', href: '/contact/' },
+];
 ---
 
-<header>
-	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
-		<div class="internal-links">
-			<HeaderLink href="/">Home</HeaderLink>
-			<HeaderLink href="/blog">Writing</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
-		</div>
-	</nav>
+<header class="site-header wrap">
+  <a class="wordmark" href="/" aria-label={`${site.name} — blog`}>
+    <span class="brand-mark" aria-hidden="true">
+      n<span>t</span>
+    </span>
+    {site.name}
+    <span class="wordmark-dot">.</span>
+  </a>
+  <nav aria-label="Primary navigation">
+    {nav.map(({ label, href }) => (
+      <a
+        href={href}
+        aria-current={
+          (href === '/' ? path === '/' || path.startsWith('/blog/') : path.startsWith(href))
+            ? 'page'
+            : undefined
+        }
+      >
+        {label}
+      </a>
+    ))}
+  </nav>
+  <ThemeToggle />
 </header>
-<style>
-	header {
-		margin: 0;
-		padding: 0 1em;
-		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
-	}
-	h2 {
-		margin: 0;
-		font-size: 1em;
-	}
-
-	h2 a,
-	h2 a.active {
-		text-decoration: none;
-	}
-	nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	nav a {
-		padding: 1em 0.5em;
-		color: var(--black);
-		border-bottom: 4px solid transparent;
-		text-decoration: none;
-	}
-	nav a.active {
-		text-decoration: none;
-		border-bottom-color: var(--accent);
-	}
-</style>

@@ -1,15 +1,26 @@
 ---
-const today = new Date();
+import { site } from '../config/site';
 ---
 
-<footer>
-	&copy; {today.getFullYear()} Neil Tayler Film. All rights reserved.
+<footer class="site-footer wrap">
+  <div>
+    <a class="footer-name" href="/">
+      {site.name}
+      <span class="accent">.</span>
+    </a>
+    <p>A personal corner of the internet.</p>
+  </div>
+  <div class="footer-links">
+    <a href="/photography/">Photography ↗</a>
+    <a href="/rss.xml">RSS feed ↗</a>
+    <a href="/contact/">Get in touch ↗</a>
+  </div>
+  <div class="footer-bottom mono">
+    <span>
+      © {new Date().getFullYear()} {site.author}
+    </span>
+    <span>
+      Made to be read. And looked at.<span class="tiny-stripes" aria-hidden="true"></span>
+    </span>
+  </div>
 </footer>
-<style>
-	footer {
-		padding: 2em 1em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat;
-		color: rgb(var(--gray));
-		text-align: center;
-	}
-</style>

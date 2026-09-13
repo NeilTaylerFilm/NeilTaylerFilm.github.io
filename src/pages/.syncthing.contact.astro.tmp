@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../config/site';
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Get in touch with ${site.author}. Contact details and links.`}
+>
+  <div class="page-intro">
+    <p class="eyebrow">Start a conversation</p>
+    <h1>
+      Say <span class="serif-word">hello.</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </h1>
+  </div>
+  <div class="contact-layout">
+    <div class="contact-intro">
+      <h2>
+        Good things often start
+        <br />
+        with a conversation.
+      </h2>
+      <p>
+        For photography, film, post-production, or something interesting you think I should see.
+      </p>
+      {!site.email && (
+        <p class="demo-notice">
+          Contact details are placeholders for now. There are no active contact links yet.
+        </p>
+      )}
+    </div>
+    <div class="contact-list">
+      {site.email ? (
+        <a class="contact-row" href={`mailto:${site.email}`}>
+          <strong>Email</strong>
+          <span>{site.email} ↗</span>
+        </a>
+      ) : (
+        <div class="contact-row">
+          <strong>Email</strong>
+          <span>To be added</span>
+        </div>
+      )}
+      {site.links.map((link) =>
+        link.url ? (
+          <a class="contact-row" href={link.url}>
+            <strong>{link.label}</strong>
+            <span>Visit profile ↗</span>
+          </a>
+        ) : (
+          <div class="contact-row">
+            <strong>{link.label}</strong>
+            <span>To be added</span>
+          </div>
+        ),
+      )}
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,9 @@
+node_modules/
+.qa/
+.astro/
+dist/
+.npm-cache/
+src/generated/
+public/_images/
+package-lock.json
+~syncthing~*

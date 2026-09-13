@@ -1,0 +1,57 @@
+---
+// PhotographyProjectCard.astro
+// A card component for displaying a photography project in the list view
+import { Image } from 'astro:assets';
+import { format } from 'date-fns';
+import { SITE_URL } from '../consts';
+
+const { title, subtitle, date, category, cover, slug } = Astro.props;
+
+// Format date as YYYY-MM-DD
+const formattedDate = format(date, 'yyyy-MM-dd');
+
+// Determine the cover image to use
+let coverSrc = '';
+let coverAlt = '';
+if (cover) {
+  coverSrc = new URL(`/src/${cover}`, SITE_URL).pathname;
+  coverAlt = `${title} cover image`;
+}
+
+---
+<article class="photography-project-card flex flex-col md:flex-row items-start gap-6 border-b pb-6 last:border-b-0 last:pb-0">
+  {/*
+    If there's a cover image, show it on the left (on md and up) and the content on the right.
+    On mobile, the cover will be full width above the content.
+  */}
+  {coverSrc && (
+    <div class="w-full md:w-48 flex-shrink-0 mb-4 md:mb-0">
+      <Image src={coverSrc} alt={coverAlt} class="rounded-lg object-cover w-full h-48" />
+    </div>
+  )}
+  <div class="flex-1 space-y-3">
+    <div class="flex flex-wrap items-baseline gap-3 text-sm text-muted">
+      <span class="category-tag bg-bg-accent text-accent px-2 py-0.5 rounded">{category}</span>
+      <span class="date">{formattedDate}</span>
+    </div>
+    <h2 class="text-xl font-bold mb-2">{title}</h2>
+    {subtitle && <p class="text-lg font-medium text-fg mb-4">{subtitle}</p>}
+    <a href={`/photography/${slug}/`} class="btn btn-sm btn-secondary">View project →</a>
+  </div>
+</article>
+
+<style>
+  /* Style for the category tag */
+  .category-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Ensure the link is styled appropriately */
+  a.btn {
+    display: inline-block;
+    margin-top: 1rem;
+  }
+</style>

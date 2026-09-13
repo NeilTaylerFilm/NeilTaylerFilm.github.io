@@ -1,0 +1,51 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ResponsiveImage from './ResponsiveImage.astro';
+import { excerpt, isoDate, categoryKey } from '../lib/content';
+interface Props {
+  post: CollectionEntry<'blog'>;
+  index: number;
+}
+const { post, index } = Astro.props;
+const { data } = post;
+const url = `/blog/${post.id}/`;
+---
+
+<article
+  class:list={['blog-card', { 'has-image': data.image }]}
+  data-feed-item
+  data-category={categoryKey(data.category)}
+  data-date={data.date.getTime()}
+  data-id={post.id}
+>
+  {data.image && (
+    <a class="card-image" href={url} tabindex="-1" aria-hidden="true">
+      <ResponsiveImage
+        src={data.image}
+        alt=""
+        sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 32vw, 420px"
+        loading={index === 0 ? 'eager' : 'lazy'}
+        priority={index === 0}
+      />
+    </a>
+  )}
+  <div class="card-content">
+    <div class="metadata">
+      <span class="category">{data.category}</span>
+      <span class="meta-divider">/</span>
+      <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
+      {data.demo && <span class="demo-tag">Example</span>}
+    </div>
+    <h2>
+      <a href={url}>{data.title}</a>
+    </h2>
+    {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
+    <p class="excerpt">{excerpt(post.body, data.excerpt)}</p>
+    <a class="read-link" href={url} aria-label={`Continue reading: ${data.title}`}>
+      Continue reading <span aria-hidden="true">→</span>
+    </a>
+  </div>
+  <span class="item-number mono" aria-hidden="true">
+    {String(index + 1).padStart(2, '0')}
+  </span>
+</article>

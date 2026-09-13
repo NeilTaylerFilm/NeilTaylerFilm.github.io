@@ -1,0 +1,135 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ResponsiveImage from '../../components/ResponsiveImage.astro';
+import { posts, isoDate, excerpt } from '../../lib/content';
+import { site } from '../../config/site';
+export async function getStaticPaths() {
+  return (await posts()).map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+const { post } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+const related = (await posts())
+  .filter((p) => p.id !== post.id && p.data.category === data.category)
+  .slice(0, 3);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: data.title,
+  description: excerpt(post.body, data.excerpt),
+  datePublished: isoDate(data.date),
+  author: { '@type': 'Person', name: site.author, url: new URL('/about/', Astro.site).href },
+  mainEntityOfPage: new URL(Astro.url.pathname, Astro.site).href,
+  ...(data.image ? { image: new URL(data.image, Astro.site).href } : {}),
+};
+---
+
+<BaseLayout
+  title={data.title}
+  description={excerpt(post.body, data.excerpt)}
+  image={data.image}
+  article={true}
+>
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')}
+  ></script>
+  <div class="reading-progress" aria-hidden="true">
+    <span data-reading-progress></span>
+  </div>
+  <a class="back-link mono" href="/">
+    ← Back to the journal
+  </a>
+  <article>
+    <header class="article-header">
+      <div class="metadata">
+        <span class="category">{data.category}</span>
+        <span>/</span>
+        <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
+      </div>
+      <h1>{data.title}</h1>
+      {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+      <p class="byline mono">By {site.author}</p>
+      {data.demo && (
+        <p class="demo-notice">
+          Example article · Demonstration copy, ready to replace with your own writing.
+        </p>
+      )}
+    </header>
+    {data.image && (
+      <figure class="article-hero">
+        <ResponsiveImage
+          src={data.image}
+          alt={data.imageAlt}
+          sizes="(max-width: 1200px) 90vw, 1100px"
+          loading="eager"
+          priority={true}
+        />
+      </figure>
+    )}
+    <div class="prose article-body" data-article-body>
+      <Content />
+    </div>
+    <div class="article-signoff mono">
+      <span aria-hidden="true">■</span> End of entry <a href="/">Back to all writing ↗</a>
+    </div>
+  </article>
+  {related.length > 0 && (
+    <section class="related" aria-labelledby="related-heading">
+      <div class="section-heading">
+        <h2 id="related-heading" class="eyebrow">
+          More in {data.category}
+        </h2>
+        <span class="line-decoration" aria-hidden="true"></span>
+      </div>
+      <div class="related-grid">
+        {related.map((p) => (
+          <article>
+            <time class="mono small muted" datetime={isoDate(p.data.date)}>
+              {isoDate(p.data.date)}
+            </time>
+            <h3>
+              <a href={`/blog/${p.id}/`}>
+                {p.data.title}{' '}
+                <span class="accent" aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+            </h3>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+</BaseLayout>
+<script>
+  const body = document.querySelector<HTMLElement>('[data-article-body]');
+  const bar = document.querySelector<HTMLElement>('[data-reading-progress]');
+  if (body && bar) {
+    let scheduled = false;
+    const update = () => {
+      const rect = body.getBoundingClientRect();
+      const progress = Math.min(
+        1,
+        Math.max(0, (innerHeight - rect.top) / Math.max(1, rect.height)),
+      );
+      bar.style.transform = `scaleX(${progress})`;
+      scheduled = false;
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!scheduled) {
+          scheduled = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    window.addEventListener('resize', update);
+    update();
+  }
+</script>

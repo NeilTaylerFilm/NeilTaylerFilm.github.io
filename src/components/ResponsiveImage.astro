@@ -1,0 +1,24 @@
+---
+// src/components/ResponsiveImage.astro
+// A responsive image component with lazy loading and proper aspect ratios
+import { Image } from 'astro:assets';
+
+const { src, alt, width, height, sizes, priority = false, ...rest } = Astro.props;
+
+// If no dimensions provided, use object-fit to maintain aspect ratio
+const hasDimensions = width && height;
+
+---
+{hasDimensions ? (
+  <Image
+    src={src}
+    alt={alt}
+    width={width}
+    height={height}
+    sizes={sizes}
+    loading={priority ? 'eager' : 'lazy'}
+    {...rest}
+  />
+) : (
+  <img src={src} alt={alt} loading="lazy" decoding="async" {...rest} />
+)}

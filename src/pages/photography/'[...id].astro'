@@ -1,0 +1,51 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Gallery from '../../components/Gallery.astro';
+import { site } from '../../config/site';
+import { projects, isoDate } from '../../lib/content';
+export async function getStaticPaths() {
+  return (await projects()).map((project) => ({ params: { id: project.id }, props: { project } }));
+}
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+---
+
+<BaseLayout
+  title={data.title}
+  description={data.subtitle || `${data.title}: a photography project by ${site.author}.`}
+  image={data.cover}
+>
+  <a class="back-link mono" href="/photography/">
+    ← All photography
+  </a>
+  <header class="project-intro">
+    <div class="metadata">
+      <span class="category">{data.category}</span>
+      <span>/</span>
+      <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
+    </div>
+    <h1>
+      {data.title}
+      <span class="accent">.</span>
+    </h1>
+    {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+    {data.demo && (
+      <p class="demo-notice">Example project · These sample photographs are not Neil’s work.</p>
+    )}
+    <div class="prose project-description">
+      <Content />
+    </div>
+    <p class="mono small muted">
+      {String(data.images?.length ?? 0).padStart(2, '0')} photographs / Select a frame to take a closer look
+    </p>
+  </header>
+  <Gallery images={data.images} title={data.title} />
+  <div class="project-end">
+    <p class="serif-word">Thanks for looking.</p>
+    <a class="control" href="/photography/">
+      Back to the project index ↗
+    </a>
+  </div>
+</BaseLayout>

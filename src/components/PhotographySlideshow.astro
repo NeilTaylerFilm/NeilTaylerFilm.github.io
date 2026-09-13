@@ -1,0 +1,147 @@
+---
+import { featured as originalFeatured, featuredIsDemo } from '../data/featured';
+import { imageInfo } from '../lib/images';
+const featured = originalFeatured.map((photo) => ({ ...photo, ...imageInfo(photo.src) }));
+const first = featured[0];
+---
+
+{first && (
+  <section
+    class="slideshow"
+    aria-label="Selected photographs"
+    aria-roledescription="carousel"
+    tabindex="0"
+    data-slideshow
+    data-slides={JSON.stringify(featured)}
+  >
+    <div class="slideshow-top mono">
+      <span>
+        <span class="status-dot"></span> Selected frames
+      </span>
+      {featuredIsDemo && <span>Sample photographs / replace with your own</span>}
+    </div>
+    <a
+      class="slide-image"
+      data-slide-link
+      href={first.project ? `/photography/${first.project}/` : first.src}
+      aria-label={
+        first.project ? `View project: ${first.project.replaceAll('-', ' ')}` : 'View photograph'
+      }
+    >
+      <img
+        data-slide-image
+        src={first.src}
+        srcset={first.srcset}
+        sizes="(max-width: 1440px) 90vw, 1344px"
+        width={first.width}
+        height={first.height}
+        alt={first.alt}
+        fetchpriority="high"
+        decoding="async"
+      />
+    </a>
+    <div class="slideshow-bottom">
+      <p class="slide-caption" data-slide-caption>
+        {first.caption}
+      </p>
+      <div class="slide-navigation">
+        <span class="mono small" data-slide-count role="status" aria-live="polite">
+          01 / {String(featured.length).padStart(2, '0')}
+        </span>
+        <button class="control square" data-slide-prev aria-label="Previous photograph" hidden>
+          ←
+        </button>
+        <button class="control square" data-slide-next aria-label="Next photograph" hidden>
+          →
+        </button>
+      </div>
+    </div>
+  </section>
+)}
+<script>
+  type Slide = {
+    src: string;
+    srcset?: string;
+    alt: string;
+    caption?: string;
+    project?: string;
+    width: number;
+    height: number;
+  };
+  const root = document.querySelector<HTMLElement>('[data-slideshow]');
+  if (root) {
+    const slides: Slide[] = JSON.parse(root.dataset.slides || '[]');
+    const img = root.querySelector<HTMLImageElement>('[data-slide-image]')!;
+    const link = root.querySelector<HTMLAnchorElement>('[data-slide-link]')!;
+    const caption = root.querySelector<HTMLElement>('[data-slide-caption]')!;
+    const count = root.querySelector<HTMLElement>('[data-slide-count]')!;
+    const previous = root.querySelector<HTMLButtonElement>('[data-slide-prev]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-slide-next]')!;
+    let current = 0;
+    img.addEventListener('load', () => {
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+        img.animate([{ opacity: 0.7 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+    });
+    previous.hidden = next.hidden = slides.length < 2;
+    function show(direction: number) {
+      current = (current + direction + slides.length) % slides.length;
+      const slide = slides[current];
+      img.srcset = slide.srcset || '';
+      img.src = slide.src;
+      img.alt = slide.alt;
+      img.width = slide.width;
+      img.height = slide.height;
+      link.href = slide.project ? `/photography/${slide.project}/` : slide.src;
+      link.setAttribute(
+        'aria-label',
+        slide.project ? `View project: ${slide.project.replaceAll('-', ' ')}` : 'View photograph',
+      );
+      caption.textContent = slide.caption || '';
+      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+      // Fetch at most one adjacent frame, and only after the visitor interacts.
+      const adjacent = slides[(current + 1) % slides.length];
+      const preload = new Image();
+      preload.sizes = img.sizes;
+      preload.srcset = adjacent.srcset || '';
+      preload.src = adjacent.src;
+    }
+    previous.addEventListener('click', () => show(-1));
+    next.addEventListener('click', () => show(1));
+    root.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        show(event.key === 'ArrowLeft' ? -1 : 1);
+      }
+    });
+    let startX = 0,
+      startY = 0,
+      swiped = false;
+    root.addEventListener(
+      'touchstart',
+      (event) => {
+        startX = event.changedTouches[0].clientX;
+        startY = event.changedTouches[0].clientY;
+        swiped = false;
+      },
+      { passive: true },
+    );
+    root.addEventListener(
+      'touchend',
+      (event) => {
+        const dx = event.changedTouches[0].clientX - startX,
+          dy = event.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+          show(dx < 0 ? 1 : -1);
+          swiped = true;
+        }
+      },
+      { passive: true },
+    );
+    link.addEventListener('click', (event) => {
+      if (swiped) {
+        event.preventDefault();
+        swiped = false;
+      }
+    });
+  }
+</script>

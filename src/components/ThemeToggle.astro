@@ -1,0 +1,46 @@
+<button
+  class="theme-toggle control"
+  type="button"
+  aria-label="Switch to light theme"
+  aria-pressed="false"
+  data-theme-toggle
+  hidden
+>
+  <span class="theme-symbol" aria-hidden="true">
+    ◐
+  </span>
+  <span data-theme-label>Dark</span>
+</button>
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  function syncTheme() {
+    const light = document.documentElement.dataset.theme === 'light';
+    button?.setAttribute('aria-pressed', String(light));
+    button?.setAttribute('aria-label', `Switch to ${light ? 'dark' : 'light'} theme`);
+    const label = button?.querySelector('[data-theme-label]');
+    if (label) label.textContent = light ? 'Light' : 'Dark';
+  }
+  if (button) {
+    button.hidden = false;
+    syncTheme();
+    button.addEventListener('click', () => {
+      const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = theme;
+      try {
+        localStorage.setItem('neil-theme', theme);
+      } catch {
+        /* Theme still works without storage. */
+      }
+      syncTheme();
+    });
+    window.addEventListener('pageshow', () => {
+      try {
+        const saved = localStorage.getItem('neil-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+      } catch {
+        /* Keep the current theme if storage is unavailable. */
+      }
+      syncTheme();
+    });
+  }
+</script>

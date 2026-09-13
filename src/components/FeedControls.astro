@@ -1,0 +1,86 @@
+---
+interface Props {
+  categories: string[];
+  count: number;
+  noun?: string;
+}
+const { categories, count, noun = 'articles' } = Astro.props;
+import { categoryKey } from '../lib/feed';
+---
+
+<div class="feed-toolbar">
+  <form class="feed-controls" data-feed-controls hidden>
+    <label>
+      <span>Category</span>
+      <select name="category" aria-label="Filter by category">
+        <option value="">All categories</option>
+        {categories.map((category) => (
+          <option value={categoryKey(category)}>{category}</option>
+        ))}
+      </select>
+    </label>
+    <label>
+      <span>Sort</span>
+      <select name="sort" aria-label="Sort by date">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
+    </label>
+  </form>
+  <p class="feed-count mono" data-feed-count data-noun={noun} role="status" aria-live="polite">
+    {String(count).padStart(2, '0')} {noun}
+  </p>
+</div>
+<noscript>
+  <p class="small muted">
+    All {noun} are shown, newest first. Enable JavaScript to filter and sort.
+  </p>
+</noscript>
+<script>
+  import { comparators } from '../lib/feed';
+  const form = document.querySelector<HTMLFormElement>('[data-feed-controls]');
+  const feed = document.querySelector<HTMLElement>('[data-feed]');
+  if (form && feed) {
+    form.hidden = false;
+    const category = form.elements.namedItem('category') as HTMLSelectElement;
+    const sort = form.elements.namedItem('sort') as HTMLSelectElement;
+    const items = Array.from(feed.querySelectorAll<HTMLElement>('[data-feed-item]'));
+    const count = document.querySelector<HTMLElement>('[data-feed-count]');
+    function apply(fromURL = false) {
+      const url = new URL(location.href);
+      if (fromURL) {
+        const value = url.searchParams.get('category') || '';
+        category.value = Array.from(category.options).some((o) => o.value === value) ? value : '';
+        sort.value = url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
+      }
+      const comparator = comparators[sort.value as keyof typeof comparators] || comparators.newest;
+      let visible = 0;
+      items
+        .sort((a, b) =>
+          comparator(
+            { date: Number(a.dataset.date), id: a.dataset.id! },
+            { date: Number(b.dataset.date), id: b.dataset.id! },
+          ),
+        )
+        .forEach((item) => {
+          item.hidden = Boolean(category.value && item.dataset.category !== category.value);
+          if (!item.hidden) visible++;
+          feed!.append(item);
+        });
+      if (count) count.textContent = `${String(visible).padStart(2, '0')} ${count.dataset.noun}`;
+      if (!fromURL) {
+        category.value
+          ? url.searchParams.set('category', category.value)
+          : url.searchParams.delete('category');
+        sort.value === 'oldest'
+          ? url.searchParams.set('sort', 'oldest')
+          : url.searchParams.delete('sort');
+        history.pushState({}, '', url);
+      }
+    }
+    form.addEventListener('submit', (event) => event.preventDefault());
+    form.addEventListener('change', () => apply());
+    window.addEventListener('popstate', () => apply(true));
+    apply(true);
+  }
+</script>

@@ -1,10 +1,11 @@
 ---
 title: "Welcome to My Blog"
-description: "A first post to demonstrate how to create new articles."
-pubDate: "2026-09-12"
-tags:
-  - technology
-  - miscellaneous
+subtitle: ""
+date: 2026-09-12
+category: "Miscellaneous"
+excerpt: "A first post to demonstrate how to create new articles"
+image: "../../assets/blog/blog-placeholder-1.jpg"
+draft: false
 ---
 
 ## This is your new blog
@@ -13,23 +14,25 @@ This is a sample post created using Astro's content collections. It demonstrates
 
 ## How to create a new post
 
-1. Create a new Markdown file in `src/content/blog/`
+1. Create a new Markdown file in `src/content/../../assets/blog/`
 2. Give it a descriptive filename like `my-first-post.md`
 3. Add frontmatter at the top with your title, description, date, and optional tags
 4. Write your article content below the frontmatter
-5. Run `npm run build` to verify everything works
-6. Commit and push to publish
+5. Add images if needed (place them in `src/../../assets/blog/` or similar)
+6. Run `npm run build` to verify everything works
+7. Commit and push to publish
 
 ## Frontmatter example
 
 ```yaml
 ---
 title: "Your Post Title"
-description: "A short description of your article."
-pubDate: "2026-09-12"
-tags:
-  - technology
-  - post-production
+subtitle: "An optional subtitle"
+date: "2026-09-12"
+category: "Technology"
+image: "../../assets/blog/your-image.jpg"
+excerpt: "A short description of your article."
+draft: false
 ---
 ```
 

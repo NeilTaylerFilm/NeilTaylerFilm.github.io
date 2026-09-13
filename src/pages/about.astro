@@ -1,22 +1,58 @@
 ---
-import Layout from '../layouts/BlogPost.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { about } from '../data/about';
+import { site } from '../config/site';
+import ResponsiveImage from '../components/ResponsiveImage.astro';
 ---
 
-<Layout
-	title="About"
-	description="About Neil Tayler Film"
-	pubDate={new Date()}
+<BaseLayout
+  title="About"
+  description={`A little about ${site.author}, photography and working in film and post-production.`}
 >
-	<h1>About Me</h1>
-	<p>
-		Hi, I'm Neil. This blog is where I write about my interests and experiences.
-	</p>
-	<p>
-		I'm passionate about filmmaking, post-production, editing, and colour grading.
-		When I'm not working on a project, you'll likely find me exploring photography
-		or tinkering with new technology.
-	</p>
-	<p>
-		Feel free to browse my writing and reach out if you'd like to connect!
-	</p>
-</Layout>
+  <div class="page-intro">
+    <p class="eyebrow">The person behind the pages</p>
+    <h1>
+      A little <span class="serif-word">context.</span>
+    </h1>
+  </div>
+  <div class="about-grid">
+    <figure class="about-photo">
+      {about.portrait ? (
+        <ResponsiveImage
+          src={about.portrait}
+          alt={about.portraitAlt}
+          width={800}
+          height={1000}
+          sizes="(max-width: 540px) 90vw, 40vw"
+          loading="eager"
+        />
+      ) : (
+        <div class="portrait-placeholder">
+          <span aria-hidden="true">nt.</span>
+          <p>Your portrait goes here</p>
+        </div>
+      )}
+      <figcaption>
+        {about.portrait ? 'A face to put to the name.' : 'Placeholder / Awaiting a photograph'}
+      </figcaption>
+    </figure>
+    <section class="about-copy">
+      <h2>{about.heading}</h2>
+      <div class="prose">
+        {about.paragraphs.map((p) => (
+          <p>{p}</p>
+        ))}
+      </div>
+      {about.areas.length > 0 && (
+        <div class="areas" aria-label="Areas of work">
+          {about.areas.map((area) => (
+            <span>{area}</span>
+          ))}
+        </div>
+      )}
+      <a class="control" href="/contact/">
+        Let’s talk <span aria-hidden="true">↗</span>
+      </a>
+    </section>
+  </div>
+</BaseLayout>
