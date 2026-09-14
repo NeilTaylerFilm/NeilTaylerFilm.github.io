@@ -8,13 +8,15 @@ The bucket is **images-neiltaylerfilm-github-io**. The delivery address is **htt
 
 1. Open Finder.
 2. Open **Documents → CodingProjects → neiltaylerfilm.github.io → photo-inbox**.
-3. Copy the pictures you want to upload into **photo-inbox**.
+3. Copy the **full-resolution pictures** you want to upload into **photo-inbox**. A 6000 × 4000 pixel photograph is fine. You do not need to resize or compress it yourself first.
 4. Use JPEG, WebP, PNG or AVIF. Export RAW/HEIC files as JPEG first. Do not use JXL.
 5. Put the pictures directly inside photo-inbox, not inside another folder.
 
 Keep your originals in your normal photo library and backup. This folder is a temporary tray. It is excluded from GitHub, so these source pictures will not be pushed to your repository.
 
 The upload tool makes several sizes, with a maximum longest edge of 2560 pixels. It does not enlarge small pictures. It removes EXIF/location metadata from the uploaded copies and converts them to sRGB. Your source files are untouched.
+
+**Putting a picture in photo-inbox does not start anything automatically.** You must run the upload command in Step 2. That command handles resizing, compression and uploading for you.
 
 **Uploaded photographs are public immediately, even if the post using them is still a draft.** Only put photographs you are ready to share into an upload batch.
 
@@ -36,6 +38,8 @@ npm run photos:upload
 
 Wait until you see **Done**.
 
+The command reads your full-resolution pictures, creates compressed WebP and JPEG copies at several sizes, and uploads those copies. **It does not upload the full-resolution original or change the file in photo-inbox.**
+
 The tool uploads small web copies to R2. If you run it again with the same pictures, it skips copies already there. Changing a source picture produces a new image address; it does not replace the old picture.
 
 For a preview of the amount to upload, use this instead:
@@ -45,6 +49,14 @@ npm run photos:upload -- --dry-run
 ```
 
 A preview does not upload anything.
+
+### How the right size reaches each visitor
+
+For example, a **6000 × 4000 pixel** photograph produces copies that are **480, 960, 1440, 1920 and 2560 pixels wide**, keeping the same proportions. Each size is made in WebP and JPEG. Smaller originals produce fewer sizes; portrait photographs are also limited to 2560 pixels on their longest edge.
+
+When you use the generated image references, the website tells the browser which sizes are available and how much space the picture occupies. The browser chooses a suitable version for the screen size and pixel density. A phone might download a 480- or 960-pixel copy; a larger screen may need a larger copy. It does not need to download every size or your full-resolution original.
+
+This works for **blog pictures, photography project galleries and the slideshow**. You only paste one image reference into your content—the website handles the size choices. Opening a photograph in the gallery's enlarged view can load the larger web copy.
 
 ## 3. Find your image addresses
 
