@@ -1,4 +1,6 @@
-// Replace the example paragraphs and optionally add a portrait in public/images/.
+// Portrait: upload through photo-inbox, then paste its Image address into portrait below.
+// Or save src/assets/about/portrait.jpg and use /assets/about/portrait.jpg.
+// Keep portrait empty to show the intentional placeholder. Registered images supply dimensions.
 export const about = {
   heading: 'Hello, I’m Neil.',
   portrait: '',

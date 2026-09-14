@@ -186,3 +186,21 @@ Sources:
 
 - https://developers.cloudflare.com/r2/pricing/
 - https://developers.cloudflare.com/workers/platform/limits/
+
+## Add your About-page portrait
+
+1. Put the portrait in **photo-inbox** and upload it using Step 2.
+2. Copy its **Image address** from **UPLOAD-RESULTS.md**.
+3. Open **src → data → about.ts**.
+4. Find `portrait: '',` and paste the address between the quotes. For example:
+
+```ts
+portrait: 'PASTE-YOUR-UPLOADED-IMAGE-ADDRESS-HERE',
+portraitAlt: 'Portrait of Neil Tayler',
+```
+
+5. Save, preview and publish as usual. The image keeps its proportions and automatically uses the registered responsive sizes.
+
+Leaving `portrait` empty shows the **Portrait to come** placeholder. You can also use a local photograph: save it as **src/assets/about/portrait.jpg** and set `portrait: '/assets/about/portrait.jpg',`.
+
+The slideshow now creates its thumbnail filmstrip automatically from **featured.ts**. You do not need to upload separate thumbnails. Visitors can select a thumbnail, use the arrow buttons or swipe the main image. **Expand** opens a larger viewer on the same page; **Close** or Escape returns to the page with the selected photo preserved. Reduced-motion settings turn off the directional slide animation.

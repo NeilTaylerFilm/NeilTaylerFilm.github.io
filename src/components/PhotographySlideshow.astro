@@ -1,147 +1,136 @@
 ---
 import { featured as originalFeatured, featuredIsDemo } from '../data/featured';
 import { imageInfo } from '../lib/images';
+import '../styles/photography-viewer.css';
 const featured = originalFeatured.map((photo) => ({ ...photo, ...imageInfo(photo.src) }));
 const first = featured[0];
 ---
 
 {first && (
   <section
-    class="slideshow"
+    class="slideshow photo-showcase"
     aria-label="Selected photographs"
     aria-roledescription="carousel"
-    tabindex="0"
     data-slideshow
     data-slides={JSON.stringify(featured)}
   >
-    <div class="slideshow-top mono">
-      <span>
-        <span class="status-dot"></span> Selected frames
-      </span>
-      {featuredIsDemo && <span>Sample photographs / replace with your own</span>}
-    </div>
-    <a
-      class="slide-image"
-      data-slide-link
-      href={first.project ? `/photography/${first.project}/` : first.full || first.src}
-      aria-label={
-        first.project ? `View project: ${first.project.replaceAll('-', ' ')}` : 'View photograph'
-      }
-    >
-      <img
-        data-slide-image
-        src={first.src}
-        srcset={first.srcset}
-        sizes="(max-width: 1440px) 90vw, 1344px"
-        width={first.width}
-        height={first.height}
-        alt={first.alt}
-        fetchpriority="high"
-        decoding="async"
-      />
-    </a>
-    <div class="slideshow-bottom">
-      <p class="slide-caption" data-slide-caption>
-        {first.caption}
-      </p>
-      <div class="slide-navigation">
-        <span class="mono small" data-slide-count role="status" aria-live="polite">
-          01 / {String(featured.length).padStart(2, '0')}
+    <div class="photo-panel" data-photo-panel>
+      <div class="photo-toolbar">
+        <span class="mono">
+          <span class="status-dot"></span> Selected photographs
         </span>
-        <button class="control square" data-slide-prev aria-label="Previous photograph" hidden>
-          ←
+        <button class="control" type="button" data-photo-expand aria-haspopup="dialog" hidden>
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" />
+          </svg>
+          Expand
         </button>
-        <button class="control square" data-slide-next aria-label="Next photograph" hidden>
-          →
+        <button
+          class="control photo-close"
+          type="button"
+          data-photo-close
+          aria-label="Close expanded photographs"
+        >
+          <span aria-hidden="true">×</span> Close
         </button>
       </div>
+      <div class="photo-viewport" data-photo-viewport>
+        <img
+          data-slide-image
+          src={first.src}
+          srcset={first.srcset}
+          sizes="(max-width: 1440px) 90vw, 1248px"
+          width={first.width}
+          height={first.height}
+          alt={first.alt}
+          fetchpriority="high"
+          decoding="async"
+        />
+      </div>
+      <div class="photo-details">
+        <div class="photo-caption">
+          <p data-slide-caption>{first.caption}</p>
+          <a
+            class="mono"
+            data-photo-project
+            href={first.project ? `/photography/${first.project}/` : undefined}
+            hidden={!first.project}
+          >
+            View project →
+          </a>
+          {featuredIsDemo && <span class="mono muted">Sample photographs</span>}
+        </div>
+        <div class="slide-navigation">
+          <span
+            class="mono small"
+            data-slide-count
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            01 / {String(featured.length).padStart(2, '0')}
+          </span>
+          <button
+            class="control square"
+            type="button"
+            data-slide-prev
+            aria-label="Previous photograph"
+            hidden
+          >
+            ←
+          </button>
+          <button
+            class="control square"
+            type="button"
+            data-slide-next
+            aria-label="Next photograph"
+            hidden
+          >
+            →
+          </button>
+        </div>
+      </div>
+      <div
+        class="photo-filmstrip"
+        data-photo-filmstrip
+        role="group"
+        aria-label="Choose a photograph"
+        hidden
+      >
+        {featured.map((photo, index) => (
+          <button
+            class="photo-thumbnail"
+            type="button"
+            data-photo-index={index}
+            aria-label={`Photograph ${index + 1} of ${featured.length}: ${photo.alt || 'Untitled photograph'}`}
+            aria-current={index === 0 ? 'true' : undefined}
+            tabindex={index === 0 ? 0 : -1}
+          >
+            <img
+              src={photo.srcset?.split(', ')[0].split(' ')[0] || photo.src}
+              width={photo.width}
+              height={photo.height}
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+        ))}
+      </div>
+      <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
+    <dialog class="photo-dialog" data-photo-dialog aria-label="Expanded photographs"></dialog>
   </section>
 )}
 <script>
-  type Slide = {
-    src: string;
-    srcset?: string;
-    alt: string;
-    caption?: string;
-    project?: string;
-    width: number;
-    height: number;
-  };
-  const root = document.querySelector<HTMLElement>('[data-slideshow]');
-  if (root) {
-    const slides: Slide[] = JSON.parse(root.dataset.slides || '[]');
-    const img = root.querySelector<HTMLImageElement>('[data-slide-image]')!;
-    const link = root.querySelector<HTMLAnchorElement>('[data-slide-link]')!;
-    const caption = root.querySelector<HTMLElement>('[data-slide-caption]')!;
-    const count = root.querySelector<HTMLElement>('[data-slide-count]')!;
-    const previous = root.querySelector<HTMLButtonElement>('[data-slide-prev]')!;
-    const next = root.querySelector<HTMLButtonElement>('[data-slide-next]')!;
-    let current = 0;
-    img.addEventListener('load', () => {
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
-        img.animate([{ opacity: 0.7 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
-    });
-    previous.hidden = next.hidden = slides.length < 2;
-    function show(direction: number) {
-      current = (current + direction + slides.length) % slides.length;
-      const slide = slides[current];
-      img.srcset = slide.srcset || '';
-      img.src = slide.src;
-      img.alt = slide.alt;
-      img.width = slide.width;
-      img.height = slide.height;
-      link.href = slide.project ? `/photography/${slide.project}/` : slide.src;
-      link.setAttribute(
-        'aria-label',
-        slide.project ? `View project: ${slide.project.replaceAll('-', ' ')}` : 'View photograph',
-      );
-      caption.textContent = slide.caption || '';
-      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
-      // Fetch at most one adjacent frame, and only after the visitor interacts.
-      const adjacent = slides[(current + 1) % slides.length];
-      const preload = new Image();
-      preload.sizes = img.sizes;
-      preload.srcset = adjacent.srcset || '';
-      preload.src = adjacent.src;
-    }
-    previous.addEventListener('click', () => show(-1));
-    next.addEventListener('click', () => show(1));
-    root.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        event.preventDefault();
-        show(event.key === 'ArrowLeft' ? -1 : 1);
-      }
-    });
-    let startX = 0,
-      startY = 0,
-      swiped = false;
-    root.addEventListener(
-      'touchstart',
-      (event) => {
-        startX = event.changedTouches[0].clientX;
-        startY = event.changedTouches[0].clientY;
-        swiped = false;
-      },
-      { passive: true },
-    );
-    root.addEventListener(
-      'touchend',
-      (event) => {
-        const dx = event.changedTouches[0].clientX - startX,
-          dy = event.changedTouches[0].clientY - startY;
-        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
-          show(dx < 0 ? 1 : -1);
-          swiped = true;
-        }
-      },
-      { passive: true },
-    );
-    link.addEventListener('click', (event) => {
-      if (swiped) {
-        event.preventDefault();
-        swiped = false;
-      }
-    });
-  }
+  import { setupPhotographyViewer } from '../scripts/photography-viewer';
+  document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 </script>

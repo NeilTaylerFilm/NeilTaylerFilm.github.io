@@ -1,0 +1,204 @@
+.photo-showcase {
+  min-width: 0;
+}
+.photo-panel {
+  min-width: 0;
+  background: var(--surface);
+  color: var(--text);
+}
+.photo-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.photo-toolbar > span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.photo-toolbar svg {
+  flex-shrink: 0;
+}
+.photo-toolbar .photo-close {
+  display: none;
+}
+.photo-viewport {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  contain: paint;
+  isolation: isolate;
+  background: #11130f;
+  touch-action: pan-y pinch-zoom;
+  cursor: zoom-in;
+}
+.photo-viewport:focus-visible {
+  outline-offset: -3px;
+}
+.photo-viewport img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
+}
+.photo-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  min-height: 68px;
+}
+.photo-caption {
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.photo-caption a {
+  color: var(--accent);
+}
+.photo-filmstrip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--control-border) var(--surface);
+  touch-action: pan-x;
+}
+.photo-thumbnail {
+  flex: 0 0 76px;
+  height: 64px;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  position: relative;
+}
+.photo-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.48;
+}
+.photo-thumbnail:hover img,
+.photo-thumbnail:focus-visible img,
+.photo-thumbnail[aria-current] img {
+  opacity: 1;
+}
+.photo-thumbnail[aria-current] {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+.photo-thumbnail:focus-visible {
+  outline-offset: 1px;
+}
+.photo-dialog {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  height: 100dvh;
+  max-height: none;
+  background: var(--surface);
+  color: var(--text);
+  overflow: hidden;
+}
+.photo-dialog::backdrop {
+  background: #11130f;
+}
+.photo-dialog[open] .photo-panel {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+.photo-dialog .photo-viewport {
+  aspect-ratio: auto;
+  min-height: 0;
+  cursor: default;
+}
+.photo-dialog .photo-close {
+  display: inline-flex;
+}
+.photo-dialog [data-photo-expand] {
+  display: none;
+}
+.photo-dialog .photo-caption {
+  max-height: 3.2em;
+  overflow-y: auto;
+}
+.photo-dialog .photo-panel > .visually-hidden {
+  position: absolute;
+}
+@media (max-width: 540px) {
+  .photo-toolbar,
+  .photo-details {
+    padding: 10px 12px;
+  }
+  .photo-toolbar .control {
+    gap: 8px;
+  }
+  .photo-details {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .photo-caption:empty {
+    display: none;
+  }
+  .photo-details .slide-navigation {
+    margin-left: auto;
+  }
+  .photo-filmstrip {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .photo-thumbnail {
+    flex-basis: 64px;
+    height: 56px;
+  }
+  .photo-dialog .photo-caption {
+    font-size: 12px;
+    max-height: 2.8em;
+  }
+  .photo-dialog .photo-details {
+    flex-wrap: nowrap;
+  }
+  .photo-dialog .slide-navigation > span {
+    margin-right: 4px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .photo-dialog .photo-toolbar {
+    padding-block: 4px;
+  }
+  .photo-dialog .photo-details {
+    min-height: 48px;
+    padding-block: 2px;
+  }
+  .photo-dialog .photo-filmstrip {
+    padding-block: 4px;
+  }
+  .photo-dialog .photo-thumbnail {
+    height: 44px;
+    flex-basis: 60px;
+  }
+}
+/* Keep small control labels readable on the raised surface in both themes. */
+.photo-panel .control:hover {
+  color: var(--text);
+}
