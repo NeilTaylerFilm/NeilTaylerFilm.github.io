@@ -19,4 +19,4 @@ Look for a balance between the lit and unlit parts of a scene. Preserving darkne
 
 Not every frame needs the same intensity. A quiet detail can give a more dramatic image somewhere to land. Try ordering a small set without worrying too much about chronology.
 
-See the [Passing through example project](/photography/passing-through/) for a gallery presentation, or [The space between frames](/../../assets/blog/the-space-between-frames/) for another sample about looking.
+See the [Passing through example project](/photography/passing-through/) for a gallery presentation, or [The space between frames](/blog/the-space-between-frames/) for another sample about looking.

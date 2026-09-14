@@ -1,40 +1,41 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import ProjectMetadata from './ProjectMetadata.astro';
 import ResponsiveImage from './ResponsiveImage.astro';
-import { isoDate, categoryKey } from '../lib/content';
+import { projectTimestamp, categoryKey } from '../lib/content';
 interface Props {
   project: CollectionEntry<'photography'>;
 }
 const { project } = Astro.props;
 const { data } = project;
+const cover = data.coverImage || data.cover || data.images[0]?.src;
 ---
 
 <article
   class="project-card"
   data-feed-item
-  data-category={categoryKey(data.category)}
-  data-date={data.date.getTime()}
+  data-category={categoryKey(data.category || '')}
+  data-date={projectTimestamp(data)}
   data-id={project.id}
 >
-  <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
-    <ResponsiveImage
-      src={data.cover}
-      alt=""
-      sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
-    />
-    <span class="project-open" aria-hidden="true">
-      ↗
-    </span>
-  </a>
-  <div class="metadata">
-    <span class="category">{data.category}</span>
-    <span>/</span>
-    <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
-    {data.demo && <span class="demo-tag">Example</span>}
-  </div>
+  {cover && (
+    <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
+      <ResponsiveImage
+        src={cover}
+        alt=""
+        sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
+      />
+      <span class="project-open" aria-hidden="true">
+        →
+      </span>
+    </a>
+  )}
+  <ProjectMetadata {...data} />
   <h2>
     <a href={`/photography/${project.id}/`}>{data.title}</a>
   </h2>
   {data.subtitle && <p class="muted">{data.subtitle}</p>}
-  <p class="mono small">{String(data.images?.length ?? 0).padStart(2, '0')} photographs</p>
+  {data.images.length > 0 && (
+    <p class="mono small">{String(data.images.length).padStart(2, '0')} photographs</p>
+  )}
 </article>

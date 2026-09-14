@@ -14,7 +14,7 @@ const url = `/blog/${post.id}/`;
 <article
   class:list={['blog-card', { 'has-image': data.image }]}
   data-feed-item
-  data-category={categoryKey(data.category)}
+  data-categories={JSON.stringify(data.categories.map(categoryKey))}
   data-date={data.date.getTime()}
   data-id={post.id}
 >
@@ -31,7 +31,7 @@ const url = `/blog/${post.id}/`;
   )}
   <div class="card-content">
     <div class="metadata">
-      <span class="category">{data.category}</span>
+      <span class="category">{data.categories.join(' / ')}</span>
       <span class="meta-divider">/</span>
       <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       {data.demo && <span class="demo-tag">Example</span>}
@@ -40,8 +40,8 @@ const url = `/blog/${post.id}/`;
       <a href={url}>{data.title}</a>
     </h2>
     {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
-    <p class="excerpt">{excerpt(post.body, data.excerpt)}</p>
-    <a class="read-link" href={url} aria-label={`Continue reading: ${data.title}`}>
+    <p class="excerpt">{excerpt(post.body, data.excerpt || data.description)}</p>
+    <a class="read-link" href={url} tabindex="-1" aria-hidden="true">
       Continue reading <span aria-hidden="true">→</span>
     </a>
   </div>

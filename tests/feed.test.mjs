@@ -14,6 +14,10 @@ test('manual excerpts win; automatic previews remove Markdown markup and image p
     'Looking A small idea.',
   );
   assert.equal(excerpt(), '');
+  assert.equal(
+    excerpt('First sentence. Second sentence. Third sentence.'),
+    'First sentence. Second sentence.',
+  );
   assert.ok(excerpt('A short sentence. '.repeat(50)).length <= 330);
 });
 test('new user-defined categories work, including punctuation and Unicode', () => {
@@ -39,4 +43,28 @@ test('comparators sort dates and break ties consistently', () => {
     [...records].sort(comparators.oldest).map((x) => x.id),
     ['c', 'a', 'b'],
   );
+});
+
+test('photography sorting accepts exact dates, years and undated projects', async () => {
+  const { projectTimestamp } = await import('../src/lib/feed.ts');
+  assert.equal(projectTimestamp({}), 0);
+  assert.equal(projectTimestamp({ year: 2026 }), Date.parse('2026-01-01'));
+  assert.equal(
+    projectTimestamp({ year: '2026', date: new Date('2026-09-14') }),
+    Date.parse('2026-09-14'),
+  );
+});
+
+test('multiple categories retain legacy support and normalize duplicates', async () => {
+  const { postCategories, matchesCategory } = await import('../src/lib/feed.ts');
+  assert.deepEqual(postCategories({ category: ' Film ' }), ['Film']);
+  const categories = postCategories({
+    categories: ['Photography', ' Technology ', 'photography', 'Film / TV'],
+    category: 'Ignored',
+  });
+  assert.deepEqual(categories, ['Photography', 'Technology', 'Film / TV']);
+  for (const selected of ['', 'photography', 'technology', 'film / tv'])
+    assert.ok(matchesCategory(categories, selected));
+  assert.equal(matchesCategory(categories, 'Notebook'), false);
+  assert.deepEqual(postCategories({}), []);
 });

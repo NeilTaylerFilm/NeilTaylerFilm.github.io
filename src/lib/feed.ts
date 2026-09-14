@@ -18,5 +18,29 @@ export function excerpt(body = '', manual?: string) {
     .replace(/[*_`~]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  return plain.length > 330 ? plain.slice(0, 327).replace(/\s+\S*$/, '') + '…' : plain;
+  const preview = [...new Intl.Segmenter('en', { granularity: 'sentence' }).segment(plain)]
+    .slice(0, 2)
+    .map(({ segment }) => segment)
+    .join('')
+    .trim();
+  return preview.length > 330 ? preview.slice(0, 327).replace(/\s+\S*$/, '') + '…' : preview;
+}
+
+export function projectTimestamp(data: { date?: Date; year?: string | number }) {
+  return data.date?.getTime() ?? (data.year ? Date.parse(`${data.year}-01-01`) : 0);
+}
+
+export function postCategories(data: { categories?: string[]; category?: string }) {
+  const values = data.categories ?? (data.category ? [data.category] : []);
+  const unique = new Map<string, string>();
+  for (const value of values) {
+    const label = value.trim();
+    if (label && !unique.has(categoryKey(label))) unique.set(categoryKey(label), label);
+  }
+  return [...unique.values()];
+}
+export function matchesCategory(categories: string[], selected: string) {
+  return (
+    !selected || categories.some((category) => categoryKey(category) === categoryKey(selected))
+  );
 }

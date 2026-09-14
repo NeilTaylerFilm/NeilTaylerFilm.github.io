@@ -3,7 +3,6 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SEO from '../components/SEO.astro';
-import { site } from '../config/site';
 interface Props {
   title: string;
   description?: string;
@@ -14,24 +13,26 @@ interface Props {
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>
+      let theme;
       try {
-        const theme = localStorage.getItem('neil-theme');
-        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+        theme = localStorage.getItem('neil-theme');
       } catch {}
+      document.documentElement.dataset.theme =
+        theme === 'light' || theme === 'dark'
+          ? theme
+          : matchMedia('(prefers-color-scheme: light)').matches
+            ? 'light'
+            : 'dark';
     </script>
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title={`${site.name} — Blog`}
-      href="/rss.xml"
-    />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <SEO {...Astro.props} />
     <slot name="head" />
   </head>
@@ -46,3 +47,17 @@ interface Props {
     <Footer />
   </body>
 </html>
+
+<script>
+  // The archive URL survives an explicit “Back to blog” link as well as browser Back.
+  document.querySelectorAll<HTMLAnchorElement>('[data-archive-back]').forEach((link) => {
+    const archive = link.dataset.archiveBack!;
+    try {
+      const saved = sessionStorage.getItem(`archive:${archive}`);
+      if (saved) {
+        const url = new URL(saved, location.origin);
+        if (url.origin === location.origin && url.pathname === archive) link.href = url.href;
+      }
+    } catch {}
+  });
+</script>

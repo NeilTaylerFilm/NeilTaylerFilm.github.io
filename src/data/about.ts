@@ -5,8 +5,6 @@ export const about = {
   portraitAlt: 'Portrait of Neil Tayler',
   paragraphs: [
     'I’m a photographer and I work in film and post-production. This is a place for my writing, photographs and the things that catch my attention.',
-    'Placeholder — Add your story here: how you found your way into images, what you enjoy making, and what you are exploring at the moment.',
-    'Placeholder — A little more about you beyond the work. This can be as short, informal or personal as you like.',
   ],
   areas: ['Photography', 'Film', 'Post-production'],
 };

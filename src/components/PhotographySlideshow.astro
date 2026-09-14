@@ -23,7 +23,7 @@ const first = featured[0];
     <a
       class="slide-image"
       data-slide-link
-      href={first.project ? `/photography/${first.project}/` : first.src}
+      href={first.project ? `/photography/${first.project}/` : first.full || first.src}
       aria-label={
         first.project ? `View project: ${first.project.replaceAll('-', ' ')}` : 'View photograph'
       }

@@ -2,7 +2,11 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="Page not found" noindex={true}>
+<BaseLayout
+  title="Page not found"
+  description="This page could not be found. Return to the blog or browse photography projects by Neil Tayler."
+  noindex={true}
+>
   <section class="not-found">
     <div class="error-label">
       <span aria-hidden="true">⌕</span> Error 404 / File not found
@@ -18,10 +22,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
     <div class="error-actions">
       <a class="control" href="/">
-        Back to the journal ↗
+        Back to blog →
       </a>
       <a class="control" href="/photography/">
-        View photography ↗
+        View photography →
       </a>
     </div>
   </section>

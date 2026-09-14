@@ -1,9 +1,3 @@
-node_modules/
-.qa/
-.astro/
-dist/
-.npm-cache/
+# Author-owned Markdown is not rewritten by application-code formatting.
+src/content/
 src/generated/
-public/_images/
-package-lock.json
-~syncthing~*

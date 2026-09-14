@@ -10,14 +10,13 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
   description={`A little about ${site.author}, photography and working in film and post-production.`}
 >
   <div class="page-intro">
-    <p class="eyebrow">The person behind the pages</p>
     <h1>
       A little <span class="serif-word">context.</span>
     </h1>
   </div>
-  <div class="about-grid">
-    <figure class="about-photo">
-      {about.portrait ? (
+  <div class:list={['about-grid', { 'without-portrait': !about.portrait }]}>
+    {about.portrait && (
+      <figure class="about-photo">
         <ResponsiveImage
           src={about.portrait}
           alt={about.portraitAlt}
@@ -26,16 +25,8 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
           sizes="(max-width: 540px) 90vw, 40vw"
           loading="eager"
         />
-      ) : (
-        <div class="portrait-placeholder">
-          <span aria-hidden="true">nt.</span>
-          <p>Your portrait goes here</p>
-        </div>
-      )}
-      <figcaption>
-        {about.portrait ? 'A face to put to the name.' : 'Placeholder / Awaiting a photograph'}
-      </figcaption>
-    </figure>
+      </figure>
+    )}
     <section class="about-copy">
       <h2>{about.heading}</h2>
       <div class="prose">
@@ -44,14 +35,14 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
         ))}
       </div>
       {about.areas.length > 0 && (
-        <div class="areas" aria-label="Areas of work">
+        <div class="areas" role="group" aria-label="Areas of work">
           {about.areas.map((area) => (
             <span>{area}</span>
           ))}
         </div>
       )}
       <a class="control" href="/contact/">
-        Let’s talk <span aria-hidden="true">↗</span>
+        Let’s talk <span aria-hidden="true">→</span>
       </a>
     </section>
   </div>

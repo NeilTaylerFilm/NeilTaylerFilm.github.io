@@ -2,71 +2,31 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import FeedControls from '../components/FeedControls.astro';
-import { posts } from '../lib/content';
+import { posts, categories as getCategories } from '../lib/content';
 const allPosts = await posts();
-const categories = [...new Set(allPosts.map((post) => post.data.category))].sort();
+const categories = getCategories(allPosts);
 ---
 
-<BaseLayout title="Writing & observations">
-  <section class="editorial-intro">
-    <div class="eyebrow">
-      <span class="status-dot"></span>A personal journal{' '}
-      <span class="intro-index">Vol. 01 / An ongoing collection</span>
-    </div>
-    <div class="intro-heading">
-      <h1>
-        Notes from
-        <br />
-        the <span class="serif-word">edit.</span>
-        <span class="cursor" aria-hidden="true"></span>
-      </h1>
-      <div class="intro-aside">
-        <span class="asterisk" aria-hidden="true">
-          ✳
-        </span>
-        <p>
-          On making images.
-          <br />
-          On figuring things out.
-          <br />
-          And everything in between.
-        </p>
-        <a class="text-link" href="/about/">
-          A little about me <span aria-hidden="true">↗</span>
-        </a>
-      </div>
-    </div>
-  </section>
-  <section aria-label="Blog articles">
+<BaseLayout
+  title="Blog"
+  description="Blog posts by Neil Tayler on photography, film, post-production, technology and the things that catch his attention."
+>
+  <section class="content-start" aria-label="Blog articles">
     <div class="section-heading">
-      <h2 class="eyebrow">The latest entries</h2>
+      <h1 class="eyebrow">Latest posts</h1>
       <span class="line-decoration" aria-hidden="true"></span>
-      <a class="mono small" href="/rss.xml">
-        Subscribe via RSS ↗
-      </a>
     </div>
-    <FeedControls categories={categories} count={allPosts.length} />
+    {allPosts.length > 0 && <FeedControls categories={categories} count={allPosts.length} />}
     <div class="blog-feed" data-feed>
       {allPosts.map((post, index) => (
         <BlogCard post={post} index={index} />
       ))}
     </div>
-    {!allPosts.length && <p class="empty-state">The first entry is on its way. Check back soon.</p>}
-    <div class="end-note mono">
-      <span aria-hidden="true">■</span> You’re all caught up. More when there’s more.
-    </div>
+    {!allPosts.length && <p class="empty-state">No posts published yet.</p>}
+    {allPosts.length > 0 && (
+      <div class="end-note mono">
+        <span aria-hidden="true">■</span> You’re all caught up. More when there’s more.
+      </div>
+    )}
   </section>
-  <aside class="photography-callout">
-    <div>
-      <span class="eyebrow">Away from the keyboard</span>
-      <h2>
-        Some things are
-        <br />
-        better <span class="serif-word">seen.</span>
-      </h2>
-    </div>
-    <a class="control" href="/photography/">
-      Explore photography <span aria-hidden="true">↗</span>
-    </a>
-  </aside>
 </BaseLayout>

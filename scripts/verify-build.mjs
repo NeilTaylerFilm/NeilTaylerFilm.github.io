@@ -50,6 +50,17 @@ for (const file of htmlFiles) {
     }
   }
   if (relative === 'blog/index.html') continue; // Static redirect for the old blog URL.
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
+  if (new Set(ids).size !== ids.length) errors.push(`Duplicate IDs: ${relative}`);
+  for (const img of html.matchAll(/<img\b[^>]*>/g)) {
+    if (!/\balt(?:=|\s|>)/.test(img[0]) || !/\bwidth=/.test(img[0]) || !/\bheight=/.test(img[0]))
+      errors.push(`Image missing alt/dimensions: ${relative}`);
+  }
+  for (const json of html.matchAll(
+    /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+  ))
+    JSON.parse(json[1]);
+  if (html.includes('application/rss+xml')) errors.push(`Unexpected RSS metadata: ${relative}`);
   const title = html.match(/<title>(.*?)<\/title>/)?.[1];
   if (!title || titles.has(title)) errors.push(`Missing or duplicate title: ${relative}`);
   titles.add(title);
@@ -61,11 +72,8 @@ for (const file of htmlFiles) {
   if (ogImage) await resolveURL(ogImage, base);
   else errors.push(`Missing social image: ${relative}`);
 }
-const rss = await readFile(path.join(root, 'rss.xml'), 'utf8');
-assert.match(rss, /<rss[^>]*version="2.0"/);
-assert.match(rss, /<channel>/);
-for (const link of rss.matchAll(/<link>(.*?)<\/link>/g)) await resolveURL(link[1], origin);
-const sitemap = await readFile(path.join(root, 'sitemap-0.xml'), 'utf8');
+assert.ok(!(await stat(path.join(root, 'rss.xml')).catch(() => null)), 'RSS must remain disabled');
+const sitemap = await readFile(path.join(root, 'sitemap.xml'), 'utf8');
 for (const link of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) await resolveURL(link[1], origin);
 assert.ok(!sitemap.includes('/404'));
 for (const collection of ['blog', 'photography']) {
@@ -74,7 +82,7 @@ for (const collection of ['blog', 'photography']) {
     const body = await readFile(`src/content/${collection}/${name}`, 'utf8');
     if (/^draft:\s*true\s*$/m.test(body.split('---')[1] || '')) {
       const url = `/${collection}/${name.replace(/\.md$/, '')}/`;
-      if (rss.includes(url) || sitemap.includes(url)) errors.push(`Draft leaked: ${url}`);
+      if (sitemap.includes(url)) errors.push(`Draft leaked: ${url}`);
       if (await stat(path.join(root, url, 'index.html')).catch(() => null))
         errors.push(`Draft route generated: ${url}`);
     }
@@ -85,5 +93,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `Verified ${htmlFiles.length} HTML pages: links, image variants, fragments, titles, production canonicals, RSS, sitemap and draft exclusion.`,
+  `Verified ${htmlFiles.length} HTML pages: links, image variants, fragments, titles, production canonicals, sitemap and draft exclusion.`,
 );

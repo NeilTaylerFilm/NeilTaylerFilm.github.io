@@ -1,0 +1,21 @@
+---
+import { isoDate } from '../lib/feed';
+interface Props {
+  category?: string;
+  location?: string;
+  date?: Date;
+  year?: string | number;
+}
+const { category, location, date, year } = Astro.props;
+const stamp = year?.toString() || (date ? isoDate(date) : undefined);
+---
+
+{(category || location || stamp) && (
+  <div class="metadata">
+    {category && <span class="category">{category}</span>}
+    {category && (location || stamp) && <span aria-hidden="true">/</span>}
+    {location && <span>{location}</span>}
+    {location && stamp && <span aria-hidden="true">·</span>}
+    {stamp && <time datetime={stamp}>{stamp}</time>}
+  </div>
+)}

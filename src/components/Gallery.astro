@@ -1,52 +1,39 @@
 ---
-// src/components/Gallery.astro
-// A simple responsive image gallery for photography projects
 import ResponsiveImage from './ResponsiveImage.astro';
-
-const { images = [], columns = 3 } = Astro.props;
-
-// Generate CSS grid columns based on the columns prop
-const gridCols = `repeat(${columns}, minmax(0, 1fr))`;
+import { imageInfo } from '../lib/images';
+interface Props {
+  images: { src: string; alt?: string; caption?: string; width?: number; height?: number }[];
+}
+const { images } = Astro.props;
 ---
+
 <div class="gallery">
-  <div class={`grid grid-cols-1 md:grid-cols-${columns} gap-4`}>
-    {(images || []).map((image, index) => (
-      <figure key={index} class="break-inside-avoid">
-        <ResponsiveImage
-          src={image.src}
-          alt={image.alt || ''}
-          width={image.width}
-          height={image.height}
-          priority={index < 3}
-        />
-        {image.caption && <figcaption class="text-sm text-muted text-center mt-2">{image.caption}</figcaption>}
+  {images.map((image, index) => {
+    const info = imageInfo(image.src);
+    return (
+      <figure
+        class:list={[
+          'gallery-item',
+          { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
+        ]}
+      >
+        <a
+          href={info?.full || image.src}
+          data-gallery-trigger
+          data-caption={image.caption || ''}
+          aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
+        >
+          <ResponsiveImage
+            {...image}
+            alt={image.alt || ''}
+            sizes={
+              index % 3 === 0 ? '(max-width: 1440px) 90vw, 1248px' : '(max-width: 540px) 90vw, 45vw'
+            }
+            loading={index === 0 ? 'eager' : 'lazy'}
+          />
+        </a>
+        {image.caption && <figcaption>{image.caption}</figcaption>}
       </figure>
-    ))}
-  </div>
+    );
+  })}
 </div>
-
-<style>
-  /* Gallery styles */
-  .gallery {
-    width: 100%;
-  }
-
-  .gallery img {
-    width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 0.5rem;
-  }
-
-  figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--color-muted);
-  }
-
-  @media (max-width: 640px) {
-    .gallery .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

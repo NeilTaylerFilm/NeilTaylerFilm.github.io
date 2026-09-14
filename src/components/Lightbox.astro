@@ -1,0 +1,122 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<dialog class="lightbox" aria-label={`${title} — photographs`} data-lightbox>
+  <div class="lightbox-toolbar">
+    <span class="mono" data-lightbox-count role="status" aria-live="polite"></span>
+    <button class="control square" type="button" data-lightbox-close aria-label="Close gallery">
+      ×
+    </button>
+  </div>
+  <div class="lightbox-stage">
+    <button
+      class="control square"
+      type="button"
+      data-lightbox-prev
+      aria-label="Previous photograph"
+    >
+      ←
+    </button>
+    <img
+      data-lightbox-image
+      src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+      alt=""
+      width="1600"
+      height="1067"
+    />
+    <button class="control square" type="button" data-lightbox-next aria-label="Next photograph">
+      →
+    </button>
+  </div>
+  <p class="lightbox-caption" data-lightbox-caption></p>
+</dialog>
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  if (dialog && typeof dialog.showModal === 'function') {
+    // Markdown photographs participate too, without changing the author's copy or captions.
+    document.querySelectorAll<HTMLImageElement>('[data-project-prose] img').forEach((img) => {
+      if (img.closest('a')) return;
+      const link = document.createElement('a');
+      link.href = img.dataset.fullImage || img.src;
+      link.dataset.galleryTrigger = '';
+      link.dataset.caption = img.closest('figure')?.querySelector('figcaption')?.textContent || '';
+      link.setAttribute(
+        'aria-label',
+        img.alt ? `Enlarge photograph: ${img.alt}` : 'Enlarge photograph',
+      );
+      img.before(link);
+      link.append(img);
+    });
+    const triggers = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'),
+    );
+    const image = dialog.querySelector<HTMLImageElement>('[data-lightbox-image]')!;
+    const close = dialog.querySelector<HTMLButtonElement>('[data-lightbox-close]')!;
+    const previous = dialog.querySelector<HTMLButtonElement>('[data-lightbox-prev]')!;
+    const next = dialog.querySelector<HTMLButtonElement>('[data-lightbox-next]')!;
+    const caption = dialog.querySelector<HTMLElement>('[data-lightbox-caption]')!;
+    const count = dialog.querySelector<HTMLElement>('[data-lightbox-count]')!;
+    let current = 0;
+    let opener: HTMLAnchorElement | undefined;
+    function show(index: number) {
+      current = (index + triggers.length) % triggers.length;
+      const trigger = triggers[current];
+      const thumbnail = trigger.querySelector('img')!;
+      image.sizes = '(max-width: 767px) 95vw, 90vw';
+      image.srcset =
+        thumbnail.closest('picture')?.querySelector('source')?.srcset || thumbnail.srcset;
+      image.src = trigger.href;
+      image.alt = thumbnail.alt;
+      image.width = thumbnail.width;
+      image.height = thumbnail.height;
+      caption.textContent = trigger.dataset.caption || '';
+      count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(triggers.length).padStart(2, '0')}`;
+      previous.hidden = next.hidden = triggers.length < 2;
+    }
+    triggers.forEach((trigger, index) => {
+      const open = () => {
+        opener = trigger;
+        show(index);
+        dialog.showModal();
+        document.documentElement.classList.add('modal-open');
+        close.focus();
+      };
+      trigger.addEventListener('click', (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        open();
+      });
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
+    });
+    close.addEventListener('click', () => dialog.close());
+    previous.addEventListener('click', () => show(current - 1));
+    next.addEventListener('click', () => show(current + 1));
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        show(current + (event.key === 'ArrowLeft' ? -1 : 1));
+      }
+      if (event.key === 'Tab') {
+        const controls = [close, previous, next].filter((button) => !button.hidden);
+        const index = controls.indexOf(document.activeElement as HTMLButtonElement);
+        event.preventDefault();
+        controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
+      }
+    });
+    dialog.addEventListener('close', () => {
+      document.documentElement.classList.remove('modal-open');
+      opener?.focus({ preventScroll: true });
+      image.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+      image.removeAttribute('srcset');
+    });
+  }
+</script>

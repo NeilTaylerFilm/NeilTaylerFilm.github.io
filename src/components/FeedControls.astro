@@ -12,19 +12,23 @@ import { categoryKey } from '../lib/feed';
   <form class="feed-controls" data-feed-controls hidden>
     <label>
       <span>Category</span>
-      <select name="category" aria-label="Filter by category">
-        <option value="">All categories</option>
-        {categories.map((category) => (
-          <option value={categoryKey(category)}>{category}</option>
-        ))}
-      </select>
+      <div class="select-wrap">
+        <select name="category" aria-label="Filter by category">
+          <option value="">All categories</option>
+          {categories.map((category) => (
+            <option value={categoryKey(category)}>{category}</option>
+          ))}
+        </select>
+      </div>
     </label>
     <label>
       <span>Sort</span>
-      <select name="sort" aria-label="Sort by date">
-        <option value="newest">Newest first</option>
-        <option value="oldest">Oldest first</option>
-      </select>
+      <div class="select-wrap">
+        <select name="sort" aria-label="Sort by date">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
     </label>
   </form>
   <p class="feed-count mono" data-feed-count data-noun={noun} role="status" aria-live="polite">
@@ -37,7 +41,7 @@ import { categoryKey } from '../lib/feed';
   </p>
 </noscript>
 <script>
-  import { comparators } from '../lib/feed';
+  import { comparators, matchesCategory } from '../lib/feed';
   const form = document.querySelector<HTMLFormElement>('[data-feed-controls]');
   const feed = document.querySelector<HTMLElement>('[data-feed]');
   if (form && feed) {
@@ -63,7 +67,10 @@ import { categoryKey } from '../lib/feed';
           ),
         )
         .forEach((item) => {
-          item.hidden = Boolean(category.value && item.dataset.category !== category.value);
+          const itemCategories: string[] = item.dataset.categories
+            ? JSON.parse(item.dataset.categories)
+            : [item.dataset.category || ''];
+          item.hidden = !matchesCategory(itemCategories, category.value);
           if (!item.hidden) visible++;
           feed!.append(item);
         });
@@ -75,12 +82,21 @@ import { categoryKey } from '../lib/feed';
         sort.value === 'oldest'
           ? url.searchParams.set('sort', 'oldest')
           : url.searchParams.delete('sort');
-        history.pushState({}, '', url);
+        if (url.href !== location.href) history.pushState({}, '', url);
       }
     }
     form.addEventListener('submit', (event) => event.preventDefault());
     form.addEventListener('change', () => apply());
     window.addEventListener('popstate', () => apply(true));
+    window.addEventListener('pageshow', () => apply(true));
+    const remember = () => {
+      try {
+        sessionStorage.setItem(`archive:${location.pathname}`, location.pathname + location.search);
+      } catch {}
+    };
+    form.addEventListener('change', remember);
+    window.addEventListener('pagehide', remember);
     apply(true);
+    remember();
   }
 </script>

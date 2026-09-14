@@ -11,3 +11,5 @@ src/generated/images.json
 .stfolder/
 .stversions/
 ~syncthing~*
+.syncthing.*
+*.sync-conflict-*

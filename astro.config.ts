@@ -1,6 +1,9 @@
 // @ts-check
 
-import sitemap from '@astrojs/sitemap';
+import { unified } from '@astrojs/markdown-remark';
+import mdx from '@astrojs/mdx';
+import rehypeRaw from 'rehype-raw';
+import markdownImages, { sourceImagePaths } from './scripts/markdown-images.mjs';
 import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
@@ -9,11 +12,27 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   redirects: { '/blog': '/' },
-  integrations: [
-    sitemap({ filter: (page) => !page.endsWith('/404/') && !page.endsWith('/blog/') }),
-  ],
-  image: {
-    domains: [],
-    remotePatterns: [],
+  // Local recovery copies and package caches are not application source.
+  vite: { server: { watch: { ignored: ['**/.qa/**', '**/.npm-cache/**'] } } },
+  markdown: {
+    processor: unified({
+      remarkPlugins: [sourceImagePaths],
+      rehypePlugins: [
+        [
+          rehypeRaw,
+          {
+            passThrough: [
+              'mdxjsEsm',
+              'mdxJsxFlowElement',
+              'mdxJsxTextElement',
+              'mdxFlowExpression',
+              'mdxTextExpression',
+            ],
+          },
+        ],
+        markdownImages,
+      ],
+    }),
   },
+  integrations: [mdx()],
 });

@@ -1,4 +1,5 @@
 ---
+import { imageInfo } from '../lib/images';
 import { site } from '../config/site';
 interface Props {
   title: string;
@@ -19,7 +20,7 @@ const canonical = new URL(
   Astro.site,
 );
 const fullTitle = `${title} — ${site.name}`;
-const socialImage = new URL(image, Astro.site);
+const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 ---
 
 <title>{fullTitle}</title>
@@ -36,3 +37,28 @@ const socialImage = new URL(image, Astro.site);
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImage} />
+
+<script
+  is:inline
+  type="application/ld+json"
+  set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': new URL('/#website', Astro.site).href,
+        url: Astro.site?.href,
+        name: site.name,
+      },
+      {
+        '@type': 'Person',
+        '@id': new URL('/about/#person', Astro.site).href,
+        name: site.author,
+        url: new URL('/about/', Astro.site).href,
+        ...(site.links.some((link) => link.url)
+          ? { sameAs: site.links.filter((link) => link.url).map((link) => link.url) }
+          : {}),
+      },
+    ],
+  }).replace(/</g, '\\u003c')}
+></script>

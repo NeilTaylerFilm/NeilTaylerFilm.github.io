@@ -8,16 +8,15 @@ interface SiteConfig {
   links: { label: string; url: string }[];
 }
 export const site: SiteConfig = {
-  name: 'Neil Tayler',
+  name: 'Neil Tayler Film',
   author: 'Neil Tayler',
   description:
     'Notes on images, ideas and everything in between. Writing and photography by Neil Tayler.',
   tagline: 'Images. Ideas. Everything in between.',
   defaultImage: '/images/social-card.png',
-  email: '', // Add your real email address here.
+  email: 'tayler.neil@icloud.com',
   links: [
-    { label: 'Instagram', url: '' },
-    { label: 'LinkedIn', url: '' },
-    { label: 'GitHub', url: '' },
+    { label: 'Instagram', url: 'https://www.instagram.com/neiltaylerfilm/' },
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/neil-tayler/' },
   ],
 };
