@@ -2,9 +2,11 @@
 
 You do not need to understand web development to use this guide. Work through one section at a time. Copy the examples, change the words and filenames, then check the result before publishing.
 
+**For all new photographs, follow [the R2 photo guide](R2-PHOTOS.md).** It covers uploading, blog images, project galleries and the slideshow. The local image examples below still work, but are an alternative to the R2 workflow.
+
 There are **two separate steps** to putting something on your website:
 
-1. **Prepare it on your Mac.** Save your writing and pictures in the website folder. You can look at them privately while you work.
+1. **Prepare it on your Mac.** Save your writing in the website folder. R2 photographs are public as soon as you upload them, even if your writing is still a draft.
 2. **Publish it.** Send your saved changes to GitHub. GitHub then updates the public website.
 
 Saving a file on your Mac does **not** update the public website.
@@ -20,12 +22,12 @@ This is your **website folder**. Keep it open while following the guide.
 
 When this guide says `src/content/blog`, it means: open **src**, then **content**, then **blog**. The slashes separate folder names.
 
-| What you want to add                  | Where it goes                           |
-| ------------------------------------- | --------------------------------------- |
-| A written blog post                   | `src/content/blog`                      |
-| A photography project                 | `src/content/photography`               |
-| Your actual image files               | A folder you create inside `src/assets` |
-| The list of pictures in the slideshow | `src/data/featured.ts`                  |
+| What you want to add                  | Where it goes                    |
+| ------------------------------------- | -------------------------------- |
+| A written blog post                   | `src/content/blog`               |
+| A photography project                 | `src/content/photography`        |
+| Your new image files                  | `photo-inbox`, then upload to R2 |
+| The list of pictures in the slideshow | `src/data/featured.ts`           |
 
 Do not put your own content in `dist`, `public/_images`, `node_modules` or `examples`. Those are not your publishing folders.
 
@@ -616,13 +618,13 @@ GitHub recommends keeping a Pages source repository within 1 GB. The published w
 
 ### What about Cloudflare R2?
 
-R2 can hold your web pictures separately from GitHub. You can display a public R2 image using its address. However, this site's automatic resizing currently processes local pictures only. An R2 address does not automatically get the same smaller versions; that workflow would need to be added before switching your library.
+R2 can hold your web pictures separately from GitHub. You can display a public R2 image using its address. The photo upload command creates smaller versions locally and records their public addresses for the site. Use the command rather than manually uploading a large file.
 
 R2 Standard includes 10 GB-month of storage, one million write/list operations and ten million read operations each month. Internet download bandwidth is free. Usage beyond the free allowances is billed: the free allowance is **not** a spending cap. See [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
 
 For perspective, 10 GB holds roughly 10,000 pictures averaging 1 MB each, before allowing for extra sizes or other files. Cloudflare recommends a custom domain for production use; the provided r2.dev address is for development and is rate limited. A domain may add a cost if you do not already own one. See [public bucket setup](https://developers.cloudflare.com/r2/buckets/public-buckets/).
 
-For now, the simplest approach is to use the existing website folders with web-sized exports. If the gallery grows large, review storage and arrange an R2 upload-and-resize workflow then. Keep your original photographs outside both systems.
+This site now supports R2 uploads through the Worker. Follow [R2-PHOTOS.md](R2-PHOTOS.md) for the current workflow. Keep original photographs in your usual photo library and backup.
 
 ## Changing your contact details
 

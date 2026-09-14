@@ -1,5 +1,7 @@
 # Neil Tayler Film
 
+Photographs: [R2 upload and publishing guide](R2-PHOTOS.md). Use `npm run photos:check` to check access and `npm run photos:upload` to process the ignored `photo-inbox/` folder. Commit `src/data/r2-images.json`; never commit `.env.r2`. Builds merge the public R2 registry with local image metadata without needing credentials.
+
 Start here: [Step-by-step publishing instructions](PUBLISHING.md). Demo content has been retired to `examples/retired-demo/` and is no longer published.
 
 A static, content-first Astro blog with a secondary photography portfolio. The homepage is the blog archive; `/blog/` redirects there, and existing article/project URLs remain stable. Styling uses shared CSS tokens and small Astro components, with no client UI framework.

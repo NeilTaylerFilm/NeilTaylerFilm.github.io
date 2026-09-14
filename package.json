@@ -19,7 +19,9 @@
     "dev:stop": "astro dev stop",
     "dev:status": "astro dev status",
     "dev:logs": "astro dev logs",
-    "postbuild": "node scripts/finish-build.mjs"
+    "postbuild": "node scripts/finish-build.mjs",
+    "photos:upload": "node scripts/upload-photos.mjs",
+    "photos:check": "node scripts/upload-photos.mjs --check"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.1",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@aws-sdk/client-s3": "^3.1131.0",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^1.0.0",
     "sharp": "^0.35.4",

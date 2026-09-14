@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import sharp from 'sharp';
 
-const manifest = {};
+const manifest = JSON.parse(await readFile('src/data/r2-images.json', 'utf8'));
 const processed = new Map();
 async function walk(dir, prefix) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {

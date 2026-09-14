@@ -1,0 +1,10 @@
+{
+  "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.jpeg": {
+    "width": 2560,
+    "height": 1692,
+    "src": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-960.jpeg",
+    "full": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.jpeg",
+    "srcset": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-480.webp 480w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-960.webp 960w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-1440.webp 1440w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-1920.webp 1920w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.webp 2560w",
+    "fallbackSrcset": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-480.jpeg 480w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-960.jpeg 960w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-1440.jpeg 1440w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-1920.jpeg 1920w, https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.jpeg 2560w"
+  }
+}
