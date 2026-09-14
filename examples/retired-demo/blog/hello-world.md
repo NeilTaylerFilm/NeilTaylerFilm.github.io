@@ -1,11 +1,12 @@
 ---
-title: "Welcome to My Blog"
-subtitle: ""
+title: 'Welcome to My Blog'
+subtitle: ''
 date: 2026-09-12
-category: "Miscellaneous"
-excerpt: "A first post to demonstrate how to create new articles"
-image: "../../assets/blog/blog-placeholder-1.jpg"
-draft: false
+category: 'Miscellaneous'
+excerpt: 'A first post to demonstrate how to create new articles'
+image: '../../assets/blog/blog-placeholder-1.jpg'
+draft: true
+demo: true
 ---
 
 ## This is your new blog
@@ -26,13 +27,14 @@ This is a sample post created using Astro's content collections. It demonstrates
 
 ```yaml
 ---
-title: "Your Post Title"
-subtitle: "An optional subtitle"
-date: "2026-09-12"
-category: "Technology"
-image: "../../assets/blog/your-image.jpg"
-excerpt: "A short description of your article."
-draft: false
+title: 'Your Post Title'
+subtitle: 'An optional subtitle'
+date: '2026-09-12'
+category: 'Technology'
+image: '../../assets/blog/your-image.jpg'
+excerpt: 'A short description of your article.'
+draft: true
+demo: true
 ---
 ```
 

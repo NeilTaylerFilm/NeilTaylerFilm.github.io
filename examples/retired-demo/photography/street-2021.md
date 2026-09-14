@@ -1,10 +1,11 @@
 ---
-title: "Street 2021"
-subtitle: "Urban photography from city walks"
+title: 'Street 2021'
+subtitle: 'Urban photography from city walks'
 date: 2021-06-20
-category: "Street"
-cover: "../../assets/photography/street-2021/cover.jpg"
-draft: false
+category: 'Street'
+cover: '../../assets/photography/street-2021/cover.jpg'
+draft: true
+demo: true
 ---
 
 Street photography is an exercise in observation and timing. This project captures candid moments from urban environments.
@@ -18,10 +19,10 @@ Street photography requires a keen eye for detail and the ability to anticipate 
 Below are some highlights from the project. Click on an image to view it in the lightbox.
 
 ![Example street 1](../../assets/photography/street-2021/image1.jpg)
-*Caption: Morning commute*
+_Caption: Morning commute_
 
 ![Example street 2](../../assets/photography/street-2021/image2.jpg)
-*Caption: City lights at night*
+_Caption: City lights at night_
 
 ## Technical notes
 
