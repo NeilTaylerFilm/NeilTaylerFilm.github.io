@@ -529,7 +529,7 @@ git push origin main
 
 If Git asks you to sign in, complete its sign-in flow. If you get an authentication error, ask for help; do not paste passwords or access tokens into the chat.
 
-**For your first publication after this website work:** there are also uncommitted website changes, not just your new content. Ask Codex to review and publish those together. The example `git add` commands above deliberately select only your content; they do not include all the website changes.
+The website setup has already been committed and pushed. For future posts, the example `git add` commands above select your new content. If you also change the website itself, review and include those files separately.
 
 ## Step 5: Wait for GitHub to finish
 
