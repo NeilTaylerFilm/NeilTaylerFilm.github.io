@@ -5,7 +5,7 @@ interface SiteConfig {
   tagline: string;
   defaultImage: string;
   email: string;
-  links: { label: string; url: string }[];
+  links: { label: string; url: string; username: string }[];
 }
 export const site: SiteConfig = {
   name: 'Neil Tayler Film',
@@ -16,7 +16,11 @@ export const site: SiteConfig = {
   defaultImage: '/images/social-card.png',
   email: 'tayler.neil@icloud.com',
   links: [
-    { label: 'Instagram', url: 'https://www.instagram.com/neiltaylerfilm/' },
-    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/neil-tayler/' },
+    {
+      label: 'Instagram',
+      url: 'https://www.instagram.com/neiltaylerfilm/',
+      username: '@neiltaylerfilm',
+    },
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/neil-tayler/', username: 'neil-tayler' },
   ],
 };

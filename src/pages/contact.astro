@@ -1,4 +1,5 @@
 ---
+import ContactIcon from '../components/ContactIcon.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../config/site';
 const links = site.links.filter((link) => link.url);
@@ -21,15 +22,25 @@ const links = site.links.filter((link) => link.url);
     </div>
     <div class="contact-list">
       {site.email && (
-        <a class="contact-row" href={`mailto:${site.email}`}>
-          <strong>Email</strong>
-          <span>{site.email} ↗</span>
-        </a>
+        <div class="contact-row">
+          <strong>
+            <ContactIcon name="Email" />
+            Email
+          </strong>
+          <a class="control contact-email" href={`mailto:${site.email}`}>
+            Email me <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       )}
       {links.map((link) => (
         <a class="contact-row" href={link.url}>
-          <strong>{link.label}</strong>
-          <span aria-hidden="true">↗</span>
+          <strong>
+            <ContactIcon name={link.label} />
+            {link.label}
+          </strong>
+          <span>
+            {link.username} <span aria-hidden="true">↗</span>
+          </span>
         </a>
       ))}
       {!site.email && !links.length && (

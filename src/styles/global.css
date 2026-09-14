@@ -990,6 +990,10 @@ h1 {
   overflow-wrap: anywhere;
 }
 .contact-row strong {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
   font-size: 21px;
   font-weight: 400;
 }
@@ -997,6 +1001,14 @@ h1 {
   font: 11px var(--mono);
   color: var(--muted);
   text-align: right;
+}
+.contact-row svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.contact-email {
+  white-space: nowrap;
 }
 .not-found {
   max-width: 760px;

@@ -135,10 +135,10 @@ You can publish a post with no pictures. If you want one:
 
 1. In Finder, open **src → assets**.
 2. Create a folder named **a-week-in-london**.
-3. Copy a picture into that folder. Keep your original photo library wherever you normally store it.
+3. Copy a web-sized export into that folder. Keep your full-size originals in your normal photo library and backup.
 4. Give the copied image a simple filename, such as **river.jpg**.
 
-Use a **JPEG**, **PNG**, **WebP** or **AVIF** file. Export RAW or HEIC photographs as JPEG first. The website makes smaller web versions automatically; you do not need to calculate image sizes for blog posts or projects.
+Use a **JPEG**, **PNG**, **WebP** or **AVIF** file. Export RAW or HEIC photographs as JPEG first. Before copying photographs into the website folder, export them as JPEG, sRGB, with the longest edge set to 2560 pixels and quality around 80–85%. Do not enlarge a smaller picture. Check that the export looks good; adjust quality if needed. The website then makes smaller versions for different screens automatically.
 
 The image is now saved here:
 
@@ -600,3 +600,32 @@ The post appears under every category you list when visitors use the filter. It 
 Older posts using `category: "Photography"` still work. When changing an older post to multiple categories, replace that entire line with the list above. Do not put several names in one quoted string. If both `category` and `categories` exist, the `categories` list takes precedence. Repeated names, ignoring spaces and capitalisation, count only once.
 
 Photography projects still use the single `category` field shown in the project instructions.
+
+## Keeping photo storage manageable
+
+Your website is a display shelf, not a backup of your photo library. These steps apply to blog pictures, the slideshow and photography projects.
+
+1. Keep RAW files and full-resolution originals in your usual photo library and backup.
+2. In your photo editor, export only the pictures you want to publish: JPEG, sRGB, longest edge 2560 pixels, quality around 80–85%.
+3. Look at the exported picture before uploading. Around 300 KB–1 MB is a useful target, not a rule; detailed photographs may need more.
+4. Copy that export into the website image folder and follow the instructions above.
+
+The automatic resizing makes smaller pictures for visitors. It does **not** shrink the file you put into GitHub. Git also remembers older versions, so deleting or replacing a large photograph does not immediately reclaim all its repository space.
+
+GitHub recommends keeping a Pages source repository within 1 GB. The published website also has a 1 GB maximum; its generated image sizes count toward that. This is enough to start a carefully selected portfolio, but it is not unlimited photo storage. See [GitHub's limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
+
+### What about Cloudflare R2?
+
+R2 can hold your web pictures separately from GitHub. You can display a public R2 image using its address. However, this site's automatic resizing currently processes local pictures only. An R2 address does not automatically get the same smaller versions; that workflow would need to be added before switching your library.
+
+R2 Standard includes 10 GB-month of storage, one million write/list operations and ten million read operations each month. Internet download bandwidth is free. Usage beyond the free allowances is billed: the free allowance is **not** a spending cap. See [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
+
+For perspective, 10 GB holds roughly 10,000 pictures averaging 1 MB each, before allowing for extra sizes or other files. Cloudflare recommends a custom domain for production use; the provided r2.dev address is for development and is rate limited. A domain may add a cost if you do not already own one. See [public bucket setup](https://developers.cloudflare.com/r2/buckets/public-buckets/).
+
+For now, the simplest approach is to use the existing website folders with web-sized exports. If the gallery grows large, review storage and arrange an R2 upload-and-resize workflow then. Keep your original photographs outside both systems.
+
+## Changing your contact details
+
+Open **src → config → site.ts** in your text editor. The email address is after `email:`. The Contact page shows an **Email me** button, which opens the visitor's email app. The address is still inside the link, so this hides it from casual view but does not prevent automated collection.
+
+Each social link has a `label`, a `url` and a `username`. Change the username to change the visible text; change the URL to change where the link goes. Save and publish using the steps above.
