@@ -1,5 +1,7 @@
 # Your website: a step-by-step guide
 
+**Ready to put saved changes online?** Follow [Publish to production: the simple guide](PUBLISH-TO-PRODUCTION.md).
+
 You do not need to understand web development to use this guide. Work through one section at a time. Copy the examples, change the words and filenames, then check the result before publishing.
 
 **For all new photographs, follow [the R2 photo guide](R2-PHOTOS.md).** It covers uploading, blog images, project galleries and the slideshow. The local image examples below still work, but are an alternative to the R2 workflow.
@@ -631,3 +633,17 @@ This site now supports R2 uploads through the Worker. Follow [R2-PHOTOS.md](R2-P
 Open **src → config → site.ts** in your text editor. The email address is after `email:`. The Contact page shows an **Email me** button, which opens the visitor's email app. The address is still inside the link, so this hides it from casual view but does not prevent automated collection.
 
 Each social link has a `label`, a `url` and a `username`. Change the username to change the visible text; change the URL to change where the link goes. Save and publish using the steps above.
+
+## Link a Post-Production slideshow entry to a blog post
+
+Open **src → data → post-production-featured.ts**. Each entry has a video address and caption. The film plays inside the slideshow when the visitor selects its play button.
+
+To enable **Learn more…**, add a line inside that entry:
+
+```ts
+blogPost: 'a-song-to-be-murdered-by',
+```
+
+Use the actual blog filename without `.md` (the example would be **src/content/blog/a-song-to-be-murdered-by.md**). The blog post must exist and must not have `draft: true`. Leave out `blogPost` until the article is ready. Missing or draft posts leave the button greyed out and inactive, rather than sending visitors to a broken link.
+
+This is separate from `relatedPosts` on a Post-Production project page: that existing field lists related articles on the project page itself.

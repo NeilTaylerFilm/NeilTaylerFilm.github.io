@@ -1,5 +1,7 @@
 # Neil Tayler Film
 
+Ready to put changes online? [Simple guide to publishing the live website](PUBLISH-TO-PRODUCTION.md).
+
 Photographs: [R2 upload and publishing guide](R2-PHOTOS.md). Use `npm run photos:check` to check access and `npm run photos:upload` to process the ignored `photo-inbox/` folder. Commit `src/data/r2-images.json`; never commit `.env.r2`. Builds merge the public R2 registry with local image metadata without needing credentials.
 
 Start here: [Step-by-step publishing instructions](PUBLISHING.md). Demo content has been retired to `examples/retired-demo/` and is no longer published.

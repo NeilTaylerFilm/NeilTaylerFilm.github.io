@@ -10,6 +10,7 @@ type Photo = {
 };
 
 export function setupPhotographyViewer(root: HTMLElement) {
+  const videoViewer = root.hasAttribute('data-video-viewer');
   const photos: Photo[] = JSON.parse(root.dataset.slides || '[]');
   if (!photos.length) return;
   const find = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
@@ -44,7 +45,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   previous.hidden = next.hidden = photos.length < 2;
   strip.hidden = photos.length < 2;
   expand.hidden = typeof dialog.showModal !== 'function';
-  if (!expand.hidden) {
+  if (!expand.hidden && !videoViewer) {
     viewport.tabIndex = 0;
     viewport.setAttribute('role', 'button');
     viewport.setAttribute('aria-label', 'Expand photograph');
@@ -137,10 +138,12 @@ export function setupPhotographyViewer(root: HTMLElement) {
     outgoing = old;
     current = index;
     root.dataset.index = String(current);
+    root.dispatchEvent(new Event('photo-change'));
     const photo = photos[current];
     caption.textContent = photo.caption || '';
     project.hidden = !photo.project;
-    if (photo.project) project.href = `/photography/${photo.project}/`;
+    if (photo.project)
+      project.href = `${root.dataset.projectBase || '/photography/'}${photo.project}/`;
     else project.removeAttribute('href');
     count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(photos.length).padStart(2, '0')}`;
     status.textContent = '';
@@ -238,6 +241,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   expand.addEventListener('click', () => openViewer(expand));
   close.addEventListener('click', () => dialog.close());
   viewport.addEventListener('click', () => {
+    if (videoViewer) return;
     if (suppressClick) {
       suppressClick = false;
       return;
@@ -249,10 +253,12 @@ export function setupPhotographyViewer(root: HTMLElement) {
     root.prepend(panel);
     root.style.height = '';
     document.documentElement.classList.remove('modal-open');
-    viewport.tabIndex = 0;
-    viewport.setAttribute('role', 'button');
-    viewport.setAttribute('aria-label', 'Expand photograph');
-    viewport.setAttribute('aria-haspopup', 'dialog');
+    if (!videoViewer) {
+      viewport.tabIndex = 0;
+      viewport.setAttribute('role', 'button');
+      viewport.setAttribute('aria-label', 'Expand photograph');
+      viewport.setAttribute('aria-haspopup', 'dialog');
+    }
     image.sizes = '(max-width: 1440px) 90vw, 1248px';
     window.scrollTo({ top: savedScroll, behavior: 'instant' });
     opener?.focus({ preventScroll: true });

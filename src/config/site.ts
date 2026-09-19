@@ -22,5 +22,6 @@ export const site: SiteConfig = {
       username: '@neiltaylerfilm',
     },
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/neil-tayler/', username: 'neil-tayler' },
+    { label: 'TikTok', url: 'https://www.tiktok.com/@neiltaylerfilm', username: '@neiltaylerfilm' },
   ],
 };

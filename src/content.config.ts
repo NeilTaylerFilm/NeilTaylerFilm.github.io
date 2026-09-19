@@ -62,4 +62,32 @@ const photography = defineCollection({
       .default([]),
   }),
 });
-export const collections = { blog, photography };
+const postProduction = defineCollection({
+  loader: glob({ base: './src/content/post-production', pattern: '**/*.{md,mdx}' }),
+  schema: z.object({
+    ...common,
+    date: z.coerce.date().optional(),
+    year: z.union([z.number().int().min(1000).max(9999), z.string().regex(/^\d{4}$/)]).optional(),
+    category: z.string().trim().min(1).optional(),
+    cover: z.string().optional(),
+    coverImage: z.string().optional(),
+    roles: z.array(z.string()).default([]),
+    projectType: z.string().optional(),
+    video: z.string().optional(), // URL or ID for video (YouTube, Vimeo, etc.)
+    poster: z.string().optional(), // Custom poster image for video
+    featured: z.boolean().default(false),
+    images: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string().default(''),
+          caption: z.string().optional(),
+          width: z.number().positive().optional(),
+          height: z.number().positive().optional(),
+        }),
+      )
+      .default([]),
+    relatedPosts: z.array(z.string()).default([]), // Array of blog post slugs
+  }),
+});
+export const collections = { blog, photography, postProduction };

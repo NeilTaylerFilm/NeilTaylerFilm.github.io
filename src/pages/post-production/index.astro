@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostProductionSlideshow from '../../components/PostProductionSlideshow.astro';
+import FeedControls from '../../components/FeedControls.astro';
+import PostProductionCard from '../../components/PostProductionCard.astro';
+import { postProjects, categories as getCategories } from '../../lib/content';
+const allProjects = await postProjects();
+const categories = getCategories(allProjects);
+---
+
+<BaseLayout
+  title="Post-Production"
+  description="Editing and colour-grading work. A place to slow down and look."
+>
+  <h1 class="visually-hidden">Post-Production</h1>
+  <PostProductionSlideshow />
+  <section class="project-section" aria-labelledby="projects-heading">
+    <div class="section-heading">
+      <h2 id="projects-heading" class="eyebrow">
+        Selected work
+      </h2>
+      <span class="line-decoration" aria-hidden="true"></span>
+    </div>
+    {allProjects.length > 0 && (
+      <FeedControls categories={categories} count={allProjects.length} noun="projects" />
+    )}
+    <div class="project-grid" data-feed>
+      {allProjects.map((project) => (
+        <PostProductionCard project={project} />
+      ))}
+    </div>
+    {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
+  </section>
+</BaseLayout>

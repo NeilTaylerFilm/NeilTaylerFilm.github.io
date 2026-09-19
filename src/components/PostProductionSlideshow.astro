@@ -1,0 +1,327 @@
+---
+import { featured as originalFeatured, featuredIsDemo } from '../data/post-production-featured';
+import { getCollection } from 'astro:content';
+import { videoEmbedUrl, linkedBlogUrl } from '../lib/post-production';
+import { imageInfo } from '../lib/images';
+import '../styles/photography-viewer.css';
+const publishedPosts = new Set(
+  (await getCollection('blog')).filter((post) => !post.data.draft).map((post) => post.id),
+);
+const featured = originalFeatured.map((photo) => ({
+  ...photo,
+  src: photo.poster || photo.src,
+  ...imageInfo(photo.poster || photo.src),
+  embedUrl: videoEmbedUrl(photo.video),
+  blogUrl: linkedBlogUrl(photo.blogPost, publishedPosts),
+}));
+const first = featured[0];
+---
+
+{first && (
+  <section
+    class="slideshow photo-showcase"
+    aria-label="Selected post-production work"
+    aria-roledescription="carousel"
+    data-slideshow
+    data-video-viewer
+    data-project-base="/post-production/"
+    data-slides={JSON.stringify(featured)}
+  >
+    <div class="photo-panel" data-photo-panel>
+      <div class="photo-toolbar">
+        <span class="mono">
+          <span class="status-dot"></span> Selected work
+        </span>
+        <button class="control" type="button" data-photo-expand aria-haspopup="dialog" hidden>
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            aria-hidden="true"
+          >
+            <path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" />
+          </svg>
+          Expand
+        </button>
+        <button
+          class="control photo-close"
+          type="button"
+          data-photo-close
+          aria-label="Close expanded work"
+        >
+          <span aria-hidden="true">×</span> Close
+        </button>
+      </div>
+      <div class="photo-viewport" data-photo-viewport>
+        <img
+          data-slide-image
+          src={first.src}
+          srcset={first.srcset}
+          sizes="(max-width: 1440px) 90vw, 1248px"
+          width={first.width}
+          height={first.height}
+          alt={first.alt}
+          fetchpriority="high"
+          decoding="async"
+        />
+        <button
+          class="video-play"
+          data-video-play
+          aria-label={`Watch ${first.caption || 'film'}`}
+          type="button"
+          hidden={!first.embedUrl}
+        >
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+      </div>
+      <div class="photo-details">
+        <div class="photo-caption">
+          <p data-slide-caption>{first.caption}</p>
+          <a
+            class="mono"
+            data-photo-project
+            href={first.project ? `/post-production/${first.project}/` : undefined}
+            hidden={!first.project}
+          >
+            View project →
+          </a>
+
+          {featuredIsDemo && <span class="mono muted">Sample work</span>}
+        </div>
+        <a
+          class="control work-learn-more"
+          data-work-learn-more
+          href={first.blogUrl}
+          role={first.blogUrl ? undefined : 'link'}
+          aria-disabled={first.blogUrl ? undefined : 'true'}
+          tabindex={first.blogUrl ? undefined : -1}
+        >
+          Learn more…
+        </a>
+        <div class="slide-navigation">
+          <span
+            class="mono small"
+            data-slide-count
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            01 / {String(featured.length).padStart(2, '0')}
+          </span>
+          <button
+            class="control square"
+            type="button"
+            data-slide-prev
+            aria-label="Previous work"
+            hidden
+          >
+            ←
+          </button>
+          <button
+            class="control square"
+            type="button"
+            data-slide-next
+            aria-label="Next work"
+            hidden
+          >
+            →
+          </button>
+        </div>
+      </div>
+      <div
+        class="photo-filmstrip"
+        data-photo-filmstrip
+        role="group"
+        aria-label="Choose a work"
+        hidden
+      >
+        {featured.map((work, index) => (
+          <button
+            class="photo-thumbnail"
+            type="button"
+            data-photo-index={index}
+            aria-label={`Work ${index + 1} of ${featured.length}: ${work.alt || 'Untitled work'}`}
+            aria-current={index === 0 ? 'true' : undefined}
+            tabindex={index === 0 ? 0 : -1}
+          >
+            {work.video ? (
+              <div class="video-thumbnail-wrapper">
+                <img
+                  src={work.src}
+                  width={work.width}
+                  height={work.height}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="video-play-icon" aria-hidden="true">
+                  ▶
+                </span>
+              </div>
+            ) : (
+              <img
+                src={work.srcset?.split(', ')[0].split(' ')[0] || work.src}
+                width={work.width}
+                height={work.height}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+          </button>
+        ))}
+      </div>
+      <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
+    </div>
+    <dialog class="photo-dialog" data-photo-dialog aria-label="Expanded work"></dialog>
+  </section>
+)}
+<script>
+  import { setupPhotographyViewer } from '../scripts/photography-viewer';
+  document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
+
+  document.querySelectorAll<HTMLElement>('[data-video-viewer]').forEach((root) => {
+    const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string }> = JSON.parse(
+      root.dataset.slides || '[]',
+    );
+    const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
+    const play = root.querySelector<HTMLButtonElement>('[data-video-play]')!;
+    const more = root.querySelector<HTMLAnchorElement>('[data-work-learn-more]')!;
+    function update() {
+      viewport.querySelector('iframe')?.remove();
+      const work = slides[Number(root.dataset.index || 0)];
+      play.hidden = !work.embedUrl;
+      play.setAttribute('aria-label', `Watch ${work.caption || 'film'}`);
+      if (work.blogUrl) {
+        more.href = work.blogUrl;
+        more.removeAttribute('aria-disabled');
+        more.removeAttribute('tabindex');
+      } else {
+        more.removeAttribute('href');
+        more.setAttribute('aria-disabled', 'true');
+        more.tabIndex = -1;
+      }
+    }
+    root.addEventListener('photo-change', update);
+    play?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const work = slides[Number(root.dataset.index || 0)];
+      if (!work.embedUrl) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = work.embedUrl;
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      iframe.allowFullscreen = true;
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.className = 'video-iframe';
+      iframe.title = work.caption || 'Film player';
+      viewport.append(iframe);
+      play.hidden = true;
+      iframe.focus();
+    });
+    update();
+  });
+</script>
+
+<style>
+  .video-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .video-play {
+    z-index: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid white;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .video-play:hover,
+  .video-play:focus-visible {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  :global([data-video-viewer] .video-iframe) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .video-thumbnail-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .video-thumbnail-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0.48;
+  }
+  .video-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+</style>
+
+<style>
+  .photo-details {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .photo-dialog .photo-caption {
+    max-height: none;
+    overflow: visible;
+  }
+  .work-learn-more {
+    white-space: nowrap;
+  }
+  @media (max-width: 540px) {
+    .photo-details {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .photo-caption {
+      grid-column: 1 / -1;
+    }
+    .work-learn-more {
+      justify-self: start;
+    }
+  }
+  .work-learn-more[aria-disabled='true'] {
+    color: var(--muted);
+    border-color: var(--border);
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+  }
+  .photo-dialog .photo-viewport {
+    aspect-ratio: auto;
+  }
+  .photo-viewport {
+    aspect-ratio: 16 / 9;
+    cursor: default;
+  }
+</style>

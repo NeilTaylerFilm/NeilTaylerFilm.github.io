@@ -1,0 +1,128 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectMetadata from '../../components/ProjectMetadata.astro';
+import Gallery from '../../components/Gallery.astro';
+import { site } from '../../config/site';
+import { postProjects } from '../../lib/content';
+export async function getStaticPaths() {
+  return (await postProjects()).map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }));
+}
+const { project } = Astro.props;
+const { data } = project;
+const { Content } = await render(project);
+---
+
+<BaseLayout
+  title={data.title}
+  description={
+    data.description ||
+    data.subtitle ||
+    `${data.title}: a post-production project by ${site.author}.`
+  }
+  image={data.socialImage || data.poster || data.coverImage || data.cover}
+  noindex={data.draft}
+>
+  <a class="back-link mono" href="/post-production/" data-archive-back="/post-production/">
+    ← All post-production
+  </a>
+  <header class="project-intro">
+    <ProjectMetadata {...data} />
+    <h1>
+      {data.title}
+      <span class="accent">.</span>
+    </h1>
+    {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+    {data.demo && <p class="demo-notice">Example project · This sample work is not Neil's.</p>}
+    {data.video && (
+      <div class="video-container" data-video-container data-video-url={data.video}>
+        <img
+          src={data.poster || data.coverImage || data.cover}
+          alt={data.title}
+          class="video-poster"
+          data-video-poster
+        />
+        <button class="video-play" data-video-play aria-label="Play video" type="button">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+      </div>
+    )}
+    <div class="prose project-description" data-project-prose>
+      <Content />
+    </div>
+  </header>
+  {data.images.length > 0 && (
+    <Gallery images={data.images} />
+  )}
+  {data.relatedPosts && data.relatedPosts.length > 0 && (
+    <section class="related-writing" aria-label="Related writing">
+      <h2 class="eyebrow">Related writing</h2>
+      <ul class="related-list">
+        {data.relatedPosts.map((slug) => (
+          <li>
+            <a href={`/blog/${slug}/`}>{slug}</a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+  <div class="project-end">
+    <p class="serif-word">Thanks for looking.</p>
+    <a class="control" href="/post-production/" data-archive-back="/post-production/">
+      Back to the project index →
+    </a>
+  </div>
+</BaseLayout>
+<script>
+  // Lazy-load video iframe on play click
+  document.querySelectorAll<HTMLElement>('[data-video-container]').forEach((container) => {
+    const playBtn = container.querySelector<HTMLButtonElement>('[data-video-play]');
+    if (!playBtn) return;
+
+    playBtn.addEventListener('click', () => {
+      const videoUrl = (container as HTMLElement).dataset.videoUrl;
+      if (!videoUrl) return;
+
+      const { id, provider } = parseVideoUrl(videoUrl);
+      if (!id) return;
+
+      const isYouTube = provider === 'youtube';
+      const embedUrl = isYouTube
+        ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`
+        : `https://player.vimeo.com/video/${id}?title=0&byline=0&portrait=0`;
+
+      const poster = container.querySelector<HTMLElement>('[data-video-poster]');
+      if (poster) poster.remove();
+      playBtn.remove();
+
+      const iframe = document.createElement('iframe');
+      iframe.src = embedUrl;
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.className = 'video-embed';
+      iframe.setAttribute('title', 'Video player');
+
+      container.appendChild(iframe);
+    });
+  });
+
+  function parseVideoUrl(url: string): { id: string | null; provider: 'youtube' | 'vimeo' | null } {
+    if (!url) return { id: null, provider: null };
+
+    const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return { id: ytMatch[1], provider: 'youtube' };
+
+    const vmMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vmMatch) return { id: vmMatch[1], provider: 'vimeo' };
+
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return { id: url, provider: 'youtube' };
+    if (/^\d+$/.test(url)) return { id: url, provider: 'vimeo' };
+
+    return { id: null, provider: null };
+  }
+</script>
