@@ -22,6 +22,8 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
     <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
       <ResponsiveImage
         src={cover}
+        width={data.images.find((image) => image.src === cover)?.width}
+        height={data.images.find((image) => image.src === cover)?.height}
         alt=""
         sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
       />

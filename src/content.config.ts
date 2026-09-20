@@ -41,6 +41,7 @@ const photography = defineCollection({
   loader: glob({ base: './src/content/photography', pattern: '**/*.{md,mdx}' }),
   schema: z.object({
     ...common,
+    galleryLayout: z.enum(['editorial', 'justified']).default('editorial'),
     date: z.coerce.date().optional(),
     year: z.union([z.number().int().min(1000).max(9999), z.string().regex(/^\d{4}$/)]).optional(),
     location: z.string().optional(),
@@ -53,6 +54,7 @@ const photography = defineCollection({
       .array(
         z.object({
           src: z.string(),
+          full: z.string().optional(),
           alt: z.string().default(''),
           caption: z.string().optional(),
           width: z.number().positive().optional(),

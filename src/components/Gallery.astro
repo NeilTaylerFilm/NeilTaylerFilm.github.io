@@ -2,23 +2,36 @@
 import ResponsiveImage from './ResponsiveImage.astro';
 import { imageInfo } from '../lib/images';
 interface Props {
-  images: { src: string; alt?: string; caption?: string; width?: number; height?: number }[];
+  images: {
+    src: string;
+    full?: string;
+    alt?: string;
+    caption?: string;
+    width?: number;
+    height?: number;
+  }[];
+  layout?: 'editorial' | 'justified';
 }
-const { images } = Astro.props;
+const { images, layout = 'editorial' } = Astro.props;
 ---
 
-<div class="gallery">
+<div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
   {images.map((image, index) => {
     const info = imageInfo(image.src);
     return (
       <figure
+        style={
+          layout === 'justified'
+            ? `--ratio: ${(info?.width || image.width || 1) / (info?.height || image.height || 1)}`
+            : undefined
+        }
         class:list={[
           'gallery-item',
           { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
         ]}
       >
         <a
-          href={info?.full || image.src}
+          href={image.full || info?.full || image.src}
           data-gallery-trigger
           data-caption={image.caption || ''}
           aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
@@ -37,3 +50,44 @@ const { images } = Astro.props;
     );
   })}
 </div>
+
+<style>
+  .gallery.gallery-justified {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .gallery.gallery-justified .gallery-item {
+    flex: var(--ratio) 1 calc(var(--ratio) * 200px);
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+  }
+  .gallery-justified .gallery-item a {
+    display: block;
+    height: 220px;
+    overflow: hidden;
+  }
+  .gallery-justified :global(picture),
+  .gallery-justified :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-justified::after {
+    content: '';
+    flex: 10 1 0;
+  }
+  @media (max-width: 540px) {
+    .gallery.gallery-justified {
+      gap: 4px;
+    }
+    .gallery.gallery-justified .gallery-item {
+      flex-basis: calc(var(--ratio) * 100px);
+    }
+    .gallery-justified .gallery-item a {
+      height: 130px;
+    }
+  }
+</style>

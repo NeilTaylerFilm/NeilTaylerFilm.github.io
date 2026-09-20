@@ -3,6 +3,7 @@ dist/
 .astro/
 .npm-cache/
 .qa/
+src/content/photography/late-night-drive.md
 .DS_Store
 .env
 .env.*

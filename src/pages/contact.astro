@@ -27,11 +27,27 @@ const links = site.links.filter((link) => link.url);
             <ContactIcon name="Email" />
             Email
           </strong>
-          <a class="control contact-email" href={`mailto:${site.email}`}>
-            Email me <span aria-hidden="true">↗</span>
-          </a>
+          <div class="contact-email-actions">
+            <button
+              class="control contact-copy-email"
+              type="button"
+              data-copy-email
+              data-email={site.email}
+              aria-label="Copy email address"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+              </svg>
+              <span data-copy-label>Copy email</span>
+            </button>
+            <a class="control contact-email" href={`mailto:${site.email}`}>
+              Email me <span aria-hidden="true">↗</span>
+            </a>
+          </div>
         </div>
       )}
+      <p class="visually-hidden" data-copy-status role="status" aria-live="polite"></p>
       {links.map((link) => (
         <a class="contact-row" href={link.url}>
           <strong>
@@ -49,3 +65,24 @@ const links = site.links.filter((link) => link.url);
     </div>
   </div>
 </BaseLayout>
+<script>
+  const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
+  const label = document.querySelector<HTMLSpanElement>('[data-copy-label]');
+  const status = document.querySelector<HTMLElement>('[data-copy-status]');
+  if (button) {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.email || '');
+        const original = label?.textContent || 'Copy email';
+        label!.textContent = 'Copied ✓';
+        status!.textContent = 'Email address copied to clipboard.';
+        setTimeout(() => {
+          label!.textContent = original;
+          status!.textContent = '';
+        }, 2000);
+      } catch {
+        status!.textContent = 'Could not copy email address. Please select and copy it manually.';
+      }
+    });
+  }
+</script>

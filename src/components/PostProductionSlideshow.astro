@@ -9,8 +9,8 @@ const publishedPosts = new Set(
 );
 const featured = originalFeatured.map((photo) => ({
   ...photo,
-  src: photo.poster || photo.src,
   ...imageInfo(photo.poster || photo.src),
+  src: imageInfo(photo.poster || photo.src)?.src || photo.poster || photo.src,
   embedUrl: videoEmbedUrl(photo.video),
   blogUrl: linkedBlogUrl(photo.blogPost, publishedPosts),
 }));
@@ -29,9 +29,9 @@ const first = featured[0];
   >
     <div class="photo-panel" data-photo-panel>
       <div class="photo-toolbar">
-        <span class="mono">
-          <span class="status-dot"></span> Selected work
-        </span>
+        <p class="work-title" data-slide-caption>
+          {first.caption}
+        </p>
         <button class="control" type="button" data-photo-expand aria-haspopup="dialog" hidden>
           <svg
             viewBox="0 0 24 24"
@@ -80,8 +80,7 @@ const first = featured[0];
         </button>
       </div>
       <div class="photo-details">
-        <div class="photo-caption">
-          <p data-slide-caption>{first.caption}</p>
+        <div class="work-actions">
           <a
             class="mono"
             data-photo-project
@@ -92,17 +91,27 @@ const first = featured[0];
           </a>
 
           {featuredIsDemo && <span class="mono muted">Sample work</span>}
+          <a
+            class="control work-learn-more"
+            data-work-learn-more
+            href={first.blogUrl}
+            role={first.blogUrl ? undefined : 'link'}
+            aria-disabled={first.blogUrl ? undefined : 'true'}
+            tabindex={first.blogUrl ? undefined : -1}
+          >
+            Learn more…
+          </a>
+          <a
+            class="watch-link"
+            data-watch-link
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+          >
+            Watch on <span data-platform-name>YouTube</span>
+          </a>
         </div>
-        <a
-          class="control work-learn-more"
-          data-work-learn-more
-          href={first.blogUrl}
-          role={first.blogUrl ? undefined : 'link'}
-          aria-disabled={first.blogUrl ? undefined : 'true'}
-          tabindex={first.blogUrl ? undefined : -1}
-        >
-          Learn more…
-        </a>
         <div class="slide-navigation">
           <span
             class="mono small"
@@ -145,7 +154,7 @@ const first = featured[0];
             class="photo-thumbnail"
             type="button"
             data-photo-index={index}
-            aria-label={`Work ${index + 1} of ${featured.length}: ${work.alt || 'Untitled work'}`}
+            aria-label={`Work ${index + 1} of ${featured.length}: ${work.caption || 'Untitled work'}`}
             aria-current={index === 0 ? 'true' : undefined}
             tabindex={index === 0 ? 0 : -1}
           >
@@ -173,6 +182,7 @@ const first = featured[0];
                 decoding="async"
               />
             )}
+            <span class="photo-thumb-label">{work.caption || 'Untitled work'}</span>
           </button>
         ))}
       </div>
@@ -186,12 +196,13 @@ const first = featured[0];
   document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 
   document.querySelectorAll<HTMLElement>('[data-video-viewer]').forEach((root) => {
-    const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string }> = JSON.parse(
-      root.dataset.slides || '[]',
-    );
+    const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string; video?: string }> =
+      JSON.parse(root.dataset.slides || '[]');
     const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
     const play = root.querySelector<HTMLButtonElement>('[data-video-play]')!;
     const more = root.querySelector<HTMLAnchorElement>('[data-work-learn-more]')!;
+    const watchLink = root.querySelector<HTMLAnchorElement>('[data-watch-link]')!;
+    const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
     function update() {
       viewport.querySelector('iframe')?.remove();
       const work = slides[Number(root.dataset.index || 0)];
@@ -205,6 +216,15 @@ const first = featured[0];
         more.removeAttribute('href');
         more.setAttribute('aria-disabled', 'true');
         more.tabIndex = -1;
+      }
+      if (work.embedUrl && work.video) {
+        const host = new URL(work.video).hostname.replace(/^www\./, '');
+        const platform = host.includes('vimeo') ? 'Vimeo' : 'YouTube';
+        platformName.textContent = platform;
+        watchLink.href = work.video;
+        watchLink.hidden = false;
+      } else {
+        watchLink.hidden = true;
       }
     }
     root.addEventListener('photo-change', update);
@@ -285,29 +305,90 @@ const first = featured[0];
     font-size: 14px;
     opacity: 0.9;
   }
+  .watch-link {
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    white-space: nowrap;
+  }
+  .watch-link:hover,
+  .watch-link:focus-visible {
+    color: var(--accent);
+  }
+  @media (max-width: 540px) {
+    .watch-link {
+      font-size: 10px;
+    }
+  }
 </style>
 
 <style>
+  .work-title {
+    margin: 0;
+    font-size: 16px;
+    text-align: left;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .photo-toolbar .control {
+    flex-shrink: 0;
+  }
   .photo-details {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
-  .photo-dialog .photo-caption {
-    max-height: none;
-    overflow: visible;
+  .work-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    min-width: 0;
+  }
+  .slide-navigation {
+    justify-self: end;
+    margin-left: auto;
   }
   .work-learn-more {
     white-space: nowrap;
   }
+  .photo-filmstrip {
+    gap: 4px;
+  }
+  .photo-filmstrip .photo-thumbnail {
+    flex: 0 0 112px;
+    width: 112px;
+    min-width: 0;
+    height: auto;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    white-space: normal;
+  }
+  .photo-thumbnail .video-thumbnail-wrapper,
+  .photo-thumbnail > img {
+    width: 100%;
+    height: 64px;
+    flex-shrink: 0;
+  }
+  .photo-thumbnail .photo-thumb-label {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+    font-size: 11px;
+    padding: 0;
+  }
   @media (max-width: 540px) {
+    .work-actions {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
     .photo-details {
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-    .photo-caption {
-      grid-column: 1 / -1;
-    }
-    .work-learn-more {
-      justify-self: start;
+      gap: 8px;
     }
   }
   .work-learn-more[aria-disabled='true'] {
