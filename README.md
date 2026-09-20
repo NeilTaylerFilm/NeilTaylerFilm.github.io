@@ -85,11 +85,13 @@ Alt text and captions are separate. Missing alt defaults to an empty string; sup
 
 ## Images
 
-Prefer originals in `src/assets/`, referenced as `/assets/project/image.jpg`. Existing `/images/...` sources under `public/images/` also work. Legacy `../../assets/...` image paths remain supported. Use `ResponsiveImage.astro` in components; Markdown and raw HTML images receive the same dimensions and derivatives through the Markdown processor.
+For new photography projects, prefer the R2 workflow in [PUBLISH-A-PHOTO-PROJECT.md](PUBLISH-A-PHOTO-PROJECT.md) and [R2-PHOTOS.md](R2-PHOTOS.md). Put full-resolution high-quality sRGB JPEG exports or existing HEIC/HEIF files in `photo-inbox`. On macOS, the uploader decodes HEIC through a temporary PNG, then creates responsive WebP/JPEG copies; originals are unchanged and temporary files are cleaned up. HEIC decoding is specific to the upload tool, not the local asset build.
+
+For repository-hosted images, use supported files in `src/assets/`, referenced as `/assets/project/image.jpg`. Existing `/images/...` sources under `public/images/` also work. Legacy `../../assets/...` image paths remain supported. Use `ResponsiveImage.astro` in components; Markdown and raw HTML images receive the same dimensions and derivatives through the Markdown processor.
 
 The pipeline creates WebP and JPEG sizes up to 2560px, without upscaling or cropping. Content hashes cache unchanged output and deduplicate identical source files. Cards, articles and lightboxes use responsive candidates; originals are never candidates. Dimensions come from the actual file after orientation. Tagged input is converted to standard sRGB for predictable web display; EXIF/GPS is stripped from derivatives. Originals remain untouched. For critical photography, inspect a representative web export on a colour-managed display before publishing.
 
-External images require explicit dimensions in `ResponsiveImage` and are not processed. Keep publishing images local for consistent sizing, privacy and optimisation.
+R2 images registered by the uploader in `src/data/r2-images.json` have responsive sizes and dimensions automatically. Other external images require explicit dimensions in `ResponsiveImage` and are not processed.
 
 ## Site identity and discovery
 

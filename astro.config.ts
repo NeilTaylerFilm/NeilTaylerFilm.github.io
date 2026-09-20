@@ -3,6 +3,7 @@
 import { unified } from '@astrojs/markdown-remark';
 import mdx from '@astrojs/mdx';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import markdownImages, { sourceImagePaths } from './scripts/markdown-images.mjs';
 import { defineConfig } from 'astro/config';
 
@@ -30,6 +31,7 @@ export default defineConfig({
             ],
           },
         ],
+        rehypeSanitize,
         markdownImages,
       ],
     }),

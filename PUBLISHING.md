@@ -135,6 +135,8 @@ You do not need to put the article title into the body again: the website alread
 
 ## Step 5: Add a picture to the post (optional)
 
+**For your current R2 workflow, follow [R2-PHOTOS.md](R2-PHOTOS.md).** It accepts HEIC/HEIF directly on your Mac and automatically creates web copies. For a whole project, use [PUBLISH-A-PHOTO-PROJECT.md](PUBLISH-A-PHOTO-PROJECT.md). The steps immediately below describe the alternative of storing images in the GitHub repository.
+
 You can publish a post with no pictures. If you want one:
 
 1. In Finder, open **src → assets**.
@@ -142,7 +144,7 @@ You can publish a post with no pictures. If you want one:
 3. Copy a web-sized export into that folder. Keep your full-size originals in your normal photo library and backup.
 4. Give the copied image a simple filename, such as **river.jpg**.
 
-Use a **JPEG**, **PNG**, **WebP** or **AVIF** file. Export RAW or HEIC photographs as JPEG first. Before copying photographs into the website folder, export them as JPEG, sRGB, with the longest edge set to 2560 pixels and quality around 80–85%. Do not enlarge a smaller picture. Check that the export looks good; adjust quality if needed. The website then makes smaller versions for different screens automatically.
+For this repository-image alternative, use a **JPEG**, **PNG**, **WebP** or **AVIF** file. Export RAW or HEIC photographs as JPEG first; automatic HEIC conversion is available in the R2 uploader only. Before copying photographs into the website folder, export them as JPEG, sRGB, with the longest edge set to 2560 pixels and quality around 80–85%. Do not enlarge a smaller picture. Check that the export looks good; adjust quality if needed. The website then makes smaller versions for different screens automatically.
 
 The image is now saved here:
 
@@ -607,7 +609,9 @@ Photography projects still use the single `category` field shown in the project 
 
 ## Keeping photo storage manageable
 
-Your website is a display shelf, not a backup of your photo library. These steps apply to blog pictures, the slideshow and photography projects.
+Your website is a display shelf, not a backup of your photo library. For your preferred R2 workflow, put high-quality full-resolution JPEG exports (sRGB, around 90–95 quality) or existing HEIC files directly in photo-inbox. The uploader prepares smaller web copies automatically. See [R2-PHOTOS.md](R2-PHOTOS.md) for the conversion steps.
+
+The numbered steps below apply only when storing photographs directly in the GitHub repository, rather than using R2.
 
 1. Keep RAW files and full-resolution originals in your usual photo library and backup.
 2. In your photo editor, export only the pictures you want to publish: JPEG, sRGB, longest edge 2560 pixels, quality around 80–85%.

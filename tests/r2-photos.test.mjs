@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import sharp from 'sharp';
 import { photoVariants } from '../scripts/lib/photo-variants.mjs';
 import { uploadBudget, inventory } from '../scripts/lib/r2.mjs';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 
 test('R2 budget counts all objects, skips duplicates and stops before the threshold', () => {
   const objects = new Map([
@@ -67,3 +72,38 @@ test('photo exports rotate, cap longest edge, strip metadata and use repeatable 
   assert.equal(smallResult.files.length, 2);
   assert.equal(smallResult.info.width, 30);
 });
+
+test(
+  'macOS HEIC originals produce repeatable web variants without changing the original',
+  { skip: process.platform !== 'darwin' },
+  async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'heic-test-'));
+    try {
+      const png = path.join(directory, 'source.png');
+      const heic = path.join(directory, 'source.heic');
+      await sharp({ create: { width: 2000, height: 3000, channels: 3, background: '#558899' } })
+        .png()
+        .toFile(png);
+      await promisify(execFile)('/usr/bin/sips', ['-s', 'format', 'heic', png, '--out', heic]);
+      const original = await readFile(heic);
+      const output = await photoVariants(original, 'https://images.example');
+      assert.equal(output.info.width, 1706);
+      assert.equal(output.info.height, 2559);
+      assert.equal(output.files.length, 8);
+      for (const file of output.files) {
+        const meta = await sharp(file.bytes).metadata();
+        assert.ok(['jpeg', 'webp'].includes(meta.format));
+        assert.equal(meta.exif, undefined);
+        assert.equal(meta.orientation, undefined);
+        assert.ok(meta.width <= 2560 && meta.height <= 2560);
+      }
+      assert.equal(
+        (await photoVariants(original, 'https://images.example')).reference,
+        output.reference,
+      );
+      assert.deepEqual(await readFile(heic), original);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);

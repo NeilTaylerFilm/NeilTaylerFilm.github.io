@@ -1,20 +1,61 @@
-node_modules/
-dist/
-.astro/
-.npm-cache/
-.qa/
-src/content/photography/late-night-drive.md
-.DS_Store
-.env
-.env.*
 public/_images/
 src/generated/images.json
 .stfolder/
 .stversions/
-~syncthing~*
-.syncthing.*
-*.sync-conflict-*
 
+# --------------------------------------------------
+# macOS
+# --------------------------------------------------
+.DS_Store
+**/.DS_Store
+
+
+# --------------------------------------------------
+# Node / Astro
+# --------------------------------------------------
+node_modules/
+dist/
+.astro/
+.npm-cache/
+
+
+# --------------------------------------------------
+# Environment variables / secrets
+# --------------------------------------------------
+.env
+.env.*
+!.env.example
+
+
+# --------------------------------------------------
+# Logs
+# --------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# --------------------------------------------------
+# Local development / AI coding tools
+# --------------------------------------------------
+.opencode/
+ULTRAWORK_MODE_ENABLED.txt
+snip
+.omo/
+.qa/
+
+# --------------------------------------------------
+# Temporary files
+# --------------------------------------------------
+*.tmp
+*.temp
+*.swp
 photo-inbox/
 .photo-upload.lock
 src/data/r2-images.json.tmp
+~syncthing~*
+.syncthing.*
+*.sync-conflict-*
+*~

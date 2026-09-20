@@ -32,12 +32,16 @@ try {
     );
   } else {
     const folder = path.resolve(positional[0] || 'photo-inbox');
+    if (!folder.startsWith(root)) {
+      console.error('Folder must be within the project root.');
+      process.exit(1);
+    }
     const entries = (await readdir(folder, { withFileTypes: true }))
-      .filter((e) => e.isFile() && /\.(jpe?g|webp|png|avif)$/i.test(e.name))
+      .filter((e) => e.isFile() && /\.(jpe?g|webp|png|avif|heic|heif)$/i.test(e.name))
       .sort((a, b) => a.name.localeCompare(b.name));
     if (!entries.length)
       throw new Error(
-        'No supported photos found. Put JPEG, WebP, PNG or AVIF files in photo-inbox first.',
+        'No supported photos found. Put JPEG, WebP, PNG, AVIF or HEIC/HEIF files in photo-inbox first (HEIC/HEIF requires macOS).',
       );
     const manifestPath = 'src/data/r2-images.json';
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));

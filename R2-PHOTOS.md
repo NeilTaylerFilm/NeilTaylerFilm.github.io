@@ -9,16 +9,46 @@ The bucket is **images-neiltaylerfilm-github-io**. The delivery address is **htt
 1. Open Finder.
 2. Open **Documents → CodingProjects → neiltaylerfilm.github.io → photo-inbox**.
 3. Copy the **full-resolution pictures** you want to upload into **photo-inbox**. A 6000 × 4000 pixel photograph is fine. You do not need to resize or compress it yourself first.
-4. Use JPEG, WebP, PNG or AVIF. Export RAW/HEIC files as JPEG first. Do not use JXL.
+4. Use JPEG, WebP, PNG, AVIF or HEIC/HEIF. On your Mac, HEIC/HEIF files are converted automatically; export RAW files as JPEG first. Do not use JXL.
 5. Put the pictures directly inside photo-inbox, not inside another folder.
 
 Keep your originals in your normal photo library and backup. This folder is a temporary tray. It is excluded from GitHub, so these source pictures will not be pushed to your repository.
 
 The upload tool makes several sizes, with a maximum longest edge of 2560 pixels. It does not enlarge small pictures. It removes EXIF/location metadata from the uploaded copies and converts them to sRGB. Your source files are untouched.
 
+HEIC/HEIF conversion uses macOS’s built-in image tools. You do not need to install anything or convert the files yourself. A temporary PNG is used during processing and then removed. Only the generated JPEG/WebP sizes are uploaded, never the HEIC original. HEIC conversion also runs during a dry run, so large batches can take longer. On Windows or Linux, export HEIC files as JPEG first.
+
 **Putting a picture in photo-inbox does not start anything automatically.** You must run the upload command in Step 2. That command handles resizing, compression and uploading for you.
 
 **Uploaded photographs are public immediately, even if the post using them is still a draft.** Only put photographs you are ready to share into an upload batch.
+
+### Which format should I put in photo-inbox?
+
+**For new exports from your photo editor, use a high-quality JPEG in sRGB.** A quality setting around **90–95 out of 100** is a useful starting point, not a requirement; settings vary between editors. Export at full resolution, and let the uploader make the smaller sizes. There is no need to make WebP files yourself or reduce the photograph to a tiny file first.
+
+**Already have HEIC photographs? Put those straight in photo-inbox on your Mac.** There is no benefit to manually making an extra JPEG first. The uploader now handles the conversion. Keep your original HEIC files and RAW files in your archive.
+
+This recommendation is for the **source file you give the uploader**. Visitors receive **WebP, with JPEG as a fallback**, whichever source format you started with. JPEG is a practical source for photographs; WebP provides efficient web delivery. See [MDN’s image-format guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types) for general format background. The export settings above are a recommendation for this website’s workflow.
+
+PNG, WebP and AVIF inputs also work, but you do not need to convert your photographs into those formats first. RAW and JXL inputs are not supported. Avoid repeatedly saving or converting a compressed photograph: always start with your best available original or a fresh export from your editor.
+
+### What happens to a HEIC file before upload?
+
+For each photograph, the uploader:
+
+1. **Reads the original without changing it.** The file in photo-inbox remains untouched.
+2. **Makes a temporary PNG on your Mac**, using the built-in macOS image converter. This is an intermediate working copy, not a file you need to manage. Using PNG at this stage avoids an extra JPEG compression step; it cannot restore detail already lost in the original HEIC.
+3. **Reads that PNG and removes the temporary conversion files.** The remaining work uses the decoded image in memory.
+4. **Applies image orientation and converts the viewing copies to sRGB**, a standard colour space used for web photographs.
+5. **Makes several smaller sizes**, keeping the image proportions and never enlarging a small original. The largest HEIC-derived copy has a longest edge of up to 2560 pixels; a portrait can finish a pixel or two below that because dimensions must be whole numbers. A 6000 × 4000 landscape produces widths of 480, 960, 1440, 1920 and 2560 pixels. Portraits have narrower widths to stay within the longest-edge limit.
+6. **Compresses every size into WebP and JPEG.** The current output quality settings are 88 for WebP and 90 for JPEG. These are encoder settings, not percentages of original detail retained. EXIF information, including camera and GPS metadata, is omitted from the final files.
+7. **Uploads only those finished WebP and JPEG copies to R2**, then records their addresses and sizes for the website. Neither the original HEIC nor the intermediate PNG is uploaded.
+
+A **dry run** performs the conversion and compression too, so it can estimate the actual upload size. It does not upload the copies or update the website’s image list. It still needs the existing R2 connection to check which copies are already stored. A real upload skips copies already present when you repeat the same batch.
+
+HEIC processing is available through the **R2 uploader on macOS**, not by putting HEIC files directly into src/assets or uploading them manually in the Cloudflare dashboard. It needs no additional software on your Mac. On Windows or Linux, export a JPEG first. The uploader handles still photographs, not Live Photo video or animated/multi-image sequences.
+
+The finished files are compressed web viewing copies, not archival masters. Do not assume HEIC HDR brightness or wide-gamut colours will be preserved exactly through conversion. Before publishing a large batch, preview a few representative images, especially bright highlights and saturated colours. Keep your originals for printing and future edits.
 
 ## 2. Upload them
 
