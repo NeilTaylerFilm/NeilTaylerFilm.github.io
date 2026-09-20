@@ -18,6 +18,8 @@ const { images, layout = 'editorial' } = Astro.props;
 <div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
   {images.map((image, index) => {
     const info = imageInfo(image.src);
+    const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
+    const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
     return (
       <figure
         style={
@@ -33,6 +35,7 @@ const { images, layout = 'editorial' } = Astro.props;
         <a
           href={image.full || info?.full || image.src}
           data-gallery-trigger
+          data-lightbox-srcset={image.full ? undefined : info?.fallbackSrcset}
           data-caption={image.caption || ''}
           aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
         >
@@ -40,7 +43,11 @@ const { images, layout = 'editorial' } = Astro.props;
             {...image}
             alt={image.alt || ''}
             sizes={
-              index % 3 === 0 ? '(max-width: 1440px) 90vw, 1248px' : '(max-width: 540px) 90vw, 45vw'
+              layout === 'justified'
+                ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
+                : index % 3 === 0
+                  ? '(max-width: 1440px) 90vw, 1248px'
+                  : '(max-width: 540px) 90vw, 45vw'
             }
             loading={index === 0 ? 'eager' : 'lazy'}
           />

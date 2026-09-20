@@ -67,3 +67,21 @@ test('image gateway streams images, serves HEAD metadata, and handles missing fi
   );
   assert.equal(calls.length, 3);
 });
+
+test('only content-hashed photos receive immutable caching', async () => {
+  const object = { size: 4, httpEtag: '"test"', body: 'test' };
+  const env = { IMAGES: { get: async () => object, head: async () => object } };
+  for (const method of ['GET', 'HEAD']) {
+    for (const [name, expected] of [
+      ['a'.repeat(32) + '-480.webp', 'public, max-age=31536000, immutable'],
+      ['test.webp', 'public, max-age=86400'],
+    ]) {
+      const response = await worker.fetch(
+        new Request(`https://example.com/photos/${name}`, { method }),
+        env,
+      );
+      assert.equal(response.headers.get('cache-control'), expected);
+      assert.equal(await response.text(), method === 'HEAD' ? '' : 'test');
+    }
+  }
+});

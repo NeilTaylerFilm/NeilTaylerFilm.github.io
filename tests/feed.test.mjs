@@ -68,3 +68,39 @@ test('multiple categories retain legacy support and normalize duplicates', async
   assert.equal(matchesCategory(categories, 'Notebook'), false);
   assert.deepEqual(postCategories({}), []);
 });
+
+test('project calendar dates reject ambiguous and impossible input', async () => {
+  const { projectDate, projectYear, matchingProjectYear } =
+    await import('../src/lib/project-date.ts');
+  for (const value of [
+    '2026-02-30',
+    '2025-02-29',
+    '18 July 2026',
+    '2026-07-18T00:00:00+02:00',
+    2026,
+  ]) {
+    assert.equal(projectDate.safeParse(value).success, false);
+  }
+  const date = projectDate.parse('2026-07-18');
+  assert.equal(isoDate(date), '2026-07-18');
+  assert.equal(isoDate(projectDate.parse('2024-02-29')), '2024-02-29');
+  const previousTimezone = process.env.TZ;
+  for (const timeZone of ['UTC', 'Pacific/Honolulu', 'Pacific/Auckland']) {
+    process.env.TZ = timeZone;
+    assert.equal(
+      new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(date),
+      '18 July 2026',
+    );
+  }
+  if (previousTimezone === undefined) delete process.env.TZ;
+  else process.env.TZ = previousTimezone;
+  assert.equal(matchingProjectYear({ date, year: 2025 }), false);
+  assert.equal(matchingProjectYear({ date, year: '2026' }), true);
+  assert.equal(matchingProjectYear({ year: 2025 }), true);
+  assert.equal(projectYear.safeParse('0000').success, false);
+});

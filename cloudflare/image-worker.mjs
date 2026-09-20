@@ -25,7 +25,9 @@ export default {
       'Content-Type': types[key.split('.').pop()],
       'Content-Length': String(object.size),
       ETag: object.httpEtag,
-      'Cache-Control': 'public, max-age=86400',
+      'Cache-Control': /^photos\/[a-f0-9]{32}-\d+\.(jpeg|webp)$/.test(key)
+        ? 'public, max-age=31536000, immutable'
+        : 'public, max-age=86400',
       'X-Content-Type-Options': 'nosniff',
     });
     // Browser caching works on workers.dev; do not assume CDN Cache API caching.

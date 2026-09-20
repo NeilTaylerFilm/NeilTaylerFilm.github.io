@@ -1,9 +1,9 @@
 ---
 {
-  "title": "Matt & Louise Engagement",
-  "subtitle": "Engagement Photographer",
-  "description": "A beautiful engagement shoot capturing the love and joy of Matt and Louise on their special day.",
-  "year": 2026,
+  "title": "Matt & Louise",
+  "subtitle": "Engagement Session",
+  "description": "",
+  "date": "2026-06-27",
   "category": "Engagement",
   "draft": false,
   "galleryLayout": "justified",
@@ -337,5 +337,3 @@
   ]
 }
 ---
-
-Neil captured these precious moments during Matt and Louise's engagement shoot. The couple shared genuine laughter, tender embraces, and beautiful connection throughout the session.

@@ -7,7 +7,7 @@ interface Props {
   year?: string | number;
 }
 const { category, location, date, year } = Astro.props;
-const stamp = year?.toString() || (date ? isoDate(date) : undefined);
+const stamp = date ? isoDate(date) : year?.toString();
 ---
 
 {(category || location || stamp) && (
@@ -16,6 +16,17 @@ const stamp = year?.toString() || (date ? isoDate(date) : undefined);
     {category && (location || stamp) && <span aria-hidden="true">/</span>}
     {location && <span>{location}</span>}
     {location && stamp && <span aria-hidden="true">·</span>}
-    {stamp && <time datetime={stamp}>{stamp}</time>}
+    {stamp && (
+      <time datetime={stamp}>
+        {date
+          ? new Intl.DateTimeFormat('en-GB', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              timeZone: 'UTC',
+            }).format(date)
+          : stamp}
+      </time>
+    )}
   </div>
 )}

@@ -23,6 +23,7 @@ const { title } = Astro.props;
     </button>
     <img
       data-lightbox-image
+      decoding="async"
       src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
       alt=""
       width="1600"
@@ -67,8 +68,7 @@ const { title } = Astro.props;
       const trigger = triggers[current];
       const thumbnail = trigger.querySelector('img')!;
       image.sizes = '(max-width: 767px) 95vw, 90vw';
-      image.srcset =
-        thumbnail.closest('picture')?.querySelector('source')?.srcset || thumbnail.srcset;
+      image.srcset = trigger.dataset.lightboxSrcset || '';
       image.src = trigger.href;
       image.alt = thumbnail.alt;
       image.width = thumbnail.width;

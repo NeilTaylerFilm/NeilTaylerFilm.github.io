@@ -39,13 +39,15 @@ Dashboard labels can change. If your screen differs, tell Codex which options yo
 5. You should see your photograph. The Worker's address without a photograph path intentionally shows **Not found**.
 6. Tell Codex when it works, or give the exact error message.
 
+For everyday photo publishing, use [R2-PHOTOS.md](../R2-PHOTOS.md) instead of manually uploading originals. The macOS uploader accepts HEIC/HEIF and converts them into WebP/JPEG files before uploading. The Worker serves those finished web copies; it does not convert or serve HEIC originals.
+
 The code accepts simple folder/file names containing letters, numbers, hyphens and underscores. Use lowercase file extensions: jpg, jpeg, png, webp or avif. Spaces are not supported.
 
 ## 4. Finish the website workflow
 
 The website now supports registered R2 images. Follow [R2-PHOTOS.md](../R2-PHOTOS.md) for the resizing/upload workflow.
 
-Future uploads should use new filenames for changed pictures because browsers can keep a downloaded picture for one day.
+Future uploads should use new filenames for changed pictures. The updated Worker caches uploader-generated filenames for one year and manually named files for one day.
 
 ## Staying within free allowances
 
@@ -61,3 +63,9 @@ Sources checked 14 September 2026:
 - https://developers.cloudflare.com/r2/get-started/workers-api/
 - https://developers.cloudflare.com/workers/platform/limits/
 - https://developers.cloudflare.com/r2/pricing/
+
+## Applying the gallery cache improvement
+
+After changing `cloudflare/image-worker.mjs`, open Cloudflare → Workers & Pages → your image Worker → **Edit code**. Replace the code with the contents of that file, then click **Deploy**. Publishing the Astro website alone does not update this Worker.
+
+The updated Worker lets browsers keep uploader-generated, content-hashed photographs for one year. Manually named pictures such as `test.webp` retain the one-day policy. Changed pictures must receive new filenames; the uploader does this automatically. No pictures need to be uploaded again. This improves repeat visits, not the first download, and adds no service or paid dependency.
