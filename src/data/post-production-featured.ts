@@ -22,6 +22,22 @@ export const featured: FeaturedWork[] = [
     // blogPost: 'your-blog-post-filename',
   },
   {
+    src: 'https://i.ytimg.com/vi/dnJWWsIn_nY/hqdefault.jpg',
+    alt: 'Body Language — Fun Sponge',
+    caption: 'Body Language — Fun Sponge',
+    video: 'https://youtu.be/dnJWWsIn_nY',
+    width: 480,
+    height: 360,
+  },
+  {
+    src: 'https://i.ytimg.com/vi/WHF_J4mL3oc/hqdefault.jpg',
+    alt: "I'm Gonna F*** You All Night — Nick Helm (MV)",
+    caption: "I'm Gonna F*** You All Night — Nick Helm (MV)",
+    video: 'https://youtu.be/WHF_J4mL3oc',
+    width: 480,
+    height: 360,
+  },
+  {
     src: 'https://i.ytimg.com/vi/3GgTC-an6Mw/hqdefault.jpg',
     alt: 'On Dover Beach — Cinematography module submission',
     caption: 'On Dover Beach',
