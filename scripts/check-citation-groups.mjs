@@ -5,8 +5,14 @@ const url = process.env.PREVIEW_URL || 'http://127.0.0.1:4323/blog/citation-prev
 const browser = await chromium.launch({ headless: true });
 
 try {
-  for (const width of [375, 1440]) {
-    const page = await browser.newPage({ viewport: { width, height: 812 } });
+  for (const width of [320, 375, 390, 430, 1440]) {
+    const touch = width < 500;
+    const page = await browser.newPage({
+      viewport: { width, height: 844 },
+      hasTouch: touch,
+      isMobile: touch,
+      deviceScaleFactor: touch ? 2 : 1,
+    });
     await page.route('https://**/favicon.ico', (route) => route.abort());
     await page.route(url, async (route) => {
       const response = await route.fetch();
@@ -30,6 +36,12 @@ try {
     assert.equal(await four.locator('.citation-source-list a[title="cite"]').count(), 4);
     assert.equal(await pair.locator('.citation-more').count(), 0);
     assert.equal(await pair.locator('a[title="cite"]').count(), 2);
+    if (touch) {
+      const pairTargetHeights = await pair.locator('a[title="cite"]').evaluateAll((links) =>
+        links.map((link) => link.getBoundingClientRect().height),
+      );
+      assert.ok(pairTargetHeights.every((height) => height >= 44), `${width}px paired citation links are at least 44px tall`);
+    }
     assert.equal(await page.locator('#meaningful-break .citation-more').count(), 0);
     assert.equal(await page.locator('#meaningful-break a[title="cite"]').count(), 3);
     assert.equal(await page.locator('.prose a:not([title="cite"])').filter({ hasText: 'ordinary Markdown link' }).count(), 1);
@@ -50,8 +62,11 @@ try {
       progress: getComputedStyle(document.querySelector('[data-reading-progress]')).transform,
       width: document.documentElement.scrollWidth,
     }));
-    await summary.focus();
-    await page.keyboard.press('Enter');
+    if (touch) await summary.tap();
+    else {
+      await summary.focus();
+      await page.keyboard.press('Enter');
+    }
     await page.waitForFunction(() => document.querySelector('.citation-more[open] .citation-source-list[data-positioned]'));
     const open = await page.evaluate(() => {
       const panel = document.querySelector('.citation-more[open] .citation-source-list');
@@ -64,6 +79,7 @@ try {
         width: document.documentElement.clientWidth,
         height: document.documentElement.clientHeight,
         links: [...panel.querySelectorAll('a')].map((a) => a.href),
+        rowHeights: [...panel.querySelectorAll('a')].map((a) => a.getBoundingClientRect().height),
         iconCount: panel.querySelectorAll('img[data-citation-icon]').length,
         hiddenIcons: [...panel.querySelectorAll('img[data-citation-icon]')].every((img) => img.hidden),
         scroll: scrollY,
@@ -77,6 +93,10 @@ try {
     assert.equal(open.links.length, 3, 'popup shows every source, including the first two');
     assert.equal(open.iconCount, 3, 'popup should retain the icon for every source');
     assert.equal(open.hiddenIcons, true, 'failed favicons hide without removing citation labels');
+    if (touch) {
+      assert.ok((await summary.boundingBox()).height >= 44, `${width}px touch disclosure is at least 44px tall`);
+      assert.ok(open.rowHeights.every((height) => height >= 44), `${width}px touch source rows are at least 44px tall`);
+    }
     assert.ok(open.bottom <= open.height - 16, `${width}px popup stays clear of the bottom edge`);
     assert.deepEqual(
       { scroll: open.scroll, top: open.bodyTop, bottom: open.bodyBottom, progress: open.progress },

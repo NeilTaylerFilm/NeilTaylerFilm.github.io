@@ -919,6 +919,18 @@ h1 {
   max-width: 100%;
   white-space: normal;
 }
+@media (pointer: coarse) {
+  .prose a[title='cite'],
+  .citation-more > summary {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    min-height: 44px;
+  }
+  .prose .citation-source-list a[title='cite'] {
+    align-items: center;
+  }
+}
 .prose ul,
 .prose ol {
   padding-left: 1.3em;
