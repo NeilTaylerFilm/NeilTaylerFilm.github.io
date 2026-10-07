@@ -7,7 +7,7 @@ const { title } = Astro.props;
 
 <dialog class="lightbox" aria-label={`${title} — photographs`} data-lightbox>
   <div class="lightbox-toolbar">
-    <span class="mono" data-lightbox-count role="status" aria-live="polite"></span>
+    <span class="mono" data-lightbox-count role="status" aria-live="off"></span>
     <button class="control square" type="button" data-lightbox-close aria-label="Close gallery">
       ×
     </button>
@@ -29,6 +29,11 @@ const { title } = Astro.props;
       width="1600"
       height="1067"
     />
+    <p class="lightbox-feedback" data-lightbox-feedback role="status" aria-live="polite"></p>
+    <div class="lightbox-actions" data-lightbox-actions hidden>
+      <button class="control" type="button" data-lightbox-retry>Retry</button>
+      <a class="control" data-lightbox-open target="_blank" rel="noopener noreferrer">Open photograph</a>
+    </div>
     <button class="control square" type="button" data-lightbox-next aria-label="Next photograph">
       →
     </button>
@@ -55,27 +60,58 @@ const { title } = Astro.props;
     const triggers = Array.from(
       document.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'),
     );
-    const image = dialog.querySelector<HTMLImageElement>('[data-lightbox-image]')!;
+    let image = dialog.querySelector<HTMLImageElement>('[data-lightbox-image]')!;
     const close = dialog.querySelector<HTMLButtonElement>('[data-lightbox-close]')!;
     const previous = dialog.querySelector<HTMLButtonElement>('[data-lightbox-prev]')!;
     const next = dialog.querySelector<HTMLButtonElement>('[data-lightbox-next]')!;
     const caption = dialog.querySelector<HTMLElement>('[data-lightbox-caption]')!;
     const count = dialog.querySelector<HTMLElement>('[data-lightbox-count]')!;
+    const feedback = dialog.querySelector<HTMLElement>('[data-lightbox-feedback]')!;
+    const actions = dialog.querySelector<HTMLElement>('[data-lightbox-actions]')!;
+    const retry = dialog.querySelector<HTMLButtonElement>('[data-lightbox-retry]')!;
+    const openLink = dialog.querySelector<HTMLAnchorElement>('[data-lightbox-open]')!;
     let current = 0;
+    let revision = 0;
     let opener: HTMLAnchorElement | undefined;
     function show(index: number) {
       current = (index + triggers.length) % triggers.length;
+      const token = ++revision;
       const trigger = triggers[current];
       const thumbnail = trigger.querySelector('img')!;
-      image.sizes = '(max-width: 767px) 95vw, 90vw';
-      image.srcset = trigger.dataset.lightboxSrcset || '';
-      image.src = trigger.href;
-      image.alt = thumbnail.alt;
-      image.width = thumbnail.width;
-      image.height = thumbnail.height;
+      const preview = thumbnail.cloneNode(true) as HTMLImageElement;
+      preview.src = thumbnail.currentSrc || thumbnail.src;
+      preview.removeAttribute('srcset');
+      preview.dataset.lightboxImage = '';
+      image.replaceWith(preview);
+      image = preview;
       caption.textContent = trigger.dataset.caption || '';
       count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(triggers.length).padStart(2, '0')}`;
       previous.hidden = next.hidden = triggers.length < 2;
+      feedback.textContent = `Loading photograph ${current + 1} of ${triggers.length}…`;
+      dialog!.dataset.loading = '';
+      actions.hidden = true;
+      const candidate = new Image();
+      candidate.sizes = '(max-width: 767px) 95vw, 90vw';
+      candidate.srcset = trigger.dataset.lightboxSrcset || '';
+      candidate.src = trigger.href;
+      candidate.alt = thumbnail.alt;
+      candidate.width = thumbnail.width;
+      candidate.height = thumbnail.height;
+      candidate.onload = () => {
+        if (token !== revision || !dialog!.open) return;
+        image.replaceWith(candidate);
+        image = candidate;
+        image.dataset.lightboxImage = '';
+        feedback.textContent = '';
+        delete dialog!.dataset.loading;
+      };
+      candidate.onerror = () => {
+        if (token !== revision || !dialog!.open) return;
+        feedback.textContent = 'Photograph could not load.';
+        openLink.href = trigger.href;
+        actions.hidden = false;
+        delete dialog!.dataset.loading;
+      };
     }
     triggers.forEach((trigger, index) => {
       const open = () => {
@@ -98,6 +134,10 @@ const { title } = Astro.props;
       });
     });
     close.addEventListener('click', () => dialog.close());
+    retry.addEventListener('click', (event) => {
+      event.preventDefault();
+      show(current);
+    });
     previous.addEventListener('click', () => show(current - 1));
     next.addEventListener('click', () => show(current + 1));
     dialog.addEventListener('keydown', (event) => {
@@ -105,14 +145,12 @@ const { title } = Astro.props;
         event.preventDefault();
         show(current + (event.key === 'ArrowLeft' ? -1 : 1));
       }
-      if (event.key === 'Tab') {
-        const controls = [close, previous, next].filter((button) => !button.hidden);
-        const index = controls.indexOf(document.activeElement as HTMLButtonElement);
-        event.preventDefault();
-        controls[(index + (event.shiftKey ? -1 : 1) + controls.length) % controls.length].focus();
-      }
     });
     dialog.addEventListener('close', () => {
+      revision++;
+      feedback.textContent = '';
+      delete dialog.dataset.loading;
+      actions.hidden = true;
       document.documentElement.classList.remove('modal-open');
       opener?.focus({ preventScroll: true });
       image.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
@@ -120,3 +158,36 @@ const { title } = Astro.props;
     });
   }
 </script>
+
+<style>
+  .lightbox-stage {
+    position: relative;
+  }
+  .lightbox-feedback {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--surface);
+    color: var(--text);
+    font: 12px var(--mono);
+  }
+  .lightbox-feedback:empty {
+    display: none;
+  }
+  .lightbox-actions:not([hidden]) {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+  }
+  .lightbox-stage img {
+    min-width: 1px;
+  }
+</style>

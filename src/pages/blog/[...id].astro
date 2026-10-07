@@ -11,7 +11,9 @@ export async function getStaticPaths() {
 }
 const { post } = Astro.props;
 const { data } = post;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const chapters = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
+const minChapterDepth = Math.min(...chapters.map((chapter) => chapter.depth));
 const related = (await posts())
   .filter(
     (p) =>
@@ -87,14 +89,53 @@ const structuredData = {
         />
       </figure>
     )}
-    <div class="prose article-body" data-article-body>
-      <Content />
-    </div>
-    <div class="article-signoff mono">
-      <span aria-hidden="true">■</span> End of entry{' '}
-      <a href="/" data-archive-back="/">
-        Back to blog →
-      </a>
+    <div class="article-reading-layout">
+      {chapters.length >= 2 && (
+        <nav class="chapter-nav chapter-nav-desktop" aria-label="Chapters">
+          <p class="eyebrow">Chapters</p>
+          <ol>
+            {chapters.map((chapter) => (
+              <li style={`padding-left: ${(chapter.depth - minChapterDepth) * 12}px`}>
+                <a href={`#${chapter.slug}`}>{chapter.text}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      {chapters.length >= 2 && (
+        <details class="chapter-nav chapter-nav-mobile">
+          <summary class="mono">
+            <span class="chapter-label">Chapters</span>
+          </summary>
+          <nav aria-label="Chapters">
+            <ol>
+              {chapters.map((chapter) => (
+                <li style={`padding-left: ${(chapter.depth - minChapterDepth) * 12}px`}>
+                  <a href={`#${chapter.slug}`}>{chapter.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </details>
+      )}
+      {chapters.length >= 2 && (
+        <button
+          class="chapter-dimmer"
+          data-chapter-dimmer
+          type="button"
+          aria-label="Close chapter menu"
+          hidden
+        ></button>
+      )}
+      <div class="prose article-body" data-article-body>
+        <Content />
+      </div>
+      <div class="article-signoff mono">
+        <span aria-hidden="true">■</span> End of entry{' '}
+        <a href="/" data-archive-back="/">
+          Back to blog →
+        </a>
+      </div>
     </div>
   </article>
   {related.length > 0 && (
@@ -127,6 +168,51 @@ const structuredData = {
 </BaseLayout>
 <script>
   const body = document.querySelector<HTMLElement>('[data-article-body]');
+  let updateProgress = () => {};
+  let updateChapter = () => {};
+  const openHashTarget = (hash = location.hash) => {
+    let id = hash.slice(1);
+    try {
+      id = decodeURIComponent(id);
+    } catch {}
+    const target = id ? document.getElementById(id) : null;
+    if (!target || !body?.contains(target)) return target;
+    for (let parent = target.parentElement; parent && parent !== body; parent = parent.parentElement)
+      if (parent instanceof HTMLDetailsElement) parent.open = true;
+    return target;
+  };
+  if (body) {
+    const sections: HTMLDetailsElement[] = [];
+    const parents: { depth: number; details: HTMLDetailsElement }[] = [];
+    for (const node of [...body.childNodes]) {
+      const depth = node instanceof HTMLElement && /^H[2-6]$/.test(node.tagName)
+        ? Number(node.tagName[1])
+        : 0;
+      if (depth) {
+        while (parents.length && parents.at(-1)!.depth >= depth) parents.pop();
+        const heading = node as HTMLElement;
+        const details = document.createElement('details');
+        details.className = 'article-section';
+        details.open = !/^tl\s*;?\s*dr\b/i.test(heading.textContent?.trim() || '');
+        const summary = document.createElement('summary');
+        summary.append(heading);
+        details.append(summary);
+        (parents.at(-1)?.details || body).append(details);
+        parents.push({ depth, details });
+        sections.push(details);
+      } else {
+        (parents.at(-1)?.details || body).append(node);
+      }
+    }
+    openHashTarget();
+    window.addEventListener('hashchange', () => openHashTarget()?.scrollIntoView());
+    for (const section of sections) section.addEventListener('toggle', () => {
+      requestAnimationFrame(() => {
+        updateProgress?.();
+        updateChapter?.();
+      });
+    });
+  }
   const bar = document.querySelector<HTMLElement>('[data-reading-progress]');
   if (body && bar) {
     let scheduled = false;
@@ -134,11 +220,12 @@ const structuredData = {
       const rect = body.getBoundingClientRect();
       const progress = Math.min(
         1,
-        Math.max(0, (innerHeight - rect.top) / Math.max(1, rect.height)),
+        Math.max(0, scrollY / Math.max(1, scrollY + rect.bottom - innerHeight)),
       );
       bar.style.transform = `scaleX(${progress})`;
       scheduled = false;
     };
+    updateProgress = update;
     window.addEventListener(
       'scroll',
       () => {
@@ -151,5 +238,81 @@ const structuredData = {
     );
     window.addEventListener('resize', update);
     update();
+  }
+
+  const chapterLinks = [
+    ...document.querySelectorAll<HTMLAnchorElement>('.chapter-nav a[href^="#"]'),
+  ];
+  const headings = [...document.querySelectorAll<HTMLElement>('[data-article-body] :is(h2,h3,h4,h5,h6)[id]')];
+  if (chapterLinks.length && headings.length) {
+    chapterLinks.forEach((link) => link.addEventListener('click', (event) => {
+      const target = openHashTarget(link.hash);
+      if (!target || !body?.contains(target)) return;
+      event.preventDefault();
+      const mobileMenu = link.closest<HTMLDetailsElement>('.chapter-nav-mobile');
+      if (mobileMenu) {
+        mobileMenu.open = false;
+        const dimmer = document.querySelector<HTMLButtonElement>('[data-chapter-dimmer]');
+        if (dimmer) dimmer.hidden = true;
+        mobileMenu.querySelector('summary')?.focus({ preventScroll: true });
+      }
+      if (location.hash === link.hash) target.scrollIntoView();
+      else location.hash = link.hash;
+    }));
+    let scheduled = false;
+    updateChapter = () => {
+      const visibleHeadings = headings.filter((heading) => {
+        return !heading.closest('details.article-section')?.parentElement
+          ?.closest('details.article-section:not([open])');
+      });
+      const threshold = scrollY + 160;
+      let active = visibleHeadings[0];
+      for (const heading of visibleHeadings) {
+        if (heading.getBoundingClientRect().top + scrollY > threshold) break;
+        active = heading;
+      }
+      if (!active) {
+        chapterLinks.forEach((link) => link.removeAttribute('aria-current'));
+        scheduled = false;
+        return;
+      }
+      chapterLinks.forEach((link) => {
+        if (link.getAttribute('href') === `#${active.id}`)
+          link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+      scheduled = false;
+    };
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!scheduled) {
+          scheduled = true;
+          requestAnimationFrame(updateChapter);
+        }
+      },
+      { passive: true },
+    );
+    window.addEventListener('resize', updateChapter);
+    updateChapter();
+
+    const mobileMenu = document.querySelector<HTMLDetailsElement>('.chapter-nav-mobile');
+    const dimmer = document.querySelector<HTMLButtonElement>('[data-chapter-dimmer]');
+    mobileMenu?.addEventListener('toggle', () => {
+      if (dimmer) dimmer.hidden = !mobileMenu.open;
+    });
+    dimmer?.addEventListener('click', () => {
+      if (!mobileMenu) return;
+      mobileMenu.open = false;
+      dimmer.hidden = true;
+      mobileMenu.querySelector('summary')?.focus({ preventScroll: true });
+    });
+    mobileMenu?.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      mobileMenu.open = false;
+      if (dimmer) dimmer.hidden = true;
+      mobileMenu.querySelector('summary')?.focus({ preventScroll: true });
+    });
   }
 </script>

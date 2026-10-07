@@ -1,9 +1,11 @@
 ---
 import ResponsiveImage from './ResponsiveImage.astro';
 import { imageInfo } from '../lib/images';
+import { gallerySections } from '../lib/gallery-sections';
 interface Props {
   images: {
     src: string;
+    section?: string;
     full?: string;
     alt?: string;
     caption?: string;
@@ -15,50 +17,62 @@ interface Props {
 const { images, layout = 'editorial' } = Astro.props;
 ---
 
-<div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
-  {images.map((image, index) => {
-    const info = imageInfo(image.src);
-    const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
-    const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
-    return (
-      <figure
-        style={
-          layout === 'justified'
-            ? `--ratio: ${(info?.width || image.width || 1) / (info?.height || image.height || 1)}`
-            : undefined
-        }
-        class:list={[
-          'gallery-item',
-          { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
-        ]}
-      >
-        <a
-          href={image.full || info?.full || image.src}
-          data-gallery-trigger
-          data-lightbox-srcset={image.full ? undefined : info?.fallbackSrcset}
-          data-caption={image.caption || ''}
-          aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
-        >
-          <ResponsiveImage
-            {...image}
-            alt={image.alt || ''}
-            sizes={
+{gallerySections(images).map((group) => (
+  <Fragment>
+    {group.heading && <h2 class="gallery-section-heading">{group.heading}</h2>}
+    <div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
+      {group.images.map((image, localIndex) => {
+        const index = group.start + localIndex;
+        const info = imageInfo(image.src);
+        const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
+        const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
+        return (
+          <figure
+            style={
               layout === 'justified'
-                ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
-                : index % 3 === 0
-                  ? '(max-width: 1440px) 90vw, 1248px'
-                  : '(max-width: 540px) 90vw, 45vw'
+                ? `--ratio: ${(info?.width || image.width || 1) / (info?.height || image.height || 1)}`
+                : undefined
             }
-            loading={index === 0 ? 'eager' : 'lazy'}
-          />
-        </a>
-        {image.caption && <figcaption>{image.caption}</figcaption>}
-      </figure>
-    );
-  })}
-</div>
+            class:list={[
+              'gallery-item',
+              { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
+            ]}
+          >
+            <a
+              href={image.full || info?.full || image.src}
+              data-gallery-trigger
+              data-lightbox-srcset={image.full ? undefined : info?.fallbackSrcset}
+              data-caption={image.caption || ''}
+              aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
+            >
+              <ResponsiveImage
+                {...image}
+                alt={image.alt || ''}
+                sizes={
+                  layout === 'justified'
+                    ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
+                    : index % 3 === 0
+                      ? '(max-width: 1440px) 90vw, 1248px'
+                      : '(max-width: 540px) 90vw, 45vw'
+                }
+                loading={index === 0 ? 'eager' : 'lazy'}
+              />
+            </a>
+            {image.caption && <figcaption>{image.caption}</figcaption>}
+          </figure>
+        );
+      })}
+    </div>
+  </Fragment>
+))}
 
 <style>
+  .gallery-section-heading {
+    margin: 36px 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.25rem;
+  }
   .gallery.gallery-justified {
     display: flex;
     flex-wrap: wrap;

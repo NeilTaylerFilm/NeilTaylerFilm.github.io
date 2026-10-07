@@ -13,7 +13,14 @@ const categories = getCategories(allProjects);
   description="Photographs, collected into projects. A place to slow down and look."
 >
   <h1 class="visually-hidden">Photography</h1>
-  <PhotographySlideshow />
+  <div class="photography-intro" data-photography-intro>
+    {allProjects.length > 0 && (
+      <a class="projects-shortcut mono" href="#projects-heading">
+        View projects ↓
+      </a>
+    )}
+    <PhotographySlideshow />
+  </div>
   <section class="project-section" aria-labelledby="projects-heading">
     <div class="section-heading">
       <h2 id="projects-heading" class="eyebrow">
@@ -32,3 +39,60 @@ const categories = getCategories(allProjects);
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>
 </BaseLayout>
+
+<style>
+  .projects-shortcut {
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    padding: 10px 0;
+    font-size: 12px;
+  }
+  .project-section {
+    margin-top: 24px;
+  }
+  .photography-intro :global(.photo-showcase > .photo-panel .photo-viewport) {
+    aspect-ratio: auto;
+    height: var(--intro-image-height, clamp(180px, calc(100svh - 560px), 600px));
+  }
+</style>
+
+<script>
+  const intro = document.querySelector<HTMLElement>('[data-photography-intro]');
+  const grid = document.querySelector<HTMLElement>('.project-grid');
+  const stage = intro?.querySelector<HTMLElement>('.photo-viewport');
+  if (intro && grid && stage) {
+    // Measure the small viewport so mobile browser chrome doesn't resize the photograph on scroll.
+    const measure = document.createElement('div');
+    measure.style.cssText =
+      'position:fixed;height:100svh;width:0;visibility:hidden;pointer-events:none';
+    measure.setAttribute('aria-hidden', 'true');
+    document.body.append(measure);
+    let frame = 0;
+    const fit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (stage.closest('dialog[open]')) return; // Expanded viewer has its own sizing.
+        const overhead =
+          grid.getBoundingClientRect().top + window.scrollY - stage.getBoundingClientRect().height;
+        const available = measure.getBoundingClientRect().height - overhead - 100;
+        const height = Math.round(Math.max(180, Math.min((stage.clientWidth * 2) / 3, available)));
+        const value = `${height}px`;
+        if (intro.style.getPropertyValue('--intro-image-height') !== value)
+          intro.style.setProperty('--intro-image-height', value);
+      });
+    };
+    const observer = new ResizeObserver(fit);
+    [
+      intro,
+      measure,
+      document.querySelector('.site-header'),
+      document.querySelector('.feed-toolbar'),
+    ].forEach((element) => {
+      if (element) observer.observe(element);
+    });
+    window.addEventListener('resize', fit);
+    document.fonts.ready.then(fit);
+    fit();
+  }
+</script>

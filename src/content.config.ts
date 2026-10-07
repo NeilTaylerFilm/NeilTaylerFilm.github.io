@@ -57,6 +57,7 @@ const photography = defineCollection({
           z.object({
             src: z.string(),
             full: z.string().optional(),
+            section: z.string().trim().min(1).optional(),
             alt: z.string().default(''),
             caption: z.string().optional(),
             width: z.number().positive().optional(),

@@ -2,7 +2,9 @@
 
 Ready to put changes online? [Simple guide to publishing the live website](PUBLISH-TO-PRODUCTION.md).
 
-Photographs: [R2 upload and publishing guide](R2-PHOTOS.md). Use `npm run photos:check` to check access and `npm run photos:upload` to process the ignored `photo-inbox/` folder. Commit `src/data/r2-images.json`; never commit `.env.r2`. Builds merge the public R2 registry with local image metadata without needing credentials.
+Photographs: [R2 upload and publishing guide](R2-PHOTOS.md). Use `npm run photos:check` to check access, `npm run photos:upload` to process the ignored `photo-inbox/` folder, and `npm run photos:audit` to check that site content has matching photo records in the repository. Commit `src/data/r2-images.json`; never commit `.env.r2`. Builds merge the public R2 registry with local image metadata without needing credentials.
+
+Keep a separate backup of original photographs: GitHub stores the site text and photo address list, while R2 stores the public web-sized copies. See the [backup and recovery guide](BACKUP-AND-RECOVERY.md). After publishing the new workflow to GitHub, it checks the public site and a published photo every six hours.
 
 Start here: [Step-by-step publishing instructions](PUBLISHING.md). Demo content has been retired to `examples/retired-demo/` and is no longer published.
 
@@ -31,6 +33,8 @@ The workflow in `.github/workflows/deploy.yml` installs from the lockfile, check
 
 ## Blog authoring
 
+For an Obsidian-focused quick guide, see [Writing a blog post](WRITING-BLOG-POSTS.md).
+
 Add a `.md` (or `.mdx`) file to `src/content/blog/`. Its filename determines `/blog/filename/`; keep filenames stable after publishing.
 
 ```yaml
@@ -54,6 +58,10 @@ draft: true
 ```
 
 Write Markdown below the front matter. `excerpt` overrides the generated preview; `description` overrides search/social copy. Hero images are optional. Dates remain ISO formatted. `updated` must not precede `date`; an updated date only appears when its calendar date differs. `format`, `tags` and `related` prepare separate subject/format and relationship metadata without adding UI. Related posts can share any category. Use a `categories` list for blog subjects; the older single `category` field still works.
+
+Article headings (`##` through `######`) are expandable sections, open by default. A heading titled `TL;DR` starts collapsed; put its summary beneath that heading.
+
+The chapter menu includes those headings and indents each level beneath its parent. Use `##` for main chapters, `###` for subtitles and `####` for a deeper level; a post can start at `###` if it has no `##` headings.
 
 Drafts are visible and routable locally, with `noindex`, but excluded from production routes, archives, category options and sitemap. The shared `posts()` / `projects()` helpers in `src/lib/content.ts` centralize publication and ordering; they can later support pagination, year archives or feeds without manually maintained post arrays.
 
@@ -97,6 +105,6 @@ R2 images registered by the uploader in `src/data/r2-images.json` have responsiv
 
 Edit `src/config/site.ts` for contact details and social links. Empty contact destinations are omitted. About content lives in `src/data/about.ts`. Retired demo articles and photography are stored outside the published content folders.
 
-Shared SEO generates clean canonicals, Open Graph/Twitter cards and site/person JSON-LD. Articles add BlogPosting data. The fallback social card and touch icon are generated from the existing SVG identity assets. `/sitemap.xml` and `/robots.txt` are generated automatically. `/404.html` retains the masthead, theme and useful navigation.
+Shared SEO generates clean canonicals, Open Graph/Twitter cards and site/person JSON-LD. Articles add BlogPosting data. The fallback social card and touch icon are generated from the existing SVG identity assets. `/sitemap.xml` and `/robots.txt` are generated automatically. `robots.txt` asks GPTBot, Google-Extended and ClaudeBot not to crawl the site; it still allows ordinary crawlers and lists the sitemap. This is a voluntary crawler request, not protection from bots that ignore it. `/404.html` retains the masthead, theme and useful navigation.
 
 RSS/Atom, search, pagination and year-archive UI are deliberately deferred. No feed endpoint or autodiscovery is enabled.

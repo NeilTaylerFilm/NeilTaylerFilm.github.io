@@ -9,6 +9,7 @@
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/44b41c15fa5df5f69c741f6c27236606-2560.jpeg",
   "images": [
     {
+      "section": "Day 01",
       "src": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/31478d01b2c105197ee2cbf77c561a51-1692.jpeg",
     },
     {
@@ -182,6 +183,7 @@
       
     },
     {
+      "section": "Day 02",
       "src": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/f8ae4c92f52bdbb0b518ffd2894b96a7-1706.jpeg",
       
     },
@@ -378,6 +380,7 @@
       
     },
     {
+      "section": "Day 03",
       "src": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/333a6805e704d7ea5f2472176eede5d2-1692.jpeg",
       
     },

@@ -78,6 +78,7 @@ const first = featured[0];
             <path d="M8 5v14l11-7z" />
           </svg>
         </button>
+        <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
       </div>
       <div class="photo-details">
         <div class="work-actions">
@@ -200,11 +201,15 @@ const first = featured[0];
       JSON.parse(root.dataset.slides || '[]');
     const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
     const play = root.querySelector<HTMLButtonElement>('[data-video-play]')!;
+    const playerStatus = root.querySelector<HTMLElement>('[data-video-status]')!;
     const more = root.querySelector<HTMLAnchorElement>('[data-work-learn-more]')!;
     const watchLink = root.querySelector<HTMLAnchorElement>('[data-watch-link]')!;
     const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
+    let playerTimer = 0;
     function update() {
       viewport.querySelector('iframe')?.remove();
+      window.clearTimeout(playerTimer);
+      playerStatus.textContent = '';
       const work = slides[Number(root.dataset.index || 0)];
       play.hidden = !work.embedUrl;
       play.setAttribute('aria-label', `Watch ${work.caption || 'film'}`);
@@ -239,6 +244,24 @@ const first = featured[0];
       iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       iframe.className = 'video-iframe';
       iframe.title = work.caption || 'Film player';
+      iframe.setAttribute('aria-busy', 'true');
+      playerStatus.textContent = 'Loading player…';
+      playerTimer = window.setTimeout(() => {
+        if (iframe.isConnected && viewport.querySelector('iframe') === iframe)
+          playerStatus.textContent = 'Player is taking a while to load.';
+      }, 8000);
+      iframe.addEventListener('load', () => {
+        if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
+        window.clearTimeout(playerTimer);
+        iframe.removeAttribute('aria-busy');
+        playerStatus.textContent = '';
+      }, { once: true });
+      iframe.addEventListener('error', () => {
+        if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
+        window.clearTimeout(playerTimer);
+        iframe.removeAttribute('aria-busy');
+        playerStatus.textContent = 'Player could not load. Use the Watch on link below to open it directly.';
+      }, { once: true });
       viewport.append(iframe);
       play.hidden = true;
       iframe.focus();
@@ -284,6 +307,20 @@ const first = featured[0];
     width: 100%;
     height: 100%;
     border: none;
+  }
+  .video-player-status:not(:empty) {
+    position: absolute;
+    z-index: 3;
+    inset-inline: 12px;
+    bottom: 12px;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin: auto;
+    padding: 7px 10px;
+    background: var(--surface);
+    color: var(--text);
+    font: 11px var(--mono);
+    pointer-events: none;
   }
   .video-thumbnail-wrapper {
     position: relative;

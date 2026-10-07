@@ -43,6 +43,16 @@ const first = featured[0];
         </button>
       </div>
       <div class="photo-viewport" data-photo-viewport>
+        {first.thumbnail && (
+          <img
+            class="photo-preview"
+            src={first.thumbnail}
+            width="192"
+            height={Math.round((first.height * 192) / first.width)}
+            alt=""
+            aria-hidden="true"
+          />
+        )}
         <img
           data-slide-image
           src={first.src}
@@ -115,7 +125,7 @@ const first = featured[0];
             tabindex={index === 0 ? 0 : -1}
           >
             <img
-              src={photo.srcset?.split(', ')[0].split(' ')[0] || photo.src}
+              src={photo.thumbnail || photo.srcset?.split(', ')[0].split(' ')[0] || photo.src}
               width={photo.width}
               height={photo.height}
               alt=""

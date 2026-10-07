@@ -1,0 +1,38 @@
+name: Check public site
+
+on:
+  schedule:
+    - cron: '19 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check website pages and photo delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          for url in \
+            'https://neiltaylerfilm.github.io/' \
+            'https://neiltaylerfilm.github.io/photography/'; do
+            echo "Checking $url"
+            curl --fail --location --silent --show-error \
+              --retry 2 --retry-all-errors --retry-delay 3 --max-time 20 \
+              --output /dev/null "$url"
+          done
+
+          # Keep this URL in sync if the first featured photo is removed from R2.
+          photo='https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/588176e9b85445d319829378ab9beff3-1707.jpeg'
+          headers="$(curl --head --fail --location --silent --show-error \
+            --retry 2 --retry-all-errors --retry-delay 3 --max-time 20 "$photo")"
+          if ! grep -Eiq '^content-type:[[:space:]]*image/' <<< "$headers"; then
+            echo 'Photo endpoint responded, but did not identify the response as an image.' >&2
+            exit 1
+          fi

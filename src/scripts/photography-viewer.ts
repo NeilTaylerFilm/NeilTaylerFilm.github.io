@@ -29,6 +29,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   const thumbnails = [...root.querySelectorAll<HTMLButtonElement>('[data-photo-index]')];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let image = find<HTMLImageElement>('[data-slide-image]');
+  const preview = viewport.querySelector<HTMLImageElement>('.photo-preview');
   let current = 0;
   let selected = 0;
   let revision = 0;
@@ -37,6 +38,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   let outgoing: HTMLImageElement | undefined;
   let pending: HTMLImageElement | undefined;
   let adjacent: { index: number; image: HTMLImageElement } | undefined;
+  let failedIndex = 0;
   let opener: HTMLElement | null = null;
   let savedScroll = 0;
   let swipeStart: { x: number; y: number } | null = null;
@@ -52,6 +54,8 @@ export function setupPhotographyViewer(root: HTMLElement) {
     viewport.setAttribute('aria-haspopup', 'dialog');
   }
   root.dataset.index = '0';
+  if (image.complete && !image.naturalWidth) preview?.remove();
+  image.addEventListener('error', () => preview?.remove(), { once: true });
 
   // Loading spinner (inserted once, toggled via attribute)
   const spinner = document.createElement('div');
@@ -116,8 +120,10 @@ export function setupPhotographyViewer(root: HTMLElement) {
 
   function showError(index: number) {
     const photo = photos[index];
+    failedIndex = index;
     status.textContent = 'This photograph could not load. Please try again.';
     viewport.setAttribute('aria-busy', 'false');
+    viewport.setAttribute('data-error', '');
     viewport.removeAttribute('data-loading');
     if (!errorEl) {
       errorEl = document.createElement('div');
@@ -128,27 +134,30 @@ export function setupPhotographyViewer(root: HTMLElement) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = 'Retry';
-      btn.setAttribute('aria-label', `Retry loading ${photo.alt || 'image'}`);
       btn.addEventListener('click', () => {
         if (errorEl) errorEl.remove();
         errorEl = null;
-        select(index, index >= selected ? 1 : -1);
+        select(failedIndex, failedIndex >= selected ? 1 : -1);
       });
       errorEl.append(msg, btn);
     }
+    errorEl
+      .querySelector('button')
+      ?.setAttribute('aria-label', `Retry loading ${photo.alt || 'image'}`);
     // Reparent to current viewport
     viewport.appendChild(errorEl);
     errorEl.hidden = false;
   }
 
   function clearError() {
+    viewport.removeAttribute('data-error');
     if (errorEl) {
       errorEl.hidden = true;
     }
   }
 
   async function load(index: number, direction: number, token: number) {
-    if (index === current) {
+    if (index === current && !viewport.hasAttribute('data-error')) {
       status.textContent = '';
       viewport.removeAttribute('aria-busy');
       viewport.removeAttribute('data-loading');
@@ -226,7 +235,10 @@ export function setupPhotographyViewer(root: HTMLElement) {
   }
 
   function select(index: number, direction: number) {
-    selected = (index + photos.length) % photos.length;
+    const nextIndex = (index + photos.length) % photos.length;
+    if (nextIndex === selected && !pending && !viewport.hasAttribute('data-error')) return;
+    preview?.remove();
+    selected = nextIndex;
     revision++;
     const token = revision;
     settle();
@@ -369,6 +381,14 @@ export function setupPhotographyViewer(root: HTMLElement) {
   reduced.addEventListener('change', settle);
   void image
     .decode()
-    .then(() => preload(1))
-    .catch(() => {});
+    .then(() => {
+      if (revision !== 0 || current !== 0) return;
+      preview?.remove();
+      preload(1);
+    })
+    .catch(() => {
+      if (revision !== 0 || current !== 0) return;
+      preview?.remove();
+      showError(0);
+    });
 }

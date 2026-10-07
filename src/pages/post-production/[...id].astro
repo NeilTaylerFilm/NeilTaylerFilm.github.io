@@ -50,6 +50,15 @@ const { Content } = await render(project);
             <path d="M8 5v14l11-7z" />
           </svg>
         </button>
+        <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
+        <a
+          class="video-player-direct"
+          data-video-direct
+          href={data.video}
+          target="_blank"
+          rel="noopener noreferrer"
+          hidden
+        >Open video directly</a>
       </div>
     )}
     <div class="prose project-description" data-project-prose>
@@ -82,7 +91,10 @@ const { Content } = await render(project);
   // Lazy-load video iframe on play click
   document.querySelectorAll<HTMLElement>('[data-video-container]').forEach((container) => {
     const playBtn = container.querySelector<HTMLButtonElement>('[data-video-play]');
+    const playerStatus = container.querySelector<HTMLElement>('[data-video-status]')!;
+    const directLink = container.querySelector<HTMLAnchorElement>('[data-video-direct]')!;
     if (!playBtn) return;
+    let activeIframe: HTMLIFrameElement | undefined;
 
     playBtn.addEventListener('click', () => {
       const videoUrl = (container as HTMLElement).dataset.videoUrl;
@@ -96,18 +108,47 @@ const { Content } = await render(project);
         ? `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`
         : `https://player.vimeo.com/video/${id}?title=0&byline=0&portrait=0`;
 
-      const poster = container.querySelector<HTMLElement>('[data-video-poster]');
-      if (poster) poster.remove();
-      playBtn.remove();
-
       const iframe = document.createElement('iframe');
+      activeIframe?.remove();
+      activeIframe = iframe;
       iframe.src = embedUrl;
       iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       iframe.allowFullscreen = true;
       iframe.className = 'video-embed';
-      iframe.setAttribute('title', 'Video player');
+      iframe.title = 'Film player';
+      directLink.href = isYouTube
+        ? `https://www.youtube.com/watch?v=${id}`
+        : `https://vimeo.com/${id}`;
+      container.setAttribute('aria-busy', 'true');
+      playerStatus.textContent = 'Loading player…';
+      const timer = window.setTimeout(() => {
+        if (iframe.isConnected && activeIframe === iframe) {
+          playerStatus.textContent = 'Player is taking a while to load.';
+          directLink.hidden = false;
+        }
+      }, 8000);
+      iframe.addEventListener('load', () => {
+        if (!iframe.isConnected || activeIframe !== iframe) return;
+        window.clearTimeout(timer);
+        container.removeAttribute('aria-busy');
+        container.querySelector('[data-video-poster]')?.remove();
+        playBtn.remove();
+        playerStatus.textContent = '';
+        directLink.hidden = true;
+      }, { once: true });
+      iframe.addEventListener('error', () => {
+        if (activeIframe !== iframe) return;
+        window.clearTimeout(timer);
+        container.removeAttribute('aria-busy');
+        playerStatus.textContent = 'Player could not load.';
+        playBtn.hidden = false;
+        directLink.hidden = false;
+        iframe.remove();
+      }, { once: true });
 
+      playBtn.hidden = true;
       container.appendChild(iframe);
+      iframe.focus();
     });
   });
 
@@ -126,3 +167,63 @@ const { Content } = await render(project);
     return { id: null, provider: null };
   }
 </script>
+
+<style>
+  .video-container {
+    position: relative;
+    aspect-ratio: 16 / 9;
+  }
+  .video-embed {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .video-poster {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid white;
+    color: white;
+    cursor: pointer;
+  }
+  .video-player-status:not(:empty) {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    margin: 0;
+    padding: 7px 10px;
+    background: var(--surface);
+    color: var(--text);
+    font: 11px var(--mono);
+    pointer-events: none;
+  }
+  .video-player-direct:not([hidden]) {
+    position: absolute;
+    z-index: 2;
+    bottom: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px;
+    background: var(--surface);
+    color: var(--accent);
+    font: 11px var(--mono);
+  }
+  @media (max-width: 767px) {
+    .video-container {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

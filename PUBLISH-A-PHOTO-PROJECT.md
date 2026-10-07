@@ -545,3 +545,25 @@ You do not need to invent a day or month. Use one of these lines, not both. Olde
 ## How gallery image sizes work
 
 You still upload through the same photo-inbox workflow. The grid automatically chooses from the prepared image sizes. Opening a photograph uses a separate larger image source, so small grid previews do not limit enlarged-image quality. Existing uploads work without uploading them again.
+
+## Divide a gallery into days or sections
+
+You can show headings such as **Day 01**, **Day 02**, or **Behind the scenes** between groups of photographs.
+
+1. Open your project's `.md` file.
+2. Find the first photograph belonging to the new day in the `"images"` list.
+3. Add a `"section"` line inside that photograph's `{ }`, as shown below. Keep the comma at the end of the new line.
+
+```json
+{
+  "section": "Day 02",
+  "src": "keep-the-existing-image-address-here",
+  "alt": "keep-or-edit-your-photo-description"
+}
+```
+
+Keep your real `src` address; do not replace it with the example words above.
+
+Only add the heading to the **first photograph of each day**, not every photograph. All following photographs belong to that section until the next heading. Add `"section": "Day 01",` to the first photograph if you also want a heading at the very beginning.
+
+The heading appears above a fresh grid of pictures. Your photographs stay in the same order, and visitors can still use the enlarged viewer to move through every day. Nothing needs to be uploaded again. Save the file, preview the page, then publish normally. Leaving out section lines keeps the existing uninterrupted gallery.
