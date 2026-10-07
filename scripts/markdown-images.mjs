@@ -10,6 +10,31 @@ export default function markdownImages() {
         node.properties.style = `text-align: ${node.properties.align}`;
         delete node.properties.align;
       }
+      if (node.type === 'element' && node.tagName === 'a' && node.properties.title === 'cite') {
+        try {
+          const source = new URL(String(node.properties.href || ''));
+          if (['http:', 'https:'].includes(source.protocol))
+            node.children.unshift({
+              type: 'element',
+              tagName: 'img',
+              properties: {
+                src: new URL('/favicon.ico', source.origin).href,
+                alt: '',
+                width: 16,
+                height: 16,
+                loading: 'lazy',
+                decoding: 'async',
+                referrerPolicy: 'no-referrer',
+                className: ['citation-icon'],
+                dataCitationIcon: '',
+                ariaHidden: 'true',
+              },
+              children: [],
+            });
+        } catch {
+          // Keep citations with relative or invalid URLs as text-only chips.
+        }
+      }
       if (node.type === 'element' && node.tagName === 'img') {
         const p = node.properties;
         const src = String(p.src || '').replace(/^(?:\.\.\/)+assets\//, '/assets/');

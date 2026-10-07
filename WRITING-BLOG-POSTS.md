@@ -136,6 +136,22 @@ example code goes here
 
 Use standard Markdown links and image links when you want the result to work on the published site. Obsidian-only wikilinks such as `[[Another note]]`, embeds such as `![[photo.jpg]]`, and vault attachment paths are not configured as website links or images here. For another blog post, use its website path, for example `[Another post](/blog/other-post-filename/)`; for an external website use `[words](https://example.com)`. For blog images, use the generated R2 Markdown line or a site asset path such as `/images/example.jpg` for a file in `public/images/`.
 
+### Citing sources inline
+
+To make an inline citation chip, add `"cite"` as the link title in ordinary Markdown. This works in Obsidian without a plugin:
+
+```md
+The article explains the process [in detail](https://example.com/article "cite").
+```
+
+Use a short, recognizable label for the source, such as `BBC article`, `YouTube interview`, or `Book title`. The chip shows the source’s website icon when available; if the icon cannot be loaded, the label still works. A normal Markdown link without the `"cite"` title stays an ordinary link.
+
+When multiple citation links sit next to one another with only spaces or line breaks between them, one or two remain separate chips. Three or more collapse into a single chip showing the first source and a `+N` count for the rest. Clicking it opens the complete source list. Add a sentence or other text between links if they should not be grouped together.
+
+```md
+The sources include [a BFI article](https://www.bfi.org.uk/ "cite") [a video](https://www.youtube.com/ "cite") [a book](https://www.penguin.co.uk/ "cite").
+```
+
 The site sanitizes raw HTML in Markdown. Prefer ordinary Markdown for formatting rather than relying on pasted HTML or Obsidian plugins.
 
 ## Preview and publish

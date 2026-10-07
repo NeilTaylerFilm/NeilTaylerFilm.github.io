@@ -826,6 +826,99 @@ h1 {
   color: var(--accent);
   text-decoration: underline;
 }
+.prose a[title='cite'] {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.08em 0.42em;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font-size: 0.8em;
+  line-height: 1.45;
+  text-decoration: none;
+  vertical-align: 0.08em;
+  overflow-wrap: anywhere;
+}
+.prose a[title='cite']:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.prose img.citation-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.3em;
+  border: 0;
+  border-radius: 2px;
+  object-fit: contain;
+  vertical-align: -0.15em;
+}
+.citation-more {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: 0.08em;
+}
+.citation-more > summary {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.08em 0.42em;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--surface-raised);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8em;
+  line-height: 1.45;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+.citation-count {
+  color: var(--muted);
+  margin-inline-start: 0.35em;
+}
+.citation-more > summary::-webkit-details-marker {
+  display: none;
+}
+.citation-more > summary:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.prose ul.citation-source-list {
+  position: fixed;
+  z-index: 1000;
+  display: none;
+  width: min(22rem, calc(100vw - 32px));
+  max-height: min(60vh, calc(100vh - 32px));
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--border);
+  list-style: none;
+}
+.citation-more[open] > .citation-source-list {
+  display: block;
+}
+.citation-more[open] > .citation-source-list:not([data-positioned]) {
+  visibility: hidden;
+}
+.prose ul.citation-source-list > li {
+  margin: 0;
+  padding: 0;
+}
+.prose ul.citation-source-list > li + li {
+  margin-top: 4px;
+}
+.prose .citation-source-list a[title='cite'] {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+}
 .prose ul,
 .prose ol {
   padding-left: 1.3em;
