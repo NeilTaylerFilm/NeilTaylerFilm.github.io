@@ -8,43 +8,58 @@
 // toolbar, and arranges your posts into neat magazine cards.
 
 // Blog archive page.
+// --- BORROWED TOOLS (Imports) ---
+// BaseLayout: The master picture frame of the website, providing the shared header, navigation, and footer.
 import BaseLayout from '../layouts/BaseLayout.astro';
+// BlogCard: A neat little preview card for a single article, showing its photo, title, date, and excerpt.
 import BlogCard from '../components/BlogCard.astro';
+// FeedControls: The interactive toolbar with search, topic filters, and sorting buttons.
 import FeedControls from '../components/FeedControls.astro';
+// posts & categories: Helper functions from our content library that fetch articles and list all topic tags.
 import { posts, categories as getCategories } from '../lib/content';
 
 // 📚 Fetch all published articles (sorted newest first)
+// Think of this like opening the filing cabinet and pulling out every finished article folder.
 const allPosts = await posts();
 
 // 🏷️ Find all categories used across these articles
+// This scans each article's tags so we can build filter buttons for topics like "Photography" or "Tech".
 const categories = getCategories(allPosts);
 ---
 
+{/* We wrap the entire page in BaseLayout, like putting our canvas inside an ornate picture frame. */}
 <BaseLayout
   title="Blog"
   description="Blog posts by Neil Tayler on photography, film, post-production, technology and the things that catch his attention."
 >
+  {/* The main stage for our blog articles. We give it an aria-label so screen readers describe it clearly to visually impaired visitors. */}
   <section class="content-start" aria-label="Blog articles">
     {/* 🏷️ Top Section Heading: "Latest posts" */}
+    {/* A decorative header with a small title and a stylish horizontal divider line. */}
     <div class="section-heading">
       <h1 class="eyebrow">Latest posts</h1>
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
 
     {/* 🎛️ Filter dropdowns (Category and Sort) */}
+    {/* Question: Are there any posts to display? If yes (count > 0), show the filter buttons so users can filter by category. */}
     {allPosts.length > 0 && <FeedControls categories={categories} count={allPosts.length} />}
 
     {/* 📰 Grid list of blog cards */}
+    {/* The magazine rack: a grid container holding all the blog article cards. */}
     <div class="blog-feed" data-feed>
+      {/* We loop through each post in our list like flipping through index cards, creating a neat preview card for each one. */}
       {allPosts.map((post, index) => (
         <BlogCard post={post} index={index} />
       ))}
     </div>
 
     {/* 🍃 Empty message if you haven't published anything yet */}
+    {/* Question: Is the article list completely empty? If yes, show a gentle note so visitors know nothing is broken. */}
     {!allPosts.length && <p class="empty-state">No posts published yet.</p>}
 
     {/* 🏁 Friendly end marker when visitor reaches the bottom */}
+    {/* When there are posts, we put a little signpost at the very end saying you've reached the bottom of the list. */}
     {allPosts.length > 0 && (
       <div class="end-note mono">
         <span aria-hidden="true">■</span> You’re all caught up. More when there’s more.
