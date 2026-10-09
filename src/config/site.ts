@@ -3,6 +3,8 @@
 // ==========================================
 // Think of this file like an ID badge or business card for your entire website.
 // Any page that needs to know your name, bio, or social links comes here to look it up!
+// If you ever want to update your email, bio, or social handles, change them right here
+// and the entire website (headers, footers, SEO tags, contact pages) updates everywhere!
 
 // 📋 This "interface" is like a blank form checklist.
 // It tells the computer: "Every website ID card MUST have these exact pieces of info."
@@ -18,6 +20,7 @@ interface SiteConfig {
 }
 
 // ✍️ Here we fill in the blank form with your actual real-world details!
+// We export this 'site' object so any page or component can borrow it (import { site } from '../config/site').
 export const site: SiteConfig = {
   name: 'Neil Tayler Film',
   author: 'Neil Tayler',
