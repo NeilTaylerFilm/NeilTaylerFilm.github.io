@@ -8,8 +8,12 @@
 // 3. Cache Rules: 1-year browser caching only applies to content-hashed files!
 
 // Tests Cloudflare image worker gateway for security and caching
+// --- BORROWED TOOLS (Imports) ---
+// test: Node.js built-in test runner.
 import test from 'node:test';
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// worker: The Cloudflare image worker butler we are testing!
 import worker from '../cloudflare/image-worker.mjs';
 
 // 🔒 TEST 1: Security guards stop bad URLs and write attempts before touching R2
