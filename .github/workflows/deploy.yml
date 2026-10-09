@@ -29,16 +29,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 📥 Step 1: Download your codebase onto the cloud machine
       - uses: actions/checkout@v4
+      # 🟢 Step 2: Install Node.js v24 with npm package caching
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      # 📦 Step 3: Install exact project dependencies
       - run: npm ci
+      # 🔍 Step 4: Run Astro TypeScript typechecker
       - run: npm run check
+      # 🧪 Step 5: Run automated test suite
       - run: npm test
+      # 🏗️ Step 6: Build the static production website into dist/
       - run: npm run build
+      # 🕵️ Step 7: Verify all HTML links and image manifests
       - run: npm run verify
+      # 📤 Step 8: Package the dist folder for deployment
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
