@@ -10,28 +10,39 @@
 // 4. Filter and sort controls so visitors can browse by theme.
 
 // Photography project index page with slideshow and category filters.
+// --- BORROWED TOOLS (Imports) ---
+// BaseLayout: The shared website skeleton (header bar, navigation, footer).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+// PhotographySlideshow: The hero slide projector displaying featured photos with next/prev buttons.
 import PhotographySlideshow from '../../components/PhotographySlideshow.astro';
+// FeedControls: The filter bar with search, category filters, and sorting.
 import FeedControls from '../../components/FeedControls.astro';
+// ProjectCard: An individual album preview tile with a cover photo and title.
 import ProjectCard from '../../components/ProjectCard.astro';
+// projects & categories: Content helpers to fetch published photo projects and list their tags.
 import { projects, categories as getCategories } from '../../lib/content';
 
 // 📚 Fetch all published photography albums (sorted newest first)
+// Like pulling every photo album off the bookshelf and lining them up in order.
 const allProjects = await projects();
 
 // 🏷️ Find all categories used across these albums
+// Extracts unique genre tags (e.g., "Landscape", "Urban") to create filter buttons.
 const categories = getCategories(allProjects);
 ---
 
+{/* The master website frame wrapping the photography exhibition hall */}
 <BaseLayout
   title="Photography"
   description="Photographs, collected into projects. A place to slow down and look."
 >
+  {/* Visually hidden heading for screen reader navigation */}
   <h1 class="visually-hidden">Photography</h1>
 
   {/* 🌟 HERO SHOWCASE: Interactive featured photograph projector */}
   <div class="photography-intro" data-photography-intro>
     {/* ⬇️ Quick jump link down to the album catalog */}
+    {/* If we have projects, provide a quick skip button to bypass the slideshow */}
     {allProjects.length > 0 && (
       <a class="projects-shortcut mono" href="#projects-heading">
         View projects ↓
@@ -52,11 +63,13 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🎛️ Filter and sort dropdowns */}
+    {/* Shows search input and category filter chips so visitors can explore specific albums */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}
 
     {/* 🧱 Grid of album preview cards */}
+    {/* Loops over every photo album and displays its cover image and title */}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (
         <ProjectCard project={project} />
@@ -64,11 +77,13 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🍃 Empty state if no albums exist */}
+    {/* Friendly placeholder shown if you haven't published any photo albums yet */}
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>
 </BaseLayout>
 
 <style>
+  /* 🏷️ Link styling for the quick-jump shortcut */
   .projects-shortcut {
     display: block;
     width: fit-content;
@@ -76,9 +91,11 @@ const categories = getCategories(allProjects);
     padding: 10px 0;
     font-size: 12px;
   }
+  /* Spacing between the hero slideshow and the album grid */
   .project-section {
     margin-top: 24px;
   }
+  /* Adjusts the hero picture box height dynamically to avoid overflowing the screen */
   .photography-intro :global(.photo-showcase > .photo-panel .photo-viewport) {
     aspect-ratio: auto;
     height: var(--intro-image-height, clamp(180px, calc(100svh - 560px), 600px));
@@ -94,12 +111,14 @@ const categories = getCategories(allProjects);
   const stage = intro?.querySelector<HTMLElement>('.photo-viewport');
   if (intro && grid && stage) {
     // Measure the small viewport so mobile browser chrome doesn't resize the photograph on scroll.
+    // Creates an invisible 100svh measuring stick to calculate real available screen space.
     const measure = document.createElement('div');
     measure.style.cssText =
       'position:fixed;height:100svh;width:0;visibility:hidden;pointer-events:none';
     measure.setAttribute('aria-hidden', 'true');
     document.body.append(measure);
     let frame = 0;
+    // Calculates the ideal photo height and writes it into a CSS custom property.
     const fit = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
@@ -113,6 +132,7 @@ const categories = getCategories(allProjects);
           intro.style.setProperty('--intro-image-height', value);
       });
     };
+    // Watches for layout changes and font loading to keep proportions perfect.
     const observer = new ResizeObserver(fit);
     [
       intro,
