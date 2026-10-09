@@ -8,6 +8,7 @@
 // Curated list of featured post-production work for the post-production page.
 // Curate the post-production page here. Use an uploaded R2 image address or a local image path.
 // Video can be a YouTube or Vimeo URL/ID. Project is the Markdown filename (without .md).
+// This list is imported directly by src/components/PostProductionSlideshow.astro.
 
 // 📋 The checklist for each film entry:
 type FeaturedWork = {
