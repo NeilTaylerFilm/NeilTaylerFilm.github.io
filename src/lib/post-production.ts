@@ -34,6 +34,7 @@ export function videoEmbedUrl(input?: string): string | undefined {
   if (/^\d+$/.test(input)) return `https://player.vimeo.com/video/${input}?autoplay=1`;
 
   // 3️⃣ Case: You pasted a full web address (like https://www.youtube.com/watch?v=...)
+  // We wrap this in try/catch so any weirdly typed link safely fails without crashing the site.
   try {
     const url = new URL(input);
     // Make sure it's a real web link starting with http/https
