@@ -8,6 +8,8 @@
 // 2. It removes old or unused leftover images so your website stays feather-light!
 
 // Remove camera originals from the build output after image processing is complete.
+// --- BORROWED TOOLS (Imports) ---
+// readFile, rm: Filesystem tools to read JSON manifests and remove unneeded build files.
 import { readFile, rm } from 'node:fs/promises';
 
 // 📖 Read our image registry
