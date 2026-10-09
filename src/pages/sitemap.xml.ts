@@ -6,8 +6,15 @@
 // map so they know exactly which links to display in search results!
 
 // Sitemap XML generator listing all published pages and posts.
+// --- BORROWED TOOLS (Imports) ---
+// APIContext: Astro's type definition providing the configured site web address.
 import type { APIContext } from 'astro';
+// posts, projects, isoDate: Librarians that fetch live content and format dates.
 import { posts, projects, isoDate } from '../lib/content';
+
+// 🗺️ The GET endpoint handler:
+// What goes in: APIContext with the site URL.
+// What comes out: An XML document listing every public URL for search engines.
 export async function GET({ site }: APIContext) {
   const entries = [
     ...['/', '/photography/', '/about/', '/contact/'].map((url) => ({
