@@ -6,7 +6,13 @@
 // while inviting search engines like Google to index your sitemap!
 
 // Robots.txt - requests that AI crawlers (GPTBot, ClaudeBot, Google-Extended) not index the site.
+// --- BORROWED TOOLS (Imports) ---
+// APIContext: Astro's type definition providing the configured site web address.
 import type { APIContext } from 'astro';
+
+// 🤖 The GET endpoint handler:
+// What goes in: APIContext with the site URL.
+// What comes out: A plain text Response served at /robots.txt.
 export function GET({ site }: APIContext) {
   const policy = [
     '# These rules are requests to cooperative crawlers, not access controls.',
