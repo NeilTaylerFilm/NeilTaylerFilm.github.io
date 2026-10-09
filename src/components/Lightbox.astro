@@ -8,6 +8,8 @@
 // - Lets visitors click "Next" / "Previous" or press Left/Right arrows.
 // - Instantly shows a temporary snapshot while the giant photo downloads.
 
+// 📋 What this lightbox needs to know:
+// The title of the exhibition to announce to screen readers.
 interface Props {
   title: string; // The title of the current project or page
 }
@@ -15,8 +17,10 @@ const { title } = Astro.props;
 ---
 
 <!-- 🎭 The pop-up dialog container (native HTML <dialog> element) -->
+<!-- Uses the browser's built-in <dialog> element for automatic keyboard focus trapping and Escape-key support -->
 <dialog class="lightbox" aria-label={`${title} — photographs`} data-lightbox>
   {/* 🛠️ Top toolbar: slide counter (01/10) and close "×" button */}
+  {/* Top strip containing position indicator (e.g. 03 / 12) and exit button */}
   <div class="lightbox-toolbar">
     <span class="mono" data-lightbox-count role="status" aria-live="off"></span>
     <button class="control square" type="button" data-lightbox-close aria-label="Close gallery">
@@ -25,6 +29,7 @@ const { title } = Astro.props;
   </div>
 
   {/* 🖼️ The main viewing stage where the photograph sits */}
+  {/* Central stage area holding the enlarged photograph and previous/next navigation buttons */}
   <div class="lightbox-stage">
     {/* ⬅️ Previous photo button */}
     <button
@@ -37,6 +42,7 @@ const { title } = Astro.props;
     </button>
 
     {/* 📸 The enlarged photograph */}
+    {/* Starts with a 1x1 transparent placeholder gif, immediately replaced on open with real picture data */}
     <img
       data-lightbox-image
       decoding="async"
@@ -50,6 +56,7 @@ const { title } = Astro.props;
     <p class="lightbox-feedback" data-lightbox-feedback role="status" aria-live="polite"></p>
 
     {/* ⚠️ Error actions: Retry button or open in a new tab if loading fails */}
+    {/* Fallback buttons shown if the image fails to download on a spotty mobile connection */}
     <div class="lightbox-actions" data-lightbox-actions hidden>
       <button class="control" type="button" data-lightbox-retry>Retry</button>
       <a class="control" data-lightbox-open target="_blank" rel="noopener noreferrer">Open photograph</a>
@@ -86,6 +93,7 @@ const { title } = Astro.props;
     });
 
     // Collect all zoomable photos on the page
+    // Collect all zoomable photos on the page into an indexed array
     const triggers = Array.from(
       document.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'),
     );
@@ -99,11 +107,13 @@ const { title } = Astro.props;
     const actions = dialog.querySelector<HTMLElement>('[data-lightbox-actions]')!;
     const retry = dialog.querySelector<HTMLButtonElement>('[data-lightbox-retry]')!;
     const openLink = dialog.querySelector<HTMLAnchorElement>('[data-lightbox-open]')!;
+    // State trackers: current slide index, revision counter to prevent race conditions, and element that opened the modal
     let current = 0;
     let revision = 0;
     let opener: HTMLAnchorElement | undefined;
 
     // 🎬 DISPLAY PHOTO FUNCTION:
+    // Main render function: updates stage with thumbnail immediately, then streams high-res photo
     function show(index: number) {
       current = (index + triggers.length) % triggers.length; // Loop around edges
       const token = ++revision;
@@ -135,6 +145,7 @@ const { title } = Astro.props;
       candidate.height = thumbnail.height;
 
       // When the high-res image is ready, swap it in smoothly
+      // High-resolution swap: when candidate image finishes downloading, replace the low-res preview smoothly
       candidate.onload = () => {
         if (token !== revision || !dialog!.open) return;
         image.replaceWith(candidate);
@@ -155,6 +166,7 @@ const { title } = Astro.props;
     }
 
     // 🖱️ Hook up clicks on photos to open the lightbox
+    // Event binding: attaches click and spacebar listeners to every thumbnail trigger on the page
     triggers.forEach((trigger, index) => {
       const open = () => {
         opener = trigger;
@@ -177,6 +189,7 @@ const { title } = Astro.props;
     });
 
     // 🎮 Controls: Close, Retry, Arrows, Keyboard navigation
+    // Keyboard and button controls for previous, next, and escape navigation
     close.addEventListener('click', () => dialog.close());
     retry.addEventListener('click', (event) => {
       event.preventDefault();
@@ -192,6 +205,7 @@ const { title } = Astro.props;
     });
 
     // 🚪 Clean up when dialog closes
+    // Cleanup on close: returns focus to the thumbnail that opened the modal and resets stage image memory
     dialog.addEventListener('close', () => {
       revision++;
       feedback.textContent = '';
@@ -206,9 +220,11 @@ const { title } = Astro.props;
 </script>
 
 <style>
+  /* 🖼️ Relative container positioning the enlarged image and buttons */
   .lightbox-stage {
     position: relative;
   }
+  /* Floating text badge displaying "Loading photograph 03 / 12..." */
   .lightbox-feedback {
     position: absolute;
     z-index: 1;
@@ -224,6 +240,7 @@ const { title } = Astro.props;
   .lightbox-feedback:empty {
     display: none;
   }
+  /* Action buttons (Retry, Open direct) placed at the bottom if loading fails */
   .lightbox-actions:not([hidden]) {
     position: absolute;
     z-index: 1;
