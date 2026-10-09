@@ -6,9 +6,12 @@
 // This component automatically picks the perfect picture size for the visitor's screen.
 // It also stops the page from jumping around while images load (by setting width and height).
 
+// --- BORROWED TOOLS (Imports) ---
+// imageInfo: Looks up pre-generated responsive image sizes (thumbnails, phone, desktop sizes) in src/lib/images.ts.
 import { imageInfo } from '../lib/images';
 
 // 📋 What we need to display a photo:
+// Like an instruction slip telling the picture framer how big the photo is and how to hang it.
 interface Props {
   src: string;                // Image web link or local file path
   alt: string;                // Description for accessibility
@@ -19,6 +22,7 @@ interface Props {
   priority?: boolean;         // Should the browser give this image top download priority?
 }
 
+// Unpack parameters and set sensible default settings
 const {
   src,
   alt,
@@ -30,9 +34,11 @@ const {
 } = Astro.props;
 
 // 🔍 Check our Image Rolodex to find pre-built small, medium, and large versions
+// Retrieves srcset links and dimensions so browsers know how much space to reserve.
 const info = imageInfo(src);
 
 // If we don't know the image dimensions, throw a helpful safety error
+// Prevents Cumulative Layout Shift (CLS) where content jumps around unexpectedly.
 if (!info && (!width || !height))
   throw new Error(`Image needs a local source or explicit dimensions: ${src}`);
 ---
@@ -40,9 +46,11 @@ if (!info && (!width || !height))
 <!-- 🖼️ The HTML5 <picture> element lets the browser pick the best version -->
 <picture>
   {/* ⚡ High-speed modern WebP format for fast loading */}
+  {/* Modern browsers pick from this list of compressed WebP pictures based on screen width */}
   {info && <source type="image/webp" srcset={info.srcset} sizes={sizes} />}
 
   {/* 📸 Standard fallback image element */}
+  {/* decoding="async" allows the browser to decode the image in the background without stuttering scrolling */}
   <img
     src={info?.src || src}
     alt={alt}
