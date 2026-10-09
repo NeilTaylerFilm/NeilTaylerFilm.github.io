@@ -9,26 +9,37 @@
 // 3. Category filters and sort options.
 
 // Post-production project index page.
+// --- BORROWED TOOLS (Imports) ---
+// BaseLayout: Master page skeleton providing the top header and footer.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+// PostProductionSlideshow: The top video reel projector where featured clips can be watched.
 import PostProductionSlideshow from '../../components/PostProductionSlideshow.astro';
+// FeedControls: The filter and sorting toolbar for categories.
 import FeedControls from '../../components/FeedControls.astro';
+// PostProductionCard: An individual film project preview tile with a video/image poster.
 import PostProductionCard from '../../components/PostProductionCard.astro';
+// postProjects & categories: Content helpers to load all film projects and their genre tags.
 import { postProjects, categories as getCategories } from '../../lib/content';
 
 // 📚 Fetch all published film / post-production projects
+// Like opening the film canisters drawer and pulling out every finished project.
 const allProjects = await postProjects();
 
 // 🏷️ Find all categories used across these film projects
+// Extracts tags like "Editing", "Color Grading", or "Commercial" for filter buttons.
 const categories = getCategories(allProjects);
 ---
 
+{/* The master website frame wrapping the film screening room */}
 <BaseLayout
   title="Post-Production"
   description="Editing and colour-grading work. A place to slow down and look."
 >
+  {/* Visually hidden heading for screen readers */}
   <h1 class="visually-hidden">Post-Production</h1>
 
   {/* 🍿 TOP SHOWCASE: The interactive video player carousel */}
+  {/* The virtual cinema screen at the top of the room */}
   <PostProductionSlideshow />
 
   {/* 🗂️ THE WORK CATALOG: Grid of film and video projects */}
@@ -42,11 +53,13 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🎛️ Category filter and sorting toolbar */}
+    {/* Shows search and tag filters if there is at least one film project */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}
 
     {/* 🧱 Grid of film project cards */}
+    {/* Loops over every post-production project and creates a preview card */}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (
         <PostProductionCard project={project} />
@@ -54,6 +67,7 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🍃 Empty state if no projects are published yet */}
+    {/* Friendly fallback note if no films are available yet */}
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>
 </BaseLayout>
