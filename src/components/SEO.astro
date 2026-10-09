@@ -18,11 +18,16 @@ import { site } from '../config/site';
 // 📋 Checklist of options this SEO component can take:
 // Like a form listing the details needed to announce a webpage to the world.
 interface Props {
-  title: string;         // The page title (e.g. 'About')
-  description?: string;  // Short teaser description
-  image?: string;        // Picture to show on Twitter/iMessage preview cards
-  article?: boolean;     // Is this a blog article (true) or general webpage (false)?
-  noindex?: boolean;     // Should Google hide this page (e.g. 404 page)?
+  // The page title (e.g. 'About')
+  title: string;
+  // Short teaser description
+  description?: string;
+  // Picture to show on Twitter/iMessage preview cards
+  image?: string;
+  // Is this a blog article (true) or general webpage (false)?
+  article?: boolean;
+  // Should Google hide this page (e.g. 404 page)?
+  noindex?: boolean;
 }
 
 // Extract props or use sensible defaults from site config
@@ -50,17 +55,17 @@ const fullTitle = `${title} — ${site.name}`;
 // Converts relative file paths into absolute URLs so external chat apps can download the thumbnail.
 const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 ---
-<!-- SECURITY: JSON.stringify sanitizes '<' to '\u003c' to prevent HTML injection in structured data. -->
+{/* SECURITY: JSON.stringify sanitizes '<' to '\u003c' to prevent HTML injection in structured data. */}
 
-<!-- 🏷️ Tab Title & Meta Description for Google -->
-<!-- Tells the browser what to write on the tab and gives Google the search result snippet. -->
+{/* 🏷️ Tab Title & Meta Description for Google */}
+{/* Tells the browser what to write on the tab and gives Google the search result snippet. */}
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex" />}
 
-<!-- 📱 Open Graph Tags (used by Facebook, LinkedIn, iMessage, Discord) -->
-<!-- These special tags dictate how the link unfurls inside chat apps like WhatsApp, Slack, and iMessage. -->
+{/* 📱 Open Graph Tags (used by Facebook, LinkedIn, iMessage, Discord) */}
+{/* These special tags dictate how the link unfurls inside chat apps like WhatsApp, Slack, and iMessage. */}
 <meta property="og:type" content={article ? 'article' : 'website'} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
@@ -68,15 +73,15 @@ const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 <meta property="og:site_name" content={site.name} />
 <meta property="og:image" content={socialImage} />
 
-<!-- 🐦 Twitter / X Preview Card Tags -->
-<!-- Instructs Twitter/X to show a prominent large picture card instead of a tiny icon. -->
+{/* 🐦 Twitter / X Preview Card Tags */}
+{/* Instructs Twitter/X to show a prominent large picture card instead of a tiny icon. */}
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImage} />
 
-<!-- 🤖 JSON-LD Structured Data: A digital business card for Google Search -->
-<!-- Formats site and author profile data into machine-readable JSON for search engines. -->
+{/* 🤖 JSON-LD Structured Data: A digital business card for Google Search */}
+{/* Formats site and author profile data into machine-readable JSON for search engines. */}
 <script
   is:inline
   type="application/ld+json"

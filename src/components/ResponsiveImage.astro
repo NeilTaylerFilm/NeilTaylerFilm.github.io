@@ -13,13 +13,20 @@ import { imageInfo } from '../lib/images';
 // 📋 What we need to display a photo:
 // Like an instruction slip telling the picture framer how big the photo is and how to hang it.
 interface Props {
-  src: string;                // Image web link or local file path
-  alt: string;                // Description for accessibility
-  width?: number;             // Explicit pixel width (if known)
-  height?: number;            // Explicit pixel height (if known)
-  sizes?: string;             // Screen size rules (e.g. "100vw")
-  loading?: 'eager' | 'lazy'; // 'lazy' waits until visitor scrolls near it; 'eager' loads immediately
-  priority?: boolean;         // Should the browser give this image top download priority?
+  // Image web link or local file path
+  src: string;
+  // Description for accessibility
+  alt: string;
+  // Explicit pixel width (if known)
+  width?: number;
+  // Explicit pixel height (if known)
+  height?: number;
+  // Screen size rules (e.g. "100vw")
+  sizes?: string;
+  // 'lazy' waits until visitor scrolls near it; 'eager' loads immediately
+  loading?: 'eager' | 'lazy';
+  // Should the browser give this image top download priority?
+  priority?: boolean;
 }
 
 // Unpack parameters and set sensible default settings
@@ -43,7 +50,7 @@ if (!info && (!width || !height))
   throw new Error(`Image needs a local source or explicit dimensions: ${src}`);
 ---
 
-<!-- 🖼️ The HTML5 <picture> element lets the browser pick the best version -->
+{/* 🖼️ The HTML5 <picture> element lets the browser pick the best version */}
 <picture>
   {/* ⚡ High-speed modern WebP format for fast loading */}
   {/* Modern browsers pick from this list of compressed WebP pictures based on screen width */}

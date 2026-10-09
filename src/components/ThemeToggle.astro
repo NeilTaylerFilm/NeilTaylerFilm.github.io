@@ -1,12 +1,12 @@
-<!-- ==========================================
+{/* ==========================================
      💡 LIGHT SWITCH (Dark / Light Mode Toggle)
      ==========================================
      This component is the light switch on your wall!
      It lets visitors toggle between a cozy dark screen and a bright light screen.
-     It also remembers their choice the next time they visit! -->
+     It also remembers their choice the next time they visit! */}
 
-<!-- 🔘 The clickable button with the half-moon symbol -->
-<!-- The button starts out hidden so visitors with disabled JavaScript don't see a broken control. -->
+{/* 🔘 The clickable button with the half-moon symbol */}
+{/* The button starts out hidden so visitors with disabled JavaScript don't see a broken control. */}
 <button
   class="theme-toggle control"
   type="button"
@@ -27,7 +27,8 @@
   const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
   // ☀️ Check whether visitor's device is set to Light mode by default
   const system = matchMedia('(prefers-color-scheme: light)');
-  let explicit: string | null = null; // Stores what the user explicitly clicked
+  // Stores what the user explicitly clicked
+  let explicit: string | null = null;
 
   // 🔄 HELPER: Updates the button's label text and accessibility status
   // Keeps the screen-reader state (aria-pressed) aligned with the visual appearance.
@@ -52,8 +53,10 @@
 
   // 🚀 If JavaScript works, unhide the button and hook up the click listener
   if (button) {
-    button.hidden = false; // Only show button if JavaScript is enabled
-    restore();             // Set the theme right away
+    // Only show button if JavaScript is enabled
+    button.hidden = false;
+    // Set the theme right away
+    restore();
 
     // 🖱️ When clicked: flip light to dark or dark to light!
     // Swaps the dataset.theme attribute on the root <html> element so CSS variables flip colors.

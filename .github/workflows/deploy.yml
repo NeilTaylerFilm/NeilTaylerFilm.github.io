@@ -14,7 +14,8 @@ name: Deploy Astro to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch: # Also lets you manually click "Run workflow" in GitHub
+  # Also lets you manually click "Run workflow" in GitHub
+  workflow_dispatch:
 
 # 🛡️ PERMISSIONS: Only grant read access to code for safety
 permissions:

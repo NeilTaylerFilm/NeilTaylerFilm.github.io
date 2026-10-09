@@ -39,7 +39,8 @@ function decode(value) {
 // 🔗 LINK VERIFIER: Checks that a link actually points to a real file on disk
 async function resolveURL(raw, base) {
   const url = new URL(decode(raw), base);
-  if (url.origin !== origin) return; // External links (e.g. YouTube) don't live in dist/
+  // External links (e.g. YouTube) don't live in dist/
+  if (url.origin !== origin) return;
   let target = path.join(root, decodeURIComponent(url.pathname));
   if (!target.startsWith(root + path.sep) && target !== root) {
     errors.push(`Outside build: ${url}`);

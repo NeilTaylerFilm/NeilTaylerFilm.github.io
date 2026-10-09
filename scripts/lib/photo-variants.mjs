@@ -89,10 +89,14 @@ export async function photoVariants(bytes, origin) {
   for (const size of sizes) {
     for (const format of ['webp', 'jpeg']) {
       const result = await sharp(bytes)
-        .rotate()                                           // Auto-rotate according to camera EXIF tag
-        .resize({ width: size, withoutEnlargement: true }) // Shrink cleanly, never stretch
-        .toColourspace('srgb')                             // Use standard sRGB web colors
-        .toFormat(format, { quality: format === 'webp' ? 88 : 90 }) // High visual quality with small filesize
+        // Auto-rotate according to camera EXIF tag
+        .rotate()
+        // Shrink cleanly, never stretch
+        .resize({ width: size, withoutEnlargement: true })
+        // Use standard sRGB web colors
+        .toColourspace('srgb')
+        // High visual quality with small filesize
+        .toFormat(format, { quality: format === 'webp' ? 88 : 90 })
         .toBuffer({ resolveWithObject: true });
       files.push({
         key: `photos/${hash}-${size}.${format}`,

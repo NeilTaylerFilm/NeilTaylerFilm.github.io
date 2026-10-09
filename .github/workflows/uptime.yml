@@ -14,7 +14,8 @@ name: Check public site
 on:
   schedule:
     - cron: '19 */6 * * *'
-  workflow_dispatch: # Also lets you manually click "Run workflow" to test anytime
+  # Also lets you manually click "Run workflow" to test anytime
+  workflow_dispatch:
 
 permissions:
   contents: read

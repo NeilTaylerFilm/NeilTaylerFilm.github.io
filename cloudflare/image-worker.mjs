@@ -49,15 +49,19 @@ export default {
 
     // 📋 Prepare shipping label (HTTP headers) for the browser
     const headers = new Headers({
-      'Content-Type': types[key.split('.').pop()], // Image type (e.g. image/webp)
-      'Content-Length': String(object.size),        // Exact file size in bytes
-      ETag: object.httpEtag,                        // Unique fingerprint of this exact file version
+      // Image type (e.g. image/webp)
+      'Content-Type': types[key.split('.').pop()],
+      // Exact file size in bytes
+      'Content-Length': String(object.size),
+      // Unique fingerprint of this exact file version
+      ETag: object.httpEtag,
       // ⚡ Caching rule: If the filename has a unique hash, save in browser for a whole year!
       // Otherwise, save for 24 hours.
       'Cache-Control': /^photos\/[a-f0-9]{32}-\d+\.(jpeg|webp)$/.test(key)
         ? 'public, max-age=31536000, immutable'
         : 'public, max-age=86400',
-      'X-Content-Type-Options': 'nosniff',          // Safety tag: stops browser from guessing wrong file types
+      // Safety tag: stops browser from guessing wrong file types
+      'X-Content-Type-Options': 'nosniff',
     });
 
     // 🚀 Hand the photo data over to the visitor's browser!

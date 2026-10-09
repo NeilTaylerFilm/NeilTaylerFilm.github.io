@@ -11,9 +11,12 @@
 // 📋 What this toolbar needs to know:
 // Like setting up an exhibition catalog desk with the category labels and total piece count.
 interface Props {
-  categories: string[]; // List of all categories available to filter by
-  count: number;        // Total number of items
-  noun?: string;        // Word to show after number (e.g. 'articles' or 'projects')
+  // List of all categories available to filter by
+  categories: string[];
+  // Total number of items
+  count: number;
+  // Word to show after number (e.g. 'articles' or 'projects')
+  noun?: string;
 }
 const { categories, count, noun = 'articles' } = Astro.props;
 // --- BORROWED TOOLS (Imports) ---
@@ -21,9 +24,9 @@ const { categories, count, noun = 'articles' } = Astro.props;
 import { categoryKey } from '../lib/feed';
 ---
 
-<!-- 🛠️ Toolbar wrapper containing dropdowns and item counter -->
+{/* 🛠️ Toolbar wrapper containing dropdowns and item counter */}
 <div class="feed-toolbar">
-  <!-- The form starts hidden until JavaScript initializes so visitors don't see non-functioning selects -->
+  {/* The form starts hidden until JavaScript initializes so visitors don't see non-functioning selects */}
   <form class="feed-controls" data-feed-controls hidden>
     {/* 🏷️ Dropdown 1: Category Filter */}
     <label>
@@ -74,7 +77,8 @@ import { categoryKey } from '../lib/feed';
   const feed = document.querySelector<HTMLElement>('[data-feed]');
 
   if (form && feed) {
-    form.hidden = false; // Reveal the toolbar now that JavaScript is ready
+    // Reveal the toolbar now that JavaScript is ready
+    form.hidden = false;
     const category = form.elements.namedItem('category') as HTMLSelectElement;
     const sort = form.elements.namedItem('sort') as HTMLSelectElement;
     const items = Array.from(feed.querySelectorAll<HTMLElement>('[data-feed-item]'));
@@ -109,7 +113,8 @@ import { categoryKey } from '../lib/feed';
             : [item.dataset.category || ''];
           item.hidden = !matchesCategory(itemCategories, category.value);
           if (!item.hidden) visible++;
-          feed!.append(item); // Reorder on screen
+          // Reorder on screen
+          feed!.append(item);
         });
 
       // Update the counter badge text (e.g. "04 articles")

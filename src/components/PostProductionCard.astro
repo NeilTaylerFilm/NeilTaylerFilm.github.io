@@ -19,7 +19,8 @@ import { projectTimestamp, categoryKey } from '../lib/content';
 // 📋 What this card needs to show a film project:
 // Like an order slip handed to a chef, specifying exactly what ingredients this card expects.
 interface Props {
-  project: CollectionEntry<'postProduction'>; // One film / video project
+  // One film / video project
+  project: CollectionEntry<'postProduction'>;
 }
 
 // Unpack the parcel handed to us by the parent page
@@ -33,7 +34,7 @@ const { data } = project;
 const cover = data.poster || data.coverImage || data.cover || data.images[0]?.src;
 ---
 
-<!-- 📦 Card container with sorting/filtering attributes -->
+{/* 📦 Card container with sorting/filtering attributes */}
 <article
   class="project-card"
   data-feed-item

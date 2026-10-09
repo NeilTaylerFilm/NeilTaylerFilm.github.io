@@ -17,18 +17,21 @@ import { excerpt, isoDate, categoryKey } from '../lib/content';
 // 📋 What this card needs to build itself:
 // Requires the blog post object and its index number in the list.
 interface Props {
-  post: CollectionEntry<'blog'>; // The blog post content from your markdown files
-  index: number;                  // Where this card sits in the list (0, 1, 2...)
+  // The blog post content from your markdown files
+  post: CollectionEntry<'blog'>;
+  // Where this card sits in the list (0, 1, 2...)
+  index: number;
 }
 
 // Unpack props: post content and sequence number
 const { post, index } = Astro.props;
 const { data } = post;
-const url = `/blog/${post.id}/`; // Web address to read the full article
+// Web address to read the full article
+const url = `/blog/${post.id}/`;
 ---
 
-<!-- 📦 The outer card container with data attributes for filtering & sorting -->
-<!-- HTML data attributes store category keys and publication timestamp for live client filtering -->
+{/* 📦 The outer card container with data attributes for filtering & sorting */}
+{/* HTML data attributes store category keys and publication timestamp for live client filtering */}
 <article
   class:list={['blog-card', { 'has-image': data.image }]}
   data-feed-item

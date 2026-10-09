@@ -19,15 +19,23 @@ import { gallerySections } from '../lib/gallery-sections';
 // An array of photograph objects and an optional layout design choice.
 interface Props {
   images: {
-    src: string;        // Picture web address
-    section?: string;   // Optional chapter heading
-    full?: string;      // High-res version for zooming
-    alt?: string;       // Screen reader description
-    caption?: string;   // Optional caption text
-    width?: number;     // Pixel width
-    height?: number;    // Pixel height
+    // Picture web address
+    src: string;
+    // Optional chapter heading
+    section?: string;
+    // High-res version for zooming
+    full?: string;
+    // Screen reader description
+    alt?: string;
+    // Optional caption text
+    caption?: string;
+    // Pixel width
+    width?: number;
+    // Pixel height
+    height?: number;
   }[];
-  layout?: 'editorial' | 'justified'; // The display style
+  // The display style
+  layout?: 'editorial' | 'justified';
 }
 
 // Unpack props: image collection and layout style

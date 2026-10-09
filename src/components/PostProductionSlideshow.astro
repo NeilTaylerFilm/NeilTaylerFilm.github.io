@@ -332,7 +332,8 @@ const first = featured[0];
       }, { once: true });
 
       viewport.append(iframe);
-      play.hidden = true; // Hide the play button since video is playing
+      // Hide the play button since video is playing
+      play.hidden = true;
       iframe.focus();
     });
     update();

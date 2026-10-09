@@ -11,13 +11,14 @@
 // 📋 What this lightbox needs to know:
 // The title of the exhibition to announce to screen readers.
 interface Props {
-  title: string; // The title of the current project or page
+  // The title of the current project or page
+  title: string;
 }
 const { title } = Astro.props;
 ---
 
-<!-- 🎭 The pop-up dialog container (native HTML <dialog> element) -->
-<!-- Uses the browser's built-in <dialog> element for automatic keyboard focus trapping and Escape-key support -->
+{/* 🎭 The pop-up dialog container (native HTML <dialog> element) */}
+{/* Uses the browser's built-in <dialog> element for automatic keyboard focus trapping and Escape-key support */}
 <dialog class="lightbox" aria-label={`${title} — photographs`} data-lightbox>
   {/* 🛠️ Top toolbar: slide counter (01/10) and close "×" button */}
   {/* Top strip containing position indicator (e.g. 03 / 12) and exit button */}
@@ -115,7 +116,8 @@ const { title } = Astro.props;
     // 🎬 DISPLAY PHOTO FUNCTION:
     // Main render function: updates stage with thumbnail immediately, then streams high-res photo
     function show(index: number) {
-      current = (index + triggers.length) % triggers.length; // Loop around edges
+      // Loop around edges
+      current = (index + triggers.length) % triggers.length;
       const token = ++revision;
       const trigger = triggers[current];
       const thumbnail = trigger.querySelector('img')!;
@@ -212,7 +214,8 @@ const { title } = Astro.props;
       delete dialog.dataset.loading;
       actions.hidden = true;
       document.documentElement.classList.remove('modal-open');
-      opener?.focus({ preventScroll: true }); // Return focus to thumbnail
+      // Return focus to thumbnail
+      opener?.focus({ preventScroll: true });
       image.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
       image.removeAttribute('srcset');
     });

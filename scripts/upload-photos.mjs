@@ -111,8 +111,10 @@ try {
             Key: file.key,
             Body: file.bytes,
             ContentType: file.type,
-            CacheControl: 'public, max-age=31536000, immutable', // Tell browsers to cache for 1 year
-            IfNoneMatch: '*', // Don't overwrite if it already exists
+            // Tell browsers to cache for 1 year
+            CacheControl: 'public, max-age=31536000, immutable',
+            // Don't overwrite if it already exists
+            IfNoneMatch: '*',
           }),
         );
         objects.set(file.key, file.bytes.length);

@@ -24,11 +24,16 @@ import SEO from '../components/SEO.astro';
 // What every page can tell this layout:
 // This interface is like an order form specifying what options each page can customize.
 interface Props {
-  title: string;        // Page title
-  description?: string; // Summary description
-  image?: string;       // Social sharing card image
-  article?: boolean;    // Is it a blog article?
-  noindex?: boolean;    // Should Google ignore this page?
+  // Page title
+  title: string;
+  // Summary description
+  description?: string;
+  // Social sharing card image
+  image?: string;
+  // Is it a blog article?
+  article?: boolean;
+  // Should Google ignore this page?
+  noindex?: boolean;
 }
 ---
 

@@ -123,9 +123,11 @@ try {
   await page.route(imageUrl, async (route) => {
     if (!failed) {
       failed = true;
-      await route.fulfill({ status: 404, body: 'missing' }); // ⚡ Signal drop!
+      // ⚡ Signal drop!
+      await route.fulfill({ status: 404, body: 'missing' });
     } else {
-      await new Promise((resolve) => setTimeout(resolve, 500)); // ⏳ Signal restored after 500ms
+      // ⏳ Signal restored after 500ms
+      await new Promise((resolve) => setTimeout(resolve, 500));
       await route.fulfill({
         status: 200,
         contentType: 'image/gif',

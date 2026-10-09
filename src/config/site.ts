@@ -9,12 +9,18 @@
 // 📋 This "interface" is like a blank form checklist.
 // It tells the computer: "Every website ID card MUST have these exact pieces of info."
 interface SiteConfig {
-  name: string;         // The name of the website (text)
-  author: string;       // Who made it (text)
-  description: string;  // A short summary for Google and social previews (text)
-  tagline: string;      // A catchy mini-motto (text)
-  defaultImage: string; // The picture to show when someone shares your link (file path)
-  email: string;        // Where people can email you (text)
+  // The name of the website (text)
+  name: string;
+  // Who made it (text)
+  author: string;
+  // A short summary for Google and social previews (text)
+  description: string;
+  // A catchy mini-motto (text)
+  tagline: string;
+  // The picture to show when someone shares your link (file path)
+  defaultImage: string;
+  // Where people can email you (text)
+  email: string;
   // A list of social media buttons with a label, web address, and handle
   links: { label: string; url: string; username: string }[];
 }

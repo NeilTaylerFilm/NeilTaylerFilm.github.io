@@ -10,14 +10,22 @@
 
 // 📋 What information each slide carries:
 type Photo = {
-  src: string;        // Web link to the photo
-  srcset?: string;   // Different sizes for different screen resolutions
-  full?: string;     // Maximum resolution version
-  alt: string;       // Screen reader description
-  caption?: string;  // Caption text
-  project?: string;  // Project folder link
-  width: number;     // Pixel width
-  height: number;    // Pixel height
+  // Web link to the photo
+  src: string;
+  // Different sizes for different screen resolutions
+  srcset?: string;
+  // Maximum resolution version
+  full?: string;
+  // Screen reader description
+  alt: string;
+  // Caption text
+  caption?: string;
+  // Project folder link
+  project?: string;
+  // Pixel width
+  width: number;
+  // Pixel height
+  height: number;
 };
 
 // 🎬 MAIN CONTROLLER: Starts up the slideshow on the webpage
@@ -37,38 +45,67 @@ export function setupPhotographyViewer(root: HTMLElement) {
   const find = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
 
   // 🎮 Grabbing all the interactive buttons and screen elements:
-  const panel = find<HTMLElement>('[data-photo-panel]');             // The whole viewer box
-  const viewport = find<HTMLElement>('[data-photo-viewport]');       // The window frame where the photo sits
-  const dialog = find<HTMLDialogElement>('[data-photo-dialog]');     // The full-screen pop-up modal
-  const expand = find<HTMLButtonElement>('[data-photo-expand]');     // "Go Fullscreen" button
-  const close = find<HTMLButtonElement>('[data-photo-close]');       // "Exit Fullscreen" button
-  const previous = find<HTMLButtonElement>('[data-slide-prev]');     // "Previous Slide" arrow
-  const next = find<HTMLButtonElement>('[data-slide-next]');         // "Next Slide" arrow
-  const caption = find<HTMLElement>('[data-slide-caption]');         // Subtitle text area
-  const project = find<HTMLAnchorElement>('[data-photo-project]');   // Link to the full project
-  const count = find<HTMLElement>('[data-slide-count]');             // Slide counter (e.g. "01 / 10")
-  const status = find<HTMLElement>('[data-photo-status]');           // Hidden message box for screen readers
-  const strip = find<HTMLElement>('[data-photo-filmstrip]');         // The row of tiny thumbnail buttons at bottom
-  const thumbnails = [...root.querySelectorAll<HTMLButtonElement>('[data-photo-index]')]; // All thumbnail buttons
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');   // Does the user get motion sickness?
+  // The whole viewer box
+  const panel = find<HTMLElement>('[data-photo-panel]');
+  // The window frame where the photo sits
+  const viewport = find<HTMLElement>('[data-photo-viewport]');
+  // The full-screen pop-up modal
+  const dialog = find<HTMLDialogElement>('[data-photo-dialog]');
+  // "Go Fullscreen" button
+  const expand = find<HTMLButtonElement>('[data-photo-expand]');
+  // "Exit Fullscreen" button
+  const close = find<HTMLButtonElement>('[data-photo-close]');
+  // "Previous Slide" arrow
+  const previous = find<HTMLButtonElement>('[data-slide-prev]');
+  // "Next Slide" arrow
+  const next = find<HTMLButtonElement>('[data-slide-next]');
+  // Subtitle text area
+  const caption = find<HTMLElement>('[data-slide-caption]');
+  // Link to the full project
+  const project = find<HTMLAnchorElement>('[data-photo-project]');
+  // Slide counter (e.g. "01 / 10")
+  const count = find<HTMLElement>('[data-slide-count]');
+  // Hidden message box for screen readers
+  const status = find<HTMLElement>('[data-photo-status]');
+  // The row of tiny thumbnail buttons at bottom
+  const strip = find<HTMLElement>('[data-photo-filmstrip]');
+  // All thumbnail buttons
+  const thumbnails = [...root.querySelectorAll<HTMLButtonElement>('[data-photo-index]')];
+  // Does the user get motion sickness?
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
-  let image = find<HTMLImageElement>('[data-slide-image]');          // The current visible picture
-  const preview = viewport.querySelector<HTMLImageElement>('.photo-preview'); // Low-res placeholder image
+  // The current visible picture
+  let image = find<HTMLImageElement>('[data-slide-image]');
+  // Low-res placeholder image
+  const preview = viewport.querySelector<HTMLImageElement>('.photo-preview');
 
   // 🧠 Memory variables that remember where we are:
-  let current = 0;              // The index of the photo showing right now
-  let selected = 0;             // The photo we want to show next
-  let revision = 0;             // Counter to ignore stale clicks if user clicks really fast
-  let frame = 0;                // Screen refresh tick (requestAnimationFrame)
-  let animations: Animation[] = []; // Currently playing slide transition animations
-  let outgoing: HTMLImageElement | undefined; // The old photo sliding off screen
-  let pending: HTMLImageElement | undefined;  // The next photo waiting to download
-  let adjacent: { index: number; image: HTMLImageElement } | undefined; // Next picture secretly loaded in background
-  let failedIndex = 0;          // If an image failed, remember which one broke
-  let opener: HTMLElement | null = null; // Remember what button was focused before opening fullscreen
-  let savedScroll = 0;          // Remember how far down the page the visitor had scrolled
-  let swipeStart: { x: number; y: number } | null = null; // Where user's finger first touched the screen
-  let suppressClick = false;    // Prevents an accidental click when finishing a swipe gesture
+  // The index of the photo showing right now
+  let current = 0;
+  // The photo we want to show next
+  let selected = 0;
+  // Counter to ignore stale clicks if user clicks really fast
+  let revision = 0;
+  // Screen refresh tick (requestAnimationFrame)
+  let frame = 0;
+  // Currently playing slide transition animations
+  let animations: Animation[] = [];
+  // The old photo sliding off screen
+  let outgoing: HTMLImageElement | undefined;
+  // The next photo waiting to download
+  let pending: HTMLImageElement | undefined;
+  // Next picture secretly loaded in background
+  let adjacent: { index: number; image: HTMLImageElement } | undefined;
+  // If an image failed, remember which one broke
+  let failedIndex = 0;
+  // Remember what button was focused before opening fullscreen
+  let opener: HTMLElement | null = null;
+  // Remember how far down the page the visitor had scrolled
+  let savedScroll = 0;
+  // Where user's finger first touched the screen
+  let swipeStart: { x: number; y: number } | null = null;
+  // Prevents an accidental click when finishing a swipe gesture
+  let suppressClick = false;
 
   // ⚙️ Initial UI Setup:
   // If there's only 1 photo, hide next/previous arrows and the bottom filmstrip
@@ -90,12 +127,14 @@ export function setupPhotographyViewer(root: HTMLElement) {
   if (image.complete && !image.naturalWidth) preview?.remove();
   image.addEventListener('error', () => preview?.remove(), { once: true });
 
+  // Loading spinner (inserted once, toggled via attribute)
   // 🔄 Loading spinner (inserted once, toggled via attribute)
   const spinner = document.createElement('div');
   spinner.className = 'photo-spinner';
   spinner.setAttribute('aria-hidden', 'true');
   viewport.appendChild(spinner);
 
+  // Error state element (created on first error, reused)
   // ⚠️ Error state element (created on first error, reused)
   let errorEl: HTMLElement | null = null;
 
@@ -323,9 +362,12 @@ export function setupPhotographyViewer(root: HTMLElement) {
   }
 
   // 🖱️ MOUSE & CLICK LISTENERS:
-  previous.addEventListener('click', () => step(-1)); // Left arrow click
-  next.addEventListener('click', () => step(1));     // Right arrow click
-  thumbnails.forEach((thumb, index) => {              // Clicking any filmstrip thumbnail
+  // Left arrow click
+  previous.addEventListener('click', () => step(-1));
+  // Right arrow click
+  next.addEventListener('click', () => step(1));
+  // Clicking any filmstrip thumbnail
+  thumbnails.forEach((thumb, index) => {
     thumb.addEventListener('click', () => select(index, index >= selected ? 1 : -1));
   });
 
@@ -356,8 +398,10 @@ export function setupPhotographyViewer(root: HTMLElement) {
     if (dialog.open || expand.hidden) return;
     settle();
     opener = source;
-    savedScroll = window.scrollY; // Remember visitor's scroll position
-    root.style.height = `${root.getBoundingClientRect().height}px`; // Freeze height so page doesn't jump
+    // Remember visitor's scroll position
+    savedScroll = window.scrollY;
+    // Freeze height so page doesn't jump
+    root.style.height = `${root.getBoundingClientRect().height}px`;
     dialog.append(panel);
     dialog.showModal();
     document.documentElement.classList.add('modal-open');
@@ -365,7 +409,8 @@ export function setupPhotographyViewer(root: HTMLElement) {
     viewport.removeAttribute('tabIndex');
     viewport.removeAttribute('aria-label');
     viewport.removeAttribute('aria-haspopup');
-    image.sizes = '100vw'; // Request full-width high-definition image
+    // Request full-width high-definition image
+    image.sizes = '100vw';
     close.focus({ preventScroll: true });
     requestAnimationFrame(keepThumbnailVisible);
   }
@@ -395,7 +440,8 @@ export function setupPhotographyViewer(root: HTMLElement) {
       viewport.setAttribute('aria-haspopup', 'dialog');
     }
     image.sizes = '(max-width: 1440px) 90vw, 1248px';
-    window.scrollTo({ top: savedScroll, behavior: 'instant' }); // Snap back to where visitor was
+    // Snap back to where visitor was
+    window.scrollTo({ top: savedScroll, behavior: 'instant' });
     opener?.focus({ preventScroll: true });
     keepThumbnailVisible();
   });

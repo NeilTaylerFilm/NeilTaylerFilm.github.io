@@ -26,10 +26,14 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://neiltaylerfilm.github.io', // 🌐 Official website web address
-  output: 'static',                         // 📦 Build fast static HTML files
-  trailingSlash: 'always',                  // 🔗 Always add a trailing slash (e.g. /about/)
-  redirects: { '/blog': '/' },              // 🔀 Send visitors from /blog to homepage
+  // 🌐 Official website web address
+  site: 'https://neiltaylerfilm.github.io',
+  // 📦 Build fast static HTML files
+  output: 'static',
+  // 🔗 Always add a trailing slash (e.g. /about/)
+  trailingSlash: 'always',
+  // 🔀 Send visitors from /blog to homepage
+  redirects: { '/blog': '/' },
   // Local recovery copies and package caches are not application source.
   vite: { server: { watch: { ignored: ['**/.qa/**', '**/.npm-cache/**'] } } },
   markdown: {

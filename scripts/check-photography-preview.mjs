@@ -130,7 +130,8 @@ try {
   await failedPage.route('**/photos/588176e9b85445d319829378ab9beff3-*', async (route) => {
     if (!failedOnce) {
       failedOnce = true;
-      await route.abort(); // Simulated network drop!
+      // Simulated network drop!
+      await route.abort();
     } else await route.continue();
   });
 
@@ -158,7 +159,8 @@ try {
   // should still see your beautiful photography!
   // We test the website with JavaScript completely switched off:
   const noJsContext = await browser.newContext({
-    javaScriptEnabled: false, // 🚫 JavaScript disabled
+    // 🚫 JavaScript disabled
+    javaScriptEnabled: false,
     viewport: { width: 375, height: 900 },
   });
   const noJsPage = await noJsContext.newPage();

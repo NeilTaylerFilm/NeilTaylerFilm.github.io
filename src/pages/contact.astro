@@ -117,7 +117,8 @@ const links = site.links.filter((link) => link.url);
         // Ask the browser's clipboard to store the email string like putting a piece of paper in someone's pocket.
         await navigator.clipboard.writeText(button.dataset.email || '');
         const original = label?.textContent || 'Copy email';
-        label!.textContent = 'Copied ✓'; // Temporary success text
+        // Temporary success text
+        label!.textContent = 'Copied ✓';
         status!.textContent = 'Email address copied to clipboard.';
         // Reset back to "Copy email" after 2 seconds
         setTimeout(() => {

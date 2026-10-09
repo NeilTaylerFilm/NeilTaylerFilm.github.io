@@ -14,10 +14,14 @@ import { isoDate } from '../lib/feed';
 // 📋 What this component can display:
 // A menu of optional details: projects can have some, all, or none of these.
 interface Props {
-  category?: string;      // Creative category (e.g. 'Street', 'Music Video')
-  location?: string;      // Where it was shot (e.g. 'Thailand', 'London')
-  date?: Date;            // The exact calendar date
-  year?: string | number; // Or just the year (e.g. 2024)
+  // Creative category (e.g. 'Street', 'Music Video')
+  category?: string;
+  // Where it was shot (e.g. 'Thailand', 'London')
+  location?: string;
+  // The exact calendar date
+  date?: Date;
+  // Or just the year (e.g. 2024)
+  year?: string | number;
 }
 
 // Unpack the provided props

@@ -20,6 +20,7 @@ async function check() {
   const browser = await chromium.launch({ headless: true });
 
   // ==========================================
+  // Test 1: Mobile nav button at 390px
   // 📱 TEST 1: MOBILE NAVIGATION MENU (390px screen width)
   // ==========================================
   // On smartphones, horizontal menu bars don't fit.
@@ -64,6 +65,7 @@ async function check() {
   }
 
   // ==========================================
+  // Test 2: Desktop nav unchanged at 1280px
   // 🖥️ TEST 2: DESKTOP NAVIGATION BAR (1280px screen width)
   // ==========================================
   // On desktop screens, we don't want a mobile hamburger button!
@@ -85,6 +87,7 @@ async function check() {
   }
 
   // ==========================================
+  // Test 3: Contact page - copy email button
   // 📬 TEST 3: CONTACT PAGE & EMAIL ACTIONS
   // ==========================================
   // Tests that visitors can easily reach you via the 1-click clipboard copy button or email app!
@@ -109,6 +112,7 @@ async function check() {
   }
 
   // ==========================================
+  // Test 4: Post-production thumbnails have labels
   // 🎬 TEST 4: POST-PRODUCTION CAROUSEL THUMBNAILS
   // ==========================================
   // When visitors browse film and color grading projects, every video thumbnail
@@ -140,6 +144,7 @@ async function check() {
   }
 
   // ==========================================
+  // Test 5: Footer has Post-Production link
   // 🦶 TEST 5: FOOTER NAVIGATION LINKS
   // ==========================================
   // Scrolls to the bottom of the page and verifies that every major section
@@ -159,6 +164,7 @@ async function check() {
   }
 
   // ==========================================
+  // Test 6: Light theme on contact
   // ☀️ TEST 6: LIGHT THEME CONTRAST ON MOBILE
   // ==========================================
   // Tests the contact page when the user or OS prefers a light color theme.

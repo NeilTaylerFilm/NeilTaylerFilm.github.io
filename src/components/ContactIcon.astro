@@ -9,14 +9,15 @@
 // 📋 What we need to know before drawing:
 // Like choosing which stencil to press onto paper.
 interface Props {
-  name: string; // The name of the icon: 'Email', 'Instagram', 'LinkedIn', or 'TikTok'
+  // The name of the icon: 'Email', 'Instagram', 'LinkedIn', or 'TikTok'
+  name: string;
 }
 // Unpack the icon name requested by whoever used this component
 const { name } = Astro.props;
 ---
 
-<!-- 📐 The SVG canvas box where our vector icon is drawn -->
-<!-- aria-hidden="true" hides the decorative shapes from screen readers so they aren't announced redundantly -->
+{/* 📐 The SVG canvas box where our vector icon is drawn */}
+{/* aria-hidden="true" hides the decorative shapes from screen readers so they aren't announced redundantly */}
 <svg
   viewBox="0 0 24 24"
   fill="none"

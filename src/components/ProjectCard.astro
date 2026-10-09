@@ -21,7 +21,8 @@ import { projectTimestamp, categoryKey } from '../lib/content';
 // 📋 What this card needs to show an album:
 // Like a recipe checklist, declaring this component requires one photography project album.
 interface Props {
-  project: CollectionEntry<'photography'>; // One photography collection project
+  // One photography collection project
+  project: CollectionEntry<'photography'>;
 }
 
 // Open the envelope passed to this card by the gallery page
@@ -34,7 +35,7 @@ const { data } = project;
 const cover = data.coverImage || data.cover || data.images[0]?.src;
 ---
 
-<!-- 📦 Card wrapper with filtering tags for category and date -->
+{/* 📦 Card wrapper with filtering tags for category and date */}
 <article
   class="project-card"
   data-feed-item

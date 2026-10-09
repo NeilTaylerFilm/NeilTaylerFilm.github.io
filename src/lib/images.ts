@@ -14,12 +14,18 @@ import manifest from '../generated/images.json';
 
 // 📋 The "Fact Sheet" for a single picture:
 type ImageInfo = {
-  width: number;          // How wide it is in pixels
-  height: number;         // How tall it is in pixels
-  src: string;            // The main picture web address
-  full: string;           // The super crisp, high-res version
-  srcset: string;         // A list of different sizes for modern screens (AVIF/WebP)
-  fallbackSrcset: string; // A backup list for older browsers (standard JPEG)
+  // How wide it is in pixels
+  width: number;
+  // How tall it is in pixels
+  height: number;
+  // The main picture web address
+  src: string;
+  // The super crisp, high-res version
+  full: string;
+  // A list of different sizes for modern screens (AVIF/WebP)
+  srcset: string;
+  // A backup list for older browsers (standard JPEG)
+  fallbackSrcset: string;
 };
 
 // 🔍 THE LOOKUP FUNCTION:

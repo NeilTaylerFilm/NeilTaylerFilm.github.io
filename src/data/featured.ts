@@ -12,13 +12,20 @@
 
 // 📋 The checklist of what each featured picture needs:
 type FeaturedPhoto = {
-  src: string;        // Full high-resolution picture web link
-  thumbnail?: string; // Optional tiny thumbnail for the bottom filmstrip
-  alt: string;        // Description of what's in the photo (for accessibility)
-  caption?: string;   // Optional subtitle text displayed under the photo
-  project?: string;   // Optional project name to link to (e.g. 'japan-2024')
-  width: number;      // Pixel width (helps browser reserve the right aspect ratio)
-  height: number;     // Pixel height
+  // Full high-resolution picture web link
+  src: string;
+  // Optional tiny thumbnail for the bottom filmstrip
+  thumbnail?: string;
+  // Description of what's in the photo (for accessibility)
+  alt: string;
+  // Optional subtitle text displayed under the photo
+  caption?: string;
+  // Optional project name to link to (e.g. 'japan-2024')
+  project?: string;
+  // Pixel width (helps browser reserve the right aspect ratio)
+  width: number;
+  // Pixel height
+  height: number;
 };
 
 // 🖼️ The list of featured photos to show on the site:

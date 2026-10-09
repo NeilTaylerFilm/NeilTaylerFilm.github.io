@@ -14,9 +14,9 @@ import { site } from '../config/site';
 
 ---
 
-<!-- The persistent footer container anchored at the bottom of every page -->
+{/* The persistent footer container anchored at the bottom of every page */}
 <footer class="site-footer wrap">
-  <!-- 🏠 Site title link that takes visitors back home -->
+  {/* 🏠 Site title link that takes visitors back home */}
   <div>
     <a class="footer-name" href="/">
       {site.name}
@@ -24,8 +24,8 @@ import { site } from '../config/site';
     </a>
   </div>
 
-  <!-- 📅 Automatic copyright notice with current calendar year -->
-  <!-- Automatically retrieves the current calendar year from the system clock so copyright never expires. -->
+  {/* 📅 Automatic copyright notice with current calendar year */}
+  {/* Automatically retrieves the current calendar year from the system clock so copyright never expires. */}
   <div class="footer-bottom mono">
     <span>
       © {new Date().getFullYear()} {site.author}

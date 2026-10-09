@@ -12,15 +12,21 @@
 
 // 📋 The checklist for each film entry:
 type FeaturedWork = {
-  src: string;       // Poster / thumbnail image shown before the video plays
-  alt: string;       // Text description of the image for accessibility
-  caption?: string;  // Title / caption shown on screen
-  project?: string;  // Project page link (optional)
+  // Poster / thumbnail image shown before the video plays
+  src: string;
+  // Text description of the image for accessibility
+  alt: string;
+  // Title / caption shown on screen
+  caption?: string;
+  // Project page link (optional)
+  project?: string;
   blogPost?: string; // Published blog filename without .md; omit until ready.
-  video?: string;    // YouTube/Vimeo URL or ID (optional)
-  poster?: string;   // Custom poster for video (optional)
-  width: number;     // Width in pixels
-  height: number;    // Height in pixels
+  video?: string; // YouTube/Vimeo URL or ID (optional)
+  poster?: string; // Custom poster for video (optional)
+  // Width in pixels
+  width: number;
+  // Height in pixels
+  height: number;
 };
 
 // 🎞️ The list of featured videos and films:
