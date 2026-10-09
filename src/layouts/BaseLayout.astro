@@ -11,12 +11,18 @@
 // 4. Instant dark/light mode so screens never flicker white!
 
 // Base layout: Header, main slot, Footer, theme script, SEO, and Cloudflare analytics.
+// --- BORROWED TOOLS (Imports) ---
+// global.css: The master style rules for colors, fonts, margins, and dark mode themes.
 import '../styles/global.css';
+// Header: The site-wide navigation bar at the top with logo and links.
 import Header from '../components/Header.astro';
+// Footer: The bottom footer containing copyright and links.
 import Footer from '../components/Footer.astro';
+// SEO: The search engine tag generator (Meta tags, Open Graph, Twitter cards).
 import SEO from '../components/SEO.astro';
 
 // What every page can tell this layout:
+// This interface is like an order form specifying what options each page can customize.
 interface Props {
   title: string;        // Page title
   description?: string; // Summary description
@@ -50,33 +56,41 @@ interface Props {
     <meta name="color-scheme" content="dark light" />
 
     {/* 📌 Browser tab icons (Favicons) */}
+    {/* Favicons: Small icons displayed in the browser tab and home screen bookmarks. */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     {/* 🔍 SEO and Social Sharing Tags */}
+    {/* Injects OpenGraph and Twitter meta tags so links look beautiful when shared. */}
     <SEO {...Astro.props} />
     {/* 🚪 Custom slot for any extra head tags requested by individual pages */}
+    {/* Slot for extra <head> items like article JSON-LD structured data. */}
     <slot name="head" />
   </head>
   <body>
     {/* ♿ Accessibility skip link so keyboard users can jump straight to main content */}
+    {/* Hidden jump link allowing screen-reader and keyboard users to skip the header navigation. */}
     <a class="skip-link" href="#main">
       Skip to content
     </a>
 
     {/* 🧭 The top navigation menu bar */}
+    {/* The site navigation header with logo and primary section links. */}
     <Header />
 
     {/* 🛋️ The living room: Where each specific page inserts its content! */}
+    {/* Main content area: The <slot /> is where each page's specific body template is rendered. */}
     <main id="main" class="wrap" tabindex="-1">
       <slot />
     </main>
 
     {/* 🦶 The footer at the bottom of the page */}
+    {/* The site-wide footer with copyright and theme toggle. */}
     <Footer />
 
     {/* 📊 Cloudflare Web Analytics: Privacy-friendly visitor counter */}
+    {/* Privacy-respecting web analytics powered by Cloudflare Insights. */}
     <!-- Cloudflare Web Analytics -->
     <script
       type="module"
@@ -92,6 +106,7 @@ interface Props {
   // When visitor clicks "Back to blog" or "Back to photography", this preserves
   // whatever category filters or sorting they had picked earlier!
   // The archive URL survives an explicit “Back to blog” link as well as browser Back.
+  // Scans all back links and restores previously saved filter/sort state from sessionStorage.
   document.querySelectorAll<HTMLAnchorElement>('[data-archive-back]').forEach((link) => {
     const archive = link.dataset.archiveBack!;
     try {
