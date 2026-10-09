@@ -6,20 +6,30 @@
 // It features the video's movie poster or cover image, project title,
 // and role/date metadata.
 
+// --- BORROWED TOOLS (Imports) ---
+// CollectionEntry: A TypeScript contract ensuring our film project has all required fields.
 import type { CollectionEntry } from 'astro:content';
+// ProjectMetadata: The neat little label component showing the film category and year.
 import ProjectMetadata from './ProjectMetadata.astro';
+// ResponsiveImage: Our smart photo frame that loads lightweight WebP sizes automatically.
 import ResponsiveImage from './ResponsiveImage.astro';
+// projectTimestamp & categoryKey: Helpers that calculate sortable timestamps and URL-safe category names.
 import { projectTimestamp, categoryKey } from '../lib/content';
 
 // 📋 What this card needs to show a film project:
+// Like an order slip handed to a chef, specifying exactly what ingredients this card expects.
 interface Props {
   project: CollectionEntry<'postProduction'>; // One film / video project
 }
 
+// Unpack the parcel handed to us by the parent page
 const { project } = Astro.props;
+// Extract the frontmatter data sheet (title, poster, dates, tags)
 const { data } = project;
 
 // 🖼️ Pick the movie poster or cover picture
+// Like looking through a drawer for a movie poster: checks 'poster', then 'coverImage', then 'cover',
+// and if none exist, grabs the very first picture from the project's gallery list!
 const cover = data.poster || data.coverImage || data.cover || data.images[0]?.src;
 ---
 
