@@ -10,10 +10,13 @@
 
 // 📅 HELPER 1: Date Stamper
 // Converts any complex date into a simple "YYYY-MM-DD" text string.
+// A full computer timestamp includes hours, seconds, and timezones (e.g. 2024-06-15T12:00:00Z).
+// Slicing the first 10 letters leaves just the clean calendar day.
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
 // 🏷️ HELPER 2: Tag Tidier
 // Removes accidental extra spaces and makes words lowercase so "Film" and "film " match!
+// Using the English locale ensures letters like 'I' lowercase consistently across all computers.
 export const categoryKey = (category: string) => category.trim().toLocaleLowerCase('en');
 
 // 🗂️ HELPER 3: The Sorting Racks
@@ -21,6 +24,7 @@ export const categoryKey = (category: string) => category.trim().toLocaleLowerCa
 // - 'newest': puts newest dates at the top
 // - 'oldest': puts oldest dates at the top
 // (If two dates are identical, it sorts alphabetically by ID so they don't jump around).
+// Subtracting dates puts larger (newer) timestamps first; the || operator applies the tiebreaker.
 // Add a comparator here when a real additional data source exists.
 export const comparators = {
   newest: (a: { date: number; id: string }, b: { date: number; id: string }) =>
