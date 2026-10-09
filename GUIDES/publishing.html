@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Publishing — Neil Tayler Film</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #191a18; --surface: #21221f; --surface-raised: #292b26;
+        --text: #eeeee6; --muted: #a4a79c; --border: #494c43;
+        --control-border: #6e7464; --subtle-border: #34372f;
+        --accent: #9cbff0; --accent-ink: #172537;
+        --sans: Arial, Helvetica, sans-serif;
+        --serif: Georgia, 'Times New Roman', serif;
+        --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        --max-width: 780px; --gutter: 48px;
+        --space-1: 8px; --space-2: 16px; --space-3: 24px; --space-4: 40px;
+        --radius: 3px; --shadow: 3px 3px 0 var(--border);
+      }
+      :root[data-theme='light'] {
+        --bg: #e5dcc8; --surface: #d9cfb9; --surface-raised: #cec3aa;
+        --text: #292821; --muted: #514d42; --border: #938975;
+        --control-border: #7c715f; --subtle-border: #c8bea9;
+        --accent: #315b88; --accent-ink: #f8f1e4;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+      body { background: var(--bg); color: var(--text); font: 17px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+      a { color: inherit; text-decoration: none; text-underline-offset: 5px; }
+      a:hover { color: var(--accent); }
+      img { display: block; max-width: 100%; height: auto; }
+      ::selection { background: var(--accent); color: var(--accent-ink); }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+
+      .skip-link { position: fixed; top: 8px; left: 16px; z-index: 100; background: var(--accent); color: var(--accent-ink); padding: 12px 20px; transform: translateY(-160%); }
+      .skip-link:focus { transform: translateY(0); }
+
+      /* Header */
+      .site-header { display: flex; align-items: center; gap: 32px; min-height: 108px; border-bottom: 1px solid var(--border); }
+      .wordmark { display: flex; align-items: center; font-size: 23px; font-weight: 700; letter-spacing: -1px; white-space: nowrap; }
+      .wordmark-dot { color: var(--accent); }
+      .back-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 32px; color: var(--muted); font-size: 11px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 1px; }
+      .back-link:hover { color: var(--accent); }
+      .back-link span { margin-right: 8px; }
+
+      .wrap { width: min(var(--max-width), calc(100% - var(--gutter) * 2)); margin-inline: auto; }
+      .content-start { margin-top: 40px; }
+
+      /* Typography */
+      h1 { font-size: clamp(40px, 5.5vw, 76px); line-height: 1.06; letter-spacing: -3px; font-weight: 700; margin-top: 22px; overflow-wrap: break-word; }
+      h2 { font-size: 32px; line-height: 1.2; letter-spacing: -1px; margin-top: 2em; }
+      h3 { font-size: 24px; line-height: 1.3; letter-spacing: -0.5px; margin-top: 1.8em; }
+      h4 { font-size: 20px; margin-top: 1.5em; }
+
+      .eyebrow { text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; font-weight: 400; line-height: 1.6; color: var(--muted); }
+      .mono { font-family: var(--mono); }
+      .small { font-size: 12px; }
+      .muted { color: var(--muted); }
+      .accent { color: var(--accent); }
+
+      /* Section heading */
+      .section-heading { display: flex; align-items: center; gap: 24px; border-top: 1px solid var(--border); padding: 20px 0 19px; margin-top: 48px; }
+      .section-heading .eyebrow { white-space: nowrap; }
+      .line-decoration { flex: 1; height: 5px; background: repeating-linear-gradient(90deg, var(--border) 0 1px, transparent 1px 4px); opacity: 0.65; }
+
+      /* Prose */
+      .prose { font-size: 19px; line-height: 1.85; overflow-wrap: break-word; }
+      .article-body { margin: 48px auto; }
+      .prose > * + * { margin-top: 1.4em; }
+      .prose a { color: var(--accent); text-decoration: underline; }
+      .prose p { margin-top: 0; }
+
+      /* Code */
+      .prose code { font-family: var(--mono); font-size: 0.78em; background: var(--surface-raised); padding: 3px 6px; border-radius: 2px; overflow-wrap: anywhere; }
+      .prose pre { max-width: 100%; overflow-x: auto; border: 1px solid var(--border); padding: 24px; font-size: 14px; line-height: 1.7; tab-size: 2; position: relative; }
+      .prose pre code { padding: 0; background: transparent; font-size: inherit; overflow-wrap: normal; }
+      .copy-btn { position: absolute; top: 12px; right: 12px; font: 11px var(--mono); padding: 6px 12px; border: 1px solid var(--control-border); background: var(--surface); color: var(--muted); border-radius: var(--radius); cursor: pointer; transition: background 0.15s, color 0.15s; }
+      .copy-btn:hover { background: var(--surface-raised); color: var(--text); }
+      .copy-btn.copied { color: var(--accent); }
+
+      /* Tables */
+      .prose table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 15px; line-height: 1.5; }
+      .prose th, .prose td { border: 1px solid var(--border); padding: 12px 16px; text-align: left; min-width: 120px; }
+      .prose th { background: var(--surface); font-weight: 600; }
+      .prose td code { font-size: 13px; }
+
+      /* Lists */
+      .prose ul, .prose ol { padding-left: 1.3em; }
+      .prose li { padding-left: 0.35em; margin: 0.4em 0; }
+      .prose li::marker { color: var(--accent); }
+      .prose ol { list-style: none; counter-reset: step-counter; }
+      .prose ol > li { counter-increment: step-counter; position: relative; padding-left: 3em; }
+      .prose ol > li::before { content: counter(step-counter, decimal-leading-zero); position: absolute; left: 0; top: 0.1em; font: 12px var(--mono); color: var(--accent); }
+      .prose blockquote { font: italic 26px/1.5 var(--serif); border-left: 3px solid var(--accent); padding: 6px 0 6px 25px; margin-inline: 0; }
+
+      /* Steps visual indicator */
+      .step-block { border: 1px solid var(--border); background: var(--surface); padding: 24px; margin: 24px 0; }
+      .step-block h3 { margin-top: 0; }
+      .step-label { font: 11px var(--mono); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+      /* Callout boxes */
+      .callout { border-left: 3px solid var(--accent); padding: 16px 20px; margin: 24px 0; background: var(--surface); }
+      .callout.warning { border-left-color: #e8a87c; }
+      .callout.info { border-left-color: var(--accent); }
+      .callout p { margin: 0; }
+      .callout-title { font: 600 14px var(--sans); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+      /* Theme toggle */
+      .theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 44px; border: 1px solid var(--control-border); padding: 9px 16px; background: var(--surface); font-size: 12px; line-height: 1.5; border-radius: var(--radius); cursor: pointer; transition: background 0.15s, transform 0.15s, box-shadow 0.15s; margin-left: auto; }
+      .theme-toggle:hover { background: var(--surface-raised); color: var(--accent); box-shadow: 2px 2px 0 var(--border); transform: translate(-1px, -1px); }
+      .theme-toggle:active { transform: translate(1px, 1px); box-shadow: none; }
+      .theme-symbol { font-size: 21px; line-height: 1; }
+
+      /* Footer */
+      .site-footer { border-top: 1px solid var(--border); padding: 36px 0 24px; margin-top: 80px; display: flex; justify-content: space-between; align-items: center; }
+      .footer-name { font-size: 23px; font-weight: 700; letter-spacing: -1px; }
+      .footer-bottom { font: 11px var(--mono); color: var(--muted); }
+
+      /* Responsive */
+      @media (max-width: 767px) {
+        :root { --gutter: 24px; }
+        .site-header { min-height: 80px; padding: 20px 0; }
+        .wordmark { font-size: 22px; }
+        h1 { font-size: 46px; letter-spacing: -2px; }
+        h2 { font-size: 29px; }
+        .prose { font-size: 18px; line-height: 1.8; }
+        .prose pre { padding: 16px; font-size: 13px; }
+        .site-footer { flex-direction: column; gap: 16px; align-items: flex-start; }
+        .theme-toggle { margin-left: 0; }
+      }
+      @media (max-width: 359px) {
+        :root { --gutter: 16px; }
+        .wordmark { font-size: 18px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header wrap">
+      <a class="wordmark" href="/"><span class="accent">←</span> Back to site</a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-symbol" id="theme-icon">☀</span>
+        <span data-theme-label>Theme</span>
+      </button>
+    </header>
+
+    <main id="main" class="wrap content-start">
+      <a class="back-link" href="index.html"><span>←</span> All guides</a>
+
+      <div class="article-header">
+        <p class="eyebrow">Guide 1 of 8</p>
+        <h1>Publishing<span class="accent">.</span></h1>
+        <p class="muted" style="margin-top:16px;font-size:17px;">Your complete reference for adding posts, projects, and slideshow images to your website.</p>
+      </div>
+
+      <div class="article-body prose">
+
+        <div class="callout info">
+          <p><strong>Two separate steps:</strong> (1) Prepare on your Mac, (2) Publish to GitHub. Saving a file does <em>not</em> update the live website.</p>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Find your files</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Where everything lives</h2>
+
+        <p>Your website folder is:</p>
+        <pre><code>Documents → CodingProjects → neiltaylerfilm.github.io</code></pre>
+
+        <table>
+          <thead>
+            <tr><th>Add this…</th><th>…to this folder</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A blog post</td><td><code>src/content/blog/</code></td></tr>
+            <tr><td>A photography project</td><td><code>src/content/photography/</code></td></tr>
+            <tr><td>New image files</td><td><code>photo-inbox/</code> → then upload to R2</td></tr>
+            <tr><td>Slideshow pictures</td><td><code>src/data/featured.ts</code></td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout warning">
+          <p><strong>Don't put your content here:</strong> <code>dist/</code>, <code>public/_images/</code>, <code>node_modules/</code>, or <code>examples/</code>.</p>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Section 1</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Adding a blog post</h2>
+
+        <div class="step-block">
+          <div class="step-label">Step 1</div>
+          <h3>Create the file</h3>
+          <p>Open <code>src/content/blog/</code> in Finder. Create a new plain-text file named <code>your-post-name.md</code>.</p>
+          <p class="muted small">Use lowercase and hyphens. Example: <code>a-week-in-london.md</code></p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 2</div>
+          <h3>Paste this template</h3>
+          <pre><code>---
+title: 'Your post title'
+date: 2026-09-14
+categories:
+  - Photography
+description: 'A short summary for search results.'
+excerpt: 'One or two sentences for the homepage card.'
+draft: true
+---
+
+Write your article here.
+
+## A section heading
+
+More writing goes here.
+
+Leave a blank line between paragraphs.</code></pre>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 3</div>
+          <h3>Understand the frontmatter</h3>
+          <table>
+            <thead>
+              <tr><th>Field</th><th>What to put</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>title</code></td><td>The title readers see. Keep quotes around it.</td></tr>
+              <tr><td><code>date</code></td><td>Publication date: <code>YYYY-MM-DD</code></td></tr>
+              <tr><td><code>categories</code></td><td>One or more subjects, each indented with a dash</td></tr>
+              <tr><td><code>description</code></td><td>Short summary for search and social sharing</td></tr>
+              <tr><td><code>excerpt</code></td><td>Brief intro shown on the homepage (1–2 sentences)</td></tr>
+              <tr><td><code>draft: true</code></td><td>Keeps the post hidden from the public website</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 4</div>
+          <h3>Format your writing</h3>
+          <pre><code>## A main section
+### A subsection
+#### A deeper level
+
+**Bold text** and *italic text*
+
+[Click this link](https://example.com)
+
+- Bullet point one
+- Bullet point two
+
+> A quotation goes here.</code></pre>
+          <p class="muted small">Don't repeat the title as a <code>#</code> heading—the website already displays it.</p>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Section 2</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Adding a photography project</h2>
+
+        <div class="step-block">
+          <div class="step-label">Step 1</div>
+          <h3>Put pictures in a folder</h3>
+          <p>In Finder, open <code>src/assets/</code>. Create a folder named after your project, like <code>london-at-night/</code>. Copy your JPEG images into it.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 2</div>
+          <h3>Create the project file</h3>
+          <p>Open <code>src/content/photography/</code>. Create <code>london-at-night.md</code> and paste:</p>
+          <pre><code>---
+title: 'London at night'
+year: 2026
+location: 'London'
+category: 'Street'
+description: 'Photographs from evening walks.'
+coverImage: /assets/london-at-night/bridge.jpg
+draft: true
+images:
+  - src: /assets/london-at-night/bridge.jpg
+    alt: 'A lit bridge crossing the river at night'
+    caption: 'An evening by the river.'
+  - src: /assets/london-at-night/street.jpg
+    alt: 'People walking under shop lights'
+---
+
+Write a short introduction to your photographs here.</code></pre>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 3</div>
+          <h3>Key fields</h3>
+          <ul>
+            <li><code>title</code> — Project name shown to visitors</li>
+            <li><code>coverImage</code> — Picture shown on the Photography index card</li>
+            <li><code>images:</code> — List of photographs in the gallery</li>
+            <li><code>alt</code> — Description for accessibility (not visible)</li>
+            <li><code>caption</code> — Optional text shown below the image</li>
+          </ul>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Section 3</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Adding pictures to the slideshow</h2>
+
+        <p>The slideshow is the large rotating image at the top of the Photography tab. It is separate from project galleries.</p>
+
+        <div class="step-block">
+          <div class="step-label">Step 1</div>
+          <h3>Open the slideshow list</h3>
+          <p>In Finder, open <code>src/data/featured.ts</code>. Replace the entire contents with:</p>
+          <pre><code>type FeaturedPhoto = {
+  src: string;
+  alt: string;
+  caption?: string;
+  project?: string;
+  width: number;
+  height: number;
+};
+
+export const featured: FeaturedPhoto[] = [
+  {
+    src: '/assets/london-at-night/bridge.jpg',
+    alt: 'A lit bridge crossing the river at night',
+    caption: 'An evening by the river',
+    width: 6000,
+    height: 4000,
+  },
+];
+
+export const featuredIsDemo = false;</code></pre>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 2</div>
+          <h3>Get image dimensions</h3>
+          <p>In Finder, select a photo and press <kbd>Command-I</kbd>. Under <strong>More Info → Dimensions</strong>, note the width and height.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 3</div>
+          <h3>Add or remove slides</h3>
+          <p>Copy a whole <code>{ ... }</code> block and paste it before the final <code>];</code>. Remove a block to delete a slide. The first block is the first slide visitors see.</p>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Section 4</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Previewing your changes</h2>
+
+        <p>This is your private rehearsal. Visitors cannot see it.</p>
+
+        <div class="step-block">
+          <div class="step-label">Step 1</div>
+          <h3>Open Terminal</h3>
+          <p>Press <kbd>Command-Space</kbd>, type <strong>Terminal</strong>, press <kbd>Return</kbd>.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 2</div>
+          <h3>Start the preview server</h3>
+          <pre><code>cd /Users/neil/Documents/CodingProjects/neiltaylerfilm.github.io
+npm run dev:stop
+npm run dev</code></pre>
+          <p>Open the address Terminal prints (usually <code>http://127.0.0.1:4321/</code>). Drafts appear here.</p>
+        </div>
+
+        <div class="callout info">
+          <p><strong>After editing text:</strong> save and refresh the browser.<br>
+          <strong>After adding/changing images:</strong> run <code>npm run dev:stop</code> then <code>npm run dev</code> again.</p>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Section 5</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <h2>Publishing to the live website</h2>
+
+        <div class="step-block">
+          <div class="step-label">Step 1</div>
+          <h3>Mark drafts as published</h3>
+          <p>Change <code>draft: true</code> to <code>draft: false</code> in each post or project you want visitors to see.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 2</div>
+          <h3>Run checks</h3>
+          <pre><code>npm run check
+npm test
+npm run build
+npm run verify</code></pre>
+          <p>If any command reports an error, <strong>stop here</strong>. Copy the error and ask for help.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 3</div>
+          <h3>Preview the public version</h3>
+          <pre><code>npm run preview -- --background</code></pre>
+          <p>Open the printed address (usually <code>http://127.0.0.1:4322/</code>). Drafts should be absent.</p>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 4</div>
+          <h3>Send changes to GitHub</h3>
+          <pre><code>git branch --show-current          # Should say "main"
+git status --short                 # See what changed
+git add src/content/blog/your-post.md
+git add src/data/r2-images.json    # If you uploaded photos
+git commit -m "Add new blog post"
+git push origin main</code></pre>
+        </div>
+
+        <div class="step-block">
+          <div class="step-label">Step 5</div>
+          <h3>Wait for deployment</h3>
+          <ol>
+            <li>Open <a href="https://github.com/NeilTaylerFilm/NeilTaylerFilm.github.io/actions">GitHub Actions</a></li>
+            <li>Find the latest <strong>Deploy Astro to GitHub Pages</strong> run</li>
+            <li>Wait for green ticks on both <strong>build</strong> and <strong>deploy</strong></li>
+            <li>Open <a href="https://neiltaylerfilm.github.io/">neiltaylerfilm.github.io</a> and refresh</li>
+          </ol>
+        </div>
+
+        <div class="section-heading">
+          <span class="eyebrow">Troubleshooting</span>
+          <span class="line-decoration"></span>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Problem</th><th>First check</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Post missing from preview</td><td>Is it still <code>draft: true</code>? Did you save?</td></tr>
+            <tr><td>Photo missing</td><td>Does the file exist? Does the address match exactly?</td></tr>
+            <tr><td>Writing shows but not images</td><td>Restart the dev server to rebuild images</td></tr>
+            <tr><td>Project missing from slideshow</td><td>Projects and slideshow are separate lists</td></tr>
+            <tr><td>Slideshow link broken</td><td><code>project</code> must match filename without <code>.md</code></td></tr>
+            <tr><td>Preview unreachable</td><td>Start it again and use the printed address</td></tr>
+            <tr><td>Live site unchanged</td><td>Did you commit, push, and wait for green ticks?</td></tr>
+          </tbody>
+        </table>
+
+      </div>
+    </main>
+
+    <footer class="site-footer wrap">
+      <a class="footer-name" href="/"><span class="accent">.</span> Neil Tayler Film</a>
+      <span class="footer-bottom">© 2026 Neil Tayler</span>
+    </footer>
+
+    <script>
+      function toggleTheme() {
+        const html = document.documentElement;
+        const next = html.dataset.theme === 'light' ? 'dark' : 'light';
+        html.dataset.theme = next;
+        try { localStorage.setItem('neil-theme', next); } catch {}
+        document.getElementById('theme-icon').textContent = next === 'light' ? '☾' : '☀';
+      }
+      (function() {
+        let t;
+        try { t = localStorage.getItem('neil-theme'); } catch {}
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        else if (matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.theme = 'light';
+        document.getElementById('theme-icon').textContent = document.documentElement.dataset.theme === 'light' ? '☾' : '☀';
+      })();
+      document.querySelectorAll('pre').forEach(pre => {
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        btn.onclick = () => {
+          const code = pre.querySelector('code')?.textContent || pre.textContent;
+          navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+          });
+        };
+        pre.style.position = 'relative';
+        pre.appendChild(btn);
+      });
+    </script>
+  </body>
+</html>

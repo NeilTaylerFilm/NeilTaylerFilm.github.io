@@ -90,6 +90,7 @@ import { categoryKey } from '../lib/feed';
       const url = new URL(location.href);
       // If loading from URL (like someone opened a shared link), pre-select dropdowns
       if (fromURL) {
+        // Ignore category names that are no longer in the page's current category list.
         const value = url.searchParams.get('category') || '';
         category.value = Array.from(category.options).some((o) => o.value === value) ? value : '';
         sort.value = url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
@@ -122,6 +123,7 @@ import { categoryKey } from '../lib/feed';
 
       // Update the browser URL bar so visitor can bookmark or share this exact view
       if (!fromURL) {
+        // Empty/default choices are removed so the URL stays short and easy to share.
         category.value
           ? url.searchParams.set('category', category.value)
           : url.searchParams.delete('category');

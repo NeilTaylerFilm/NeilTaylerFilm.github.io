@@ -22,7 +22,7 @@ import { posts, isoDate, excerpt } from '../../lib/content';
 // imageInfo: Helper to find picture dimensions and paths.
 import { imageInfo } from '../../lib/images';
 // categoryKey: Normalizes category names like "Post-Production" to match consistently.
-import { categoryKey } from '../../lib/feed';
+import { categoryKey, displayLabel } from '../../lib/feed';
 // site: Global website info like the author's name and default social image.
 import { site } from '../../config/site';
 
@@ -36,6 +36,8 @@ export async function getStaticPaths() {
 // Grab this specific post's metadata and render its headings and content.
 const { post } = Astro.props;
 const { data } = post;
+// Type pill + first category shown in the article header
+const label = displayLabel(data);
 const { Content, headings } = await render(post);
 
 // 📑 Build chapter outline from H2 through H6 headings
@@ -57,7 +59,7 @@ const related = (await posts())
 
 // 🖼️ Pick social sharing card image
 // Chooses the best picture to show when this article is shared on iMessage, Twitter, or Slack.
-const socialImage = data.socialImage || data.image || site.defaultImage;
+const socialImage = data.socialImage || data.coverImage || data.image || site.defaultImage;
 
 // 🔍 Structured Schema.org data for Google search indexing
 // A tidy digital index card for search engine robots telling them who wrote this and when.
@@ -79,7 +81,7 @@ const structuredData = {
 <BaseLayout
   title={data.title}
   description={data.description || excerpt(post.body, data.excerpt)}
-  image={data.socialImage || data.image}
+  image={data.socialImage || data.coverImage || data.image}
   noindex={data.draft}
   article={true}
 >
@@ -102,8 +104,8 @@ const structuredData = {
     {/* Article header: displays categories, publication date, title, and author byline. */}
     <header class="article-header">
       <div class="metadata">
-        <span class="category">{data.categories.join(' / ')}</span>
-        <span>/</span>
+        {label.type && <span class="type-pill">{label.type}</span>}
+        {label.category && <span class="category">{label.category}</span>}
         <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       </div>
       <h1>{data.title}</h1>
@@ -254,6 +256,7 @@ const structuredData = {
       node instanceof HTMLAnchorElement && node.matches('a[title="cite"]');
     const isWhitespace = (node: Node) =>
       node.nodeType === Node.TEXT_NODE && !node.textContent?.trim();
+    // Read the original paragraph nodes first; only adjacent citation links belong in one group.
     for (const paragraph of body.querySelectorAll('p')) {
       const nodes = [...paragraph.childNodes];
       for (let index = 0; index < nodes.length; ) {
@@ -272,6 +275,7 @@ const structuredData = {
       }
     }
     const groups: HTMLDetailsElement[] = [];
+    // Wrap later groups first so earlier groups in the same paragraph stay in place.
     for (const run of citationRuns.reverse()) {
       const cluster = document.createElement('span');
       cluster.className = 'citation-cluster';
@@ -335,7 +339,8 @@ const structuredData = {
       passive: true,
     });
     window.addEventListener('resize', () => groups.forEach((details) => (details.open = false)));
-    // Converts article headings into collapsible <details> accordions so readers can collapse long sections.
+    // Make each article section foldable when a reader wants less on screen.
+    // A heading starts a foldable section; the stack places smaller headings inside larger ones.
     const sections: HTMLDetailsElement[] = [];
     const parents: { depth: number; details: HTMLDetailsElement }[] = [];
     for (const node of [...body.childNodes]) {
@@ -347,6 +352,7 @@ const structuredData = {
         const heading = node as HTMLElement;
         const details = document.createElement('details');
         details.className = 'article-section';
+        // Keep a "TL;DR" section folded at first; leave every other section open.
         details.open = !/^tl\s*;?\s*dr\b/i.test(heading.textContent?.trim() || '');
         const summary = document.createElement('summary');
         summary.append(heading);

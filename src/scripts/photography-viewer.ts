@@ -84,7 +84,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   let current = 0;
   // The photo we want to show next
   let selected = 0;
-  // Counter to ignore stale clicks if user clicks really fast
+  // Each new selection gets a number; old downloads must match it before changing the screen.
   let revision = 0;
   // Screen refresh tick (requestAnimationFrame)
   let frame = 0;
@@ -258,7 +258,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
     try {
       await candidate.decode();
     } catch {
-      // If the user already clicked away to another picture, ignore this error
+      // A slow photo may fail after a newer click; only report errors for the current choice.
       if (token !== revision) return;
       pending = undefined;
       selected = current;
@@ -268,7 +268,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
       showError(index);
       return;
     }
-    // If the user already clicked another slide while this was loading, stop here
+    // Do not let an older download replace a newer photo chosen by the visitor.
     if (token !== revision) return;
     pending = undefined;
     settle();

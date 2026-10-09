@@ -2,7 +2,7 @@
 // 🕵️ COMPREHENSIVE WEBSITE QA INSPECTOR (qa-checks.mjs)
 // ==========================================
 // Think of this script like a human QA tester going through a checklist on real devices!
-// It opens an automated browser and tests 6 critical user experience features:
+// It opens an automated browser and reports what it finds in 6 parts of the site:
 // 1. Mobile Menu: At 390px (iPhone width), does the "Menu" hamburger button open smoothly
 //    and close when pressing the Escape key?
 // 2. Desktop Menu: At 1280px (laptop width), is the hamburger hidden and are normal links showing?
@@ -16,6 +16,7 @@
 import { chromium } from 'playwright-core';
 const baseURL = 'http://127.0.0.1:4322';
 
+// Missing features are printed as false; this report does not fail the command.
 async function check() {
   const browser = await chromium.launch({ headless: true });
 

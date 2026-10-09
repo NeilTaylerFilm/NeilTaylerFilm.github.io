@@ -1,5 +1,8 @@
 {
+  // Share Astro's strict TypeScript checks across page templates and browser scripts.
   "extends": "astro/tsconfigs/strict",
+  // Check the generated Astro types and all project source files.
   "include": [".astro/types.d.ts", "**/*"],
+  // These folders contain build output, installed tools, or local QA files.
   "exclude": ["dist", "node_modules", ".qa"]
 }

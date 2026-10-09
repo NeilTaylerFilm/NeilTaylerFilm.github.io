@@ -26,7 +26,7 @@ for (const source of Object.keys(manifest)) {
     await rm(`dist${source}`, { force: true });
 }
 
-// 🎯 STEP 2: Collect all image files that are actually being used by published pages
+// 🎯 STEP 2: Collect image files named by the generated image manifest
 // Keep cache files locally, but omit obsolete derivatives from the deployed artifact.
 const used = new Set(
   Object.values(manifest).flatMap((info) =>

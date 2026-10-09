@@ -89,6 +89,7 @@
   /* Cream white text to put on top of navy blue */
   --accent-ink: #f8f1e4;
 }
+/* Start with predictable browser defaults, then let the site styles add its design. */
 * {
   box-sizing: border-box;
 }
@@ -150,6 +151,7 @@ h4 {
   outline: 2px solid var(--accent);
   outline-offset: 5px;
 }
+/* The centered wrapper keeps page content away from the edges on every screen size. */
 .wrap {
   width: min(var(--max-width), calc(100% - var(--gutter) * 2));
   margin-inline: auto;
@@ -196,7 +198,7 @@ h4 {
 .skip-link:focus {
   transform: translateY(0);
 }
-/* Navigation and controls */
+/* The header, brand link, and menu controls used on every page. */
 .site-header {
   display: flex;
   align-items: center;
@@ -291,6 +293,7 @@ h4 {
   vertical-align: 2px;
 }
 
+/* Large shared headline style used for the main title on each page. */
 h1 {
   font-size: clamp(48px, 7vw, 100px);
   line-height: 0.99;
@@ -322,6 +325,7 @@ h1 {
 .section-heading > a:hover {
   color: var(--accent);
 }
+/* Category and sort controls sit beside a count of the items currently shown. */
 .feed-toolbar {
   display: flex;
   align-items: center;
@@ -360,10 +364,11 @@ h1 {
   color: var(--muted);
   white-space: nowrap;
 }
+/* Archive cards use two columns when a cover exists and one when it does not. */
 .blog-card {
   position: relative;
   display: grid;
-  padding: 36px 45px 36px 0;
+  padding: 28px 45px 28px 0;
   gap: 34px;
   border-bottom: 1px solid var(--border);
   align-items: start;
@@ -375,7 +380,7 @@ h1 {
   display: block;
   overflow: hidden;
   background: var(--surface);
-  aspect-ratio: 4/3;
+  aspect-ratio: 16/9;
 }
 .card-image img {
   width: 100%;
@@ -389,6 +394,7 @@ h1 {
 .card-content {
   min-width: 0;
 }
+/* Keep category, date, and type labels together when the line wraps on small screens. */
 .metadata {
   display: flex;
   gap: 12px;
@@ -403,8 +409,14 @@ h1 {
 .category {
   color: var(--accent);
 }
-.meta-divider {
-  color: var(--muted);
+/* Post type: small outlined pill, the first thing a reader should register */
+.type-pill {
+  color: var(--accent);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 1px 8px;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 .demo-tag {
   font-size: 9px;
@@ -436,22 +448,6 @@ h1 {
   margin-top: 15px;
   color: var(--muted);
   max-width: 790px;
-}
-.read-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 20px;
-  font: 11px var(--mono);
-  margin-top: 15px;
-  min-height: 40px;
-}
-.read-link span {
-  color: var(--accent);
-  font-size: 18px;
-  transition: transform 0.15s;
-}
-.read-link:hover span {
-  transform: translateX(3px);
 }
 .item-number {
   position: absolute;
@@ -661,6 +657,7 @@ h1 {
 .project-description p {
   font-size: 17px;
 }
+/* Project galleries default to two columns; portrait images are made narrower below. */
 .gallery {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -700,6 +697,7 @@ h1 {
   font-size: 42px;
   margin-bottom: 24px;
 }
+/* The lightbox fills the screen so the photograph can use the available space. */
 .lightbox {
   inset: 0;
   border: 0;
@@ -811,6 +809,7 @@ h1 {
   grid-template-columns: minmax(0, 1fr) minmax(0, var(--reading-width)) minmax(0, 1fr);
   column-gap: 36px;
 }
+/* On wide screens, the chapter list stays beside the article while the reader scrolls. */
 .chapter-nav-desktop {
   grid-column: 1;
   grid-row: 1 / span 2;
@@ -877,6 +876,7 @@ h1 {
   color: var(--accent);
   text-decoration: underline;
 }
+/* Citation links look like small labels; their source details are opened by page script. */
 .prose a[title='cite'] {
   display: inline-block;
   max-width: 100%;
@@ -1149,6 +1149,7 @@ h1 {
     scroll-margin-top: 72px;
   }
 }
+/* Script turns article headings into native disclosure sections that can be opened or folded. */
 .article-body > .article-section,
 .article-section > .article-section {
   margin-top: 1.4em;
@@ -1192,6 +1193,7 @@ h1 {
     scroll-margin-top: 72px;
   }
 }
+/* Related articles are shown in three columns on wide screens. */
 .related-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1204,6 +1206,7 @@ h1 {
   letter-spacing: -0.5px;
   margin-top: 10px;
 }
+/* A thin line at the top of the screen fills as the reader moves through an article. */
 .reading-progress {
   height: 2px;
   position: fixed;
@@ -1483,14 +1486,11 @@ h1 {
     font-size: 11px;
   }
   .blog-card {
-    padding: 28px 0;
+    padding: 20px 0;
     gap: 22px;
   }
   .blog-card.has-image {
     grid-template-columns: 1fr;
-  }
-  .card-image {
-    aspect-ratio: 16/10;
   }
   .blog-card h2 {
     font-size: 32px;
@@ -1847,7 +1847,6 @@ h1 {
   }
   .card-image:hover img,
   .project-cover:hover img,
-  .read-link:hover span,
   .control:hover,
   .control:active {
     transform: none;
@@ -1899,7 +1898,6 @@ picture {
 .metadata,
 .project-card .metadata,
 .feed-controls select,
-.read-link,
 .back-link,
 .gallery-item figcaption,
 .prose figcaption {

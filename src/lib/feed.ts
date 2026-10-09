@@ -79,6 +79,17 @@ export function postCategories(data: { categories?: string[]; category?: string 
   return [...unique.values()];
 }
 
+// 🏷️ HELPER 6b: Card Label
+// Returns the `type` (shown as an outlined pill) and only the FIRST category
+// from frontmatter (shown as plain text), e.g. { type: "Explainer", category: "Editing" }.
+// All categories still power the filter; this only controls what is displayed.
+export function displayLabel(data: { type?: string; categories?: string[]; category?: string }) {
+  const [first] = postCategories(data);
+  // Skip the category if it just repeats the type
+  const category = first && (!data.type || categoryKey(first) !== categoryKey(data.type)) ? first : undefined;
+  return { type: data.type, category };
+}
+
 // 🎯 HELPER 7: Category Matcher
 // Checks: "Does this article belong to the category button the visitor just clicked?"
 export function matchesCategory(categories: string[], selected: string) {

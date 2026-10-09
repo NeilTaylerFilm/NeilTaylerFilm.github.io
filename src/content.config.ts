@@ -19,16 +19,30 @@ import { postCategories } from './lib/feed';
 // projectDate, projectYear, matchingProjectYear: Custom date validators ensuring consistent timeline years.
 import { projectDate, projectYear, matchingProjectYear } from './lib/project-date';
 
+// 🛠️ HELPER: Resilient optional text and date (accepts undefined, null, or empty string from Obsidian)
+const optionalText = z
+  .string()
+  .nullish()
+  .transform((v) => (v && v.trim().length > 0 ? v.trim() : undefined));
+
+const optionalDate = z.preprocess(
+  // A blank date means "no date"; only non-empty values should be checked as dates.
+  (val) => (val === null || val === '' ? undefined : val),
+  z.coerce.date().optional(),
+);
+
 // 📝 COMMON CHECKLIST: Rules that apply to all content items
 const common = {
   // Must have a title (cannot be empty text)
   title: z.string().min(1),
   // Optional subtitle
-  subtitle: z.string().optional(),
+  subtitle: optionalText,
+  // Optional post type shown on cards (e.g. 'Explainer', 'Essay', 'Album')
+  type: optionalText,
   // Optional summary description
-  description: z.string().optional(),
+  description: optionalText,
   // Optional social sharing photo
-  socialImage: z.string().optional(),
+  socialImage: optionalText,
   // If true, hidden from the public website!
   draft: z.boolean().default(false),
   // Optional badge marking demo content
@@ -45,23 +59,34 @@ const blog = defineCollection({
       // Date published (required)
       date: z.coerce.date(),
       // Date last updated (optional)
-      updated: z.coerce.date().optional(),
+      updated: optionalDate,
       // Single category (e.g. 'Writing')
-      category: z.string().trim().min(1).optional(),
+      category: optionalText,
       // Or list of categories
-      categories: z.array(z.string().trim().min(1)).min(1).optional(),
+      categories: z
+        .preprocess(
+          (val) => (val === null || val === '' ? undefined : val),
+          z.array(z.string().trim().min(1)).min(1).optional(),
+        ),
       // Format type (e.g. 'essay')
-      format: z.string().optional(),
+      format: optionalText,
       // Keyword tags
-      tags: z.array(z.string()).default([]),
+      tags: z.preprocess(
+        (val) => (val === null || val === '' ? [] : val),
+        z.array(z.string()).default([]),
+      ),
       // Slugs of related posts
-      related: z.array(z.string()).default([]),
+      related: z.preprocess(
+        (val) => (val === null || val === '' ? [] : val),
+        z.array(z.string()).default([]),
+      ),
+      coverImage: optionalText,
       // Cover photo path
-      image: z.string().optional(),
+      image: optionalText,
       // Accessibility alt text for cover
-      imageAlt: z.string().default(''),
+      imageAlt: z.string().nullish().transform((v) => v?.trim() || ''),
       // Custom summary teaser
-      excerpt: z.string().optional(),
+      excerpt: optionalText,
     })
     // 🔍 Rule: Must have at least one category tag
     .refine((data) => postCategories(data).length > 0, {
@@ -90,15 +115,20 @@ const photography = defineCollection({
       // Or just the 4-digit year (e.g. 2024)
       year: projectYear.optional(),
       // City or country (e.g. 'Kyoto, Japan')
-      location: z.string().optional(),
+      location: optionalText,
       // Photography style (e.g. 'Street')
-      category: z.string().trim().min(1).optional(),
+      category: optionalText,
+      // Multiple categories support
+      categories: z.preprocess(
+        (val) => (val === null || val === '' ? undefined : val),
+        z.array(z.string().trim().min(1)).min(1).optional(),
+      ),
       // Cover photo link
-      cover: z.string().optional(),
+      cover: optionalText,
       // Alternative cover image property
-      coverImage: z.string().optional(),
+      coverImage: optionalText,
       // Alt description for cover
-      coverAlt: z.string().default(''),
+      coverAlt: z.string().nullish().transform((v) => v?.trim() || ''),
       // Put this album on the homepage?
       featured: z.boolean().default(false),
       images: z
@@ -107,13 +137,13 @@ const photography = defineCollection({
             // Web address or path to the photo
             src: z.string(),
             // High-res version for zooming
-            full: z.string().optional(),
+            full: optionalText,
             // Chapter heading
-            section: z.string().trim().min(1).optional(),
+            section: optionalText,
             // Accessibility alt text
-            alt: z.string().default(''),
+            alt: z.string().nullish().transform((v) => v?.trim() || ''),
             // Caption text
-            caption: z.string().optional(),
+            caption: optionalText,
             // Pixel width
             width: z.number().positive().optional(),
             // Pixel height
@@ -123,7 +153,9 @@ const photography = defineCollection({
         .default([]),
     })
     // 🔍 Rule: If both year and date are given, they must agree!
-    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] }),
+    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] })
+    // Merge category/categories into one deduplicated list
+    .transform((data) => ({ ...data, categories: postCategories(data) })),
 });
 
 // 🎬 COLLECTION 3: The Post-Production & Film Rulebook
@@ -138,34 +170,48 @@ const postProduction = defineCollection({
       // Year (e.g. 2024)
       year: projectYear.optional(),
       // Discipline (e.g. 'Editing', 'VFX')
-      category: z.string().trim().min(1).optional(),
+      category: optionalText,
+      // Multiple categories support
+      categories: z
+        .preprocess(
+          (val) => (val === null || val === '' ? undefined : val),
+          z.array(z.string().trim().min(1)).min(1).optional(),
+        ),
       // Cover image
-      cover: z.string().optional(),
+      cover: optionalText,
       // Cover image alternate
-      coverImage: z.string().optional(),
+      coverImage: optionalText,
       // Your roles (e.g. ['Director', 'Colorist'])
-      roles: z.array(z.string()).default([]),
+      roles: z.preprocess(
+        (val) => (val === null || val === '' ? [] : val),
+        z.array(z.string().trim().min(1)).default([]),
+      ),
       // Type of project (e.g. 'Music Video')
-      projectType: z.string().optional(),
-      video: z.string().optional(), // URL or ID for video (YouTube, Vimeo, etc.)
-      poster: z.string().optional(), // Custom poster image for video
+      projectType: optionalText,
+      video: optionalText, // URL or ID for video (YouTube, Vimeo, etc.)
+      poster: optionalText, // Custom poster image for video
       // Feature on showcase carousel?
       featured: z.boolean().default(false),
       images: z
         .array(
           z.object({
             src: z.string(),
-            alt: z.string().default(''),
-            caption: z.string().optional(),
+            alt: z.string().nullish().transform((v) => v?.trim() || ''),
+            caption: optionalText,
             width: z.number().positive().optional(),
             height: z.number().positive().optional(),
           }),
         )
         .default([]),
-      relatedPosts: z.array(z.string()).default([]), // Array of blog post slugs
+      relatedPosts: z.preprocess(
+        (val) => (val === null || val === '' ? [] : val),
+        z.array(z.string()).default([]),
+      ), // Array of blog post slugs
     })
     // 🔍 Rule: Year and date must not contradict each other
-    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] }),
+    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] })
+    // Merge category/categories into one deduplicated list
+    .transform((data) => ({ ...data, categories: postCategories(data) })),
 });
 
 // 📦 Export all collections so Astro knows about them

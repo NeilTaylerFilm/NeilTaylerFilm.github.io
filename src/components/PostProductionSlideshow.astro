@@ -27,6 +27,7 @@ const publishedPosts = new Set(
 );
 
 // 🎞️ Assemble the video works with images, video embed links, and blog links
+// Keep the poster usable as a plain image even when it has no generated image variants.
 const featured = originalFeatured.map((photo) => ({
   ...photo,
   ...imageInfo(photo.poster || photo.src),
@@ -263,6 +264,7 @@ const first = featured[0];
 
     // 🔄 When user flips to another slide, remove old video player and refresh links
     function update() {
+      // Stop an old loading message from appearing over the newly selected film.
       viewport.querySelector('iframe')?.remove();
       window.clearTimeout(playerTimer);
       playerStatus.textContent = '';
@@ -317,6 +319,7 @@ const first = featured[0];
 
       // When the video finishes loading:
       iframe.addEventListener('load', () => {
+        // A different slide may have replaced this player while it was loading.
         if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');
@@ -325,6 +328,7 @@ const first = featured[0];
 
       // If video failed to load (e.g. offline):
       iframe.addEventListener('error', () => {
+        // Ignore errors from a player that is no longer on screen.
         if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');

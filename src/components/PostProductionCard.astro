@@ -38,7 +38,7 @@ const cover = data.poster || data.coverImage || data.cover || data.images[0]?.sr
 <article
   class="project-card"
   data-feed-item
-  data-category={categoryKey(data.category || '')}
+  data-categories={JSON.stringify(data.categories.map(categoryKey))}
   data-date={projectTimestamp(data)}
   data-id={project.id}
 >

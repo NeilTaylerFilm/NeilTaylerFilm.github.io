@@ -16,7 +16,7 @@ import { z } from 'astro/zod';
 // 1. Must look like four numbers, a dash, two numbers, a dash, two numbers (YYYY-MM-DD).
 // 2. Must exist on a real calendar (catches fake dates like Feb 30th).
 // 3. Turns the text into a real digital clock timestamp so the computer understands it.
-export const projectDate = z
+const dateString = z
   .string()
   // Pattern matching: 4-digit year, 2-digit month, 2-digit day
   .regex(/^[1-9]\d{3}-\d{2}-\d{2}$/)
@@ -27,6 +27,13 @@ export const projectDate = z
   }, 'Use a real calendar date in YYYY-MM-DD format')
   // Turn the verified text into a real Date object locked to midnight UTC
   .transform((value) => new Date(`${value}T00:00:00.000Z`));
+
+export const projectDate = z.preprocess((val) => {
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    return val.toISOString().slice(0, 10);
+  }
+  return val;
+}, dateString);
 
 // 🗓️ RULE 2: The Year Checker
 // Checks that a year is a 4-digit number (like 2024), either written as a number or in quotes.

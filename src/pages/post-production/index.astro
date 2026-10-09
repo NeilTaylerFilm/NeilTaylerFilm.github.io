@@ -53,7 +53,7 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🎛️ Category filter and sorting toolbar */}
-    {/* Shows search and tag filters if there is at least one film project */}
+    {/* Shows category and sort menus if there is at least one film project. */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}

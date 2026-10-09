@@ -15,7 +15,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 // PhotographySlideshow: The hero slide projector displaying featured photos with next/prev buttons.
 import PhotographySlideshow from '../../components/PhotographySlideshow.astro';
-// FeedControls: The filter bar with search, category filters, and sorting.
+// FeedControls: The toolbar for filtering albums by category and sorting by date.
 import FeedControls from '../../components/FeedControls.astro';
 // ProjectCard: An individual album preview tile with a cover photo and title.
 import ProjectCard from '../../components/ProjectCard.astro';
@@ -63,7 +63,7 @@ const categories = getCategories(allProjects);
     </div>
 
     {/* 🎛️ Filter and sort dropdowns */}
-    {/* Shows search input and category filter chips so visitors can explore specific albums */}
+    {/* Shows category and sort menus so visitors can narrow the album list. */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}

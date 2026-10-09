@@ -3,8 +3,7 @@
 // 📰 BLOG TEASER CARD (Article Preview Box)
 // ==========================================
 // Think of this like a handsome little postcard for one blog post!
-// It shows the cover picture, the article title, what category it is,
-// the date it was written, a two-sentence preview teaser, and an index number.
+// It shows the cover picture, title, category, date, a short preview, and an index number.
 
 // --- BORROWED TOOLS (Imports) ---
 // CollectionEntry: TypeScript type describing a blog post's data structure.
@@ -13,6 +12,7 @@ import type { CollectionEntry } from 'astro:content';
 import ResponsiveImage from './ResponsiveImage.astro';
 // excerpt, isoDate, categoryKey: Helper tools to trim summaries, format dates, and normalize categories.
 import { excerpt, isoDate, categoryKey } from '../lib/content';
+import { displayLabel } from '../lib/feed';
 
 // 📋 What this card needs to build itself:
 // Requires the blog post object and its index number in the list.
@@ -28,12 +28,16 @@ const { post, index } = Astro.props;
 const { data } = post;
 // Web address to read the full article
 const url = `/blog/${post.id}/`;
+// A dedicated cover wins; older posts can keep using the original `image` field.
+const coverImage = data.coverImage || data.image;
+// Type pill + first category shown in the metadata row
+const label = displayLabel(data);
 ---
 
 {/* 📦 The outer card container with data attributes for filtering & sorting */}
 {/* HTML data attributes store category keys and publication timestamp for live client filtering */}
 <article
-  class:list={['blog-card', { 'has-image': data.image }]}
+  class:list={['blog-card', { 'has-image': coverImage }]}
   data-feed-item
   data-categories={JSON.stringify(data.categories.map(categoryKey))}
   data-date={data.date.getTime()}
@@ -41,13 +45,13 @@ const url = `/blog/${post.id}/`;
 >
   {/* 🖼️ Optional cover picture */}
   {/* If an article image exists, render clickable preview picture */}
-  {data.image && (
+  {coverImage && (
     <a class="card-image" href={url} tabindex="-1" aria-hidden="true">
+      {/* Load the very first photo immediately so it appears instantly; lazy-load the rest! */}
       <ResponsiveImage
-        src={data.image}
+        src={coverImage}
         alt=""
         sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 32vw, 420px"
-        {/* Load the very first photo immediately so it appears instantly; lazy-load the rest! */}
         loading={index === 0 ? 'eager' : 'lazy'}
         priority={index === 0}
       />
@@ -58,8 +62,8 @@ const url = `/blog/${post.id}/`;
     {/* 🏷️ Category tags, date stamp, and optional demo badge */}
     {/* Displays formatted categories and publication date */}
     <div class="metadata">
-      <span class="category">{data.categories.join(' / ')}</span>
-      <span class="meta-divider">/</span>
+      {label.type && <span class="type-pill">{label.type}</span>}
+      {label.category && <span class="category">{label.category}</span>}
       <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       {data.demo && <span class="demo-tag">Example</span>}
     </div>
@@ -73,13 +77,8 @@ const url = `/blog/${post.id}/`;
     {/* 📝 Optional subtitle */}
     {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
 
-    {/* ✂️ Bite-sized 1-2 sentence preview snippet */}
+    {/* A custom summary is used when present; otherwise show up to two opening sentences. */}
     <p class="excerpt">{excerpt(post.body, data.excerpt || data.description)}</p>
-
-    {/* ➡️ "Continue reading" arrow button */}
-    <a class="read-link" href={url} tabindex="-1" aria-hidden="true">
-      Continue reading <span aria-hidden="true">→</span>
-    </a>
   </div>
 
   {/* 🔢 Card numbering badge (e.g. "01", "02") */}

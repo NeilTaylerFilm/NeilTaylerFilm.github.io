@@ -2,20 +2,23 @@
 // ==========================================
 // 🏷️ PROJECT INFO STRIP (Category, City & Date)
 // ==========================================
-// This little component prints the stylish info strip under project titles.
-// It puts things like "Landscape / Tokyo · 15 June 2024" in a neat single line,
-// handling slashes and middle dots cleanly!
+// This component prints optional project details above a project title.
+// It can show a type, category, location, and date in one line.
 
 // Project metadata line with category, location and date
 // --- BORROWED TOOLS (Imports) ---
 // isoDate: Formats raw calendar dates into universal computer-friendly strings (YYYY-MM-DD).
-import { isoDate } from '../lib/feed';
+import { isoDate, displayLabel } from '../lib/feed';
 
 // 📋 What this component can display:
 // A menu of optional details: projects can have some, all, or none of these.
 interface Props {
+  // Post type (e.g. 'Explainer')
+  type?: string;
   // Creative category (e.g. 'Street', 'Music Video')
   category?: string;
+  // Multiple categories (only the first is displayed)
+  categories?: string[];
   // Where it was shot (e.g. 'Thailand', 'London')
   location?: string;
   // The exact calendar date
@@ -25,38 +28,28 @@ interface Props {
 }
 
 // Unpack the provided props
-const { category, location, date, year } = Astro.props;
+const { type, category: singleCategory, categories, location, date, year } = Astro.props;
+// Type shows as an outlined pill; only the first category shows, as plain text
+const label = displayLabel({ type, categories, category: singleCategory });
 // Build a simple date text stamp
 // If an exact calendar date is available, convert it to YYYY-MM-DD; otherwise use the plain year string.
 const stamp = date ? isoDate(date) : year?.toString();
 ---
 
 {/* Only show this line if at least one piece of info exists */}
-{(category || location || stamp) && (
+{(label.type || label.category || location || stamp) && (
   <div class="metadata">
-    {/* 🏷️ Category pill */}
-    {category && <span class="category">{category}</span>}
-    {/* Slash separator if location or date follows */}
-    {category && (location || stamp) && <span aria-hidden="true">/</span>}
-    
+    {/* 🏷️ Type pill (outlined) and first category (plain text) */}
+    {label.type && <span class="type-pill">{label.type}</span>}
+    {label.category && <span class="category">{label.category}</span>}
+
     {/* 📍 Location name */}
     {location && <span>{location}</span>}
     {/* Middle dot separator if date follows */}
     {location && stamp && <span aria-hidden="true">·</span>}
 
-    {/* 📅 Nicely formatted date (e.g., "12 October 2024") */}
-    {stamp && (
-      <time datetime={stamp}>
-        {date
-          ? new Intl.DateTimeFormat('en-GB', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              timeZone: 'UTC',
-            }).format(date)
-          : stamp}
-      </time>
-    )}
+    {/* 📅 Exact dates use YYYY-MM-DD; year-only projects keep the year */}
+    {stamp && <time datetime={stamp}>{stamp}</time>}
   </div>
 )}
 

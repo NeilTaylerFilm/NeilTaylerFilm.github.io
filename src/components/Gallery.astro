@@ -58,6 +58,7 @@ const { images, layout = 'editorial' } = Astro.props;
         // 📐 Calculate the aspect ratio (width divided by height) so rows don't distort
         // Ratio calculation: prevents image jumping and controls mosaic expansion
         const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
+        // This hint helps the browser choose a suitable image file before it downloads it.
         const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
 
         return (

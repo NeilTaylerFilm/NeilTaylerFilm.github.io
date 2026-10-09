@@ -21,6 +21,7 @@ const path = Astro.url.pathname;
 
 // 🗺️ The menu items to display in the navigation bar:
 // Each entry has a human-readable title and its destination URL path.
+// Blog articles use the home link, so that link is marked active on /blog/ pages too.
 const nav = [
   { label: 'Blog', href: '/' },
   { label: 'Photography', href: '/photography/' },
@@ -43,7 +44,6 @@ const nav = [
     {nav.map(({ label, href }) => (
       <a
         href={href}
-        {/* 💡 Light up the link if visitor is currently on this page */}
         aria-current={
           (href === '/' ? path === '/' || path.startsWith('/blog/') : path.startsWith(href))
             ? 'page'

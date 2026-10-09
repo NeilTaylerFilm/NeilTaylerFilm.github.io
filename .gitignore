@@ -50,6 +50,7 @@ snip
 # Obsidian Related Files
 # --------------------------------------------------
 .obsidian
+obsidianTemplates/
 
 # --------------------------------------------------
 # Temporary files

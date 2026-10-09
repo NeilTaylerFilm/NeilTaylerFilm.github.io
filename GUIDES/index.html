@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neil Tayler Film — Guides</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #191a18;
+        --surface: #21221f;
+        --surface-raised: #292b26;
+        --text: #eeeee6;
+        --muted: #a4a79c;
+        --border: #494c43;
+        --control-border: #6e7464;
+        --subtle-border: #34372f;
+        --accent: #9cbff0;
+        --accent-ink: #172537;
+        --sans: Arial, Helvetica, sans-serif;
+        --serif: Georgia, 'Times New Roman', serif;
+        --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+        --max-width: 960px;
+        --gutter: 48px;
+        --space-1: 8px;
+        --space-2: 16px;
+        --space-3: 24px;
+        --space-4: 40px;
+        --space-5: 64px;
+        --radius: 3px;
+        --shadow: 3px 3px 0 var(--border);
+      }
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #e5dcc8;
+        --surface: #d9cfb9;
+        --surface-raised: #cec3aa;
+        --text: #292821;
+        --muted: #514d42;
+        --border: #938975;
+        --control-border: #7c715f;
+        --subtle-border: #c8bea9;
+        --accent: #315b88;
+        --accent-ink: #f8f1e4;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      a { color: inherit; text-decoration: none; text-underline-offset: 5px; }
+      a:hover { color: var(--accent); }
+      img { display: block; max-width: 100%; height: auto; }
+      ::selection { background: var(--accent); color: var(--accent-ink); }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+
+      .skip-link {
+        position: fixed; top: 8px; left: 16px; z-index: 100;
+        background: var(--accent); color: var(--accent-ink);
+        padding: 12px 20px; transform: translateY(-160%);
+      }
+      .skip-link:focus { transform: translateY(0); }
+
+      /* Header */
+      .site-header {
+        display: flex; align-items: center; gap: 32px;
+        min-height: 108px; border-bottom: 1px solid var(--border);
+      }
+      .wordmark {
+        display: flex; align-items: center;
+        font-size: 23px; font-weight: 700; letter-spacing: -1px; white-space: nowrap;
+      }
+      .wordmark-dot { color: var(--accent); }
+      .theme-toggle {
+        margin-left: auto; display: inline-flex; align-items: center;
+        justify-content: center; gap: 16px; min-height: 44px;
+        border: 1px solid var(--control-border); padding: 9px 16px;
+        background: var(--surface); font-size: 12px; line-height: 1.5;
+        border-radius: var(--radius); cursor: pointer; transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      }
+      .theme-toggle:hover {
+        background: var(--surface-raised); color: var(--accent);
+        box-shadow: 2px 2px 0 var(--border); transform: translate(-1px, -1px);
+      }
+      .theme-toggle:active { transform: translate(1px, 1px); box-shadow: none; }
+      .theme-symbol { font-size: 21px; line-height: 1; }
+
+      /* Main layout */
+      .wrap {
+        width: min(var(--max-width), calc(100% - var(--gutter) * 2));
+        margin-inline: auto;
+      }
+      .content-start { margin-top: 40px; }
+
+      /* Page title */
+      h1 {
+        font-size: clamp(48px, 7vw, 100px); line-height: 0.99;
+        letter-spacing: -5px; font-weight: 700; overflow-wrap: break-word;
+      }
+      .page-intro { padding: 56px 0 48px; }
+      .page-intro > .eyebrow { color: var(--muted); margin-bottom: 25px; }
+      .intro-description { font-size: 17px; color: var(--muted); margin-top: 22px; max-width: 620px; }
+
+      /* Guide cards */
+      .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        margin-top: 40px;
+      }
+      .guide-card {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        padding: 28px;
+        transition: transform 0.15s, box-shadow 0.15s;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .guide-card:hover {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow);
+      }
+      .guide-card h2 {
+        font-size: 22px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;
+      }
+      .guide-card p {
+        font-size: 15px; color: var(--muted); line-height: 1.6; flex: 1;
+      }
+      .guide-card .meta {
+        font: 11px var(--mono); color: var(--muted); text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .guide-card .arrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        font: 11px var(--mono); color: var(--accent); margin-top: 8px;
+      }
+      .guide-card .arrow span { font-size: 18px; transition: transform 0.15s; }
+      .guide-card:hover .arrow span { transform: translateX(4px); }
+
+      /* Footer */
+      .site-footer {
+        border-top: 1px solid var(--border);
+        padding: 36px 0 24px; margin-top: 80px;
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .footer-name { font-size: 23px; font-weight: 700; letter-spacing: -1px; }
+      .footer-bottom { font: 11px var(--mono); color: var(--muted); }
+
+      @media (max-width: 767px) {
+        :root { --gutter: 24px; }
+        .site-header { min-height: 80px; padding: 20px 0; }
+        .wordmark { font-size: 22px; }
+        h1 { font-size: 60px; letter-spacing: -3px; }
+        .page-intro { padding: 38px 0; }
+        .guide-grid { grid-template-columns: 1fr; }
+        .site-footer { flex-direction: column; gap: 16px; align-items: flex-start; }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header wrap">
+      <a class="wordmark" href="/">Neil Tayler Film<span class="wordmark-dot">.</span></a>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span class="theme-symbol" id="theme-icon">☀</span>
+        <span data-theme-label>Theme</span>
+      </button>
+    </header>
+
+    <main id="main" class="wrap content-start">
+      <div class="page-intro">
+        <p class="eyebrow">Documentation</p>
+        <h1>Guides<span style="color:var(--accent)">.</span></h1>
+        <p class="intro-description">
+          Step-by-step instructions for maintaining your website. 
+          Written for non-coders. Pick a guide and follow along.
+        </p>
+      </div>
+
+      <div class="guide-grid">
+        <a href="publishing.html" class="guide-card">
+          <span class="meta">Getting started</span>
+          <h2>Publishing your website</h2>
+          <p>Add blog posts, photography projects, and slideshow images. Covers previewing and publishing changes.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="publish-to-production.html" class="guide-card">
+          <span class="meta">Quick reference</span>
+          <h2>Publish to production</h2>
+          <p>The shortest path from saved changes to a live website. Copy these commands into Terminal.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="writing-blog-posts.html" class="guide-card">
+          <span class="meta">Blog</span>
+          <h2>Writing blog posts</h2>
+          <p>Structure your frontmatter, add images, use headings, and format citations. For Obsidian users.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="r2-photos.html" class="guide-card">
+          <span class="meta">Photography</span>
+          <h2>Adding photographs with R2</h2>
+          <p>Upload photos to Cloudflare R2, get image addresses, and add them to posts or projects.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="publish-photo-project.html" class="guide-card">
+          <span class="meta">Photography</span>
+          <h2>Publishing a photo project</h2>
+          <p>From a folder of photos to a finished gallery page. Uses the automatic project generator.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="backup-and-recovery.html" class="guide-card">
+          <span class="meta">Safety</span>
+          <h2>Backup and recovery</h2>
+          <p>Where your files live, how to protect them, and what to do if something goes wrong.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="domain-setup.html" class="guide-card">
+          <span class="meta">Advanced</span>
+          <h2>Domain setup</h2>
+          <p>Connect a custom domain like www.yourname.com. Requires Cloudflare account access.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+
+        <a href="cloudflare-setup.html" class="guide-card">
+          <span class="meta">Setup</span>
+          <h2>Cloudflare R2 setup</h2>
+          <p>Initial configuration: create the bucket, deploy the Worker, and verify the connection.</p>
+          <span class="arrow">Open guide <span>→</span></span>
+        </a>
+      </div>
+    </main>
+
+    <footer class="site-footer wrap">
+      <a class="footer-name" href="/">Neil Tayler Film<span class="wordmark-dot">.</span></a>
+      <span class="footer-bottom">© 2026 Neil Tayler</span>
+    </footer>
+
+    <script>
+      function toggleTheme() {
+        const html = document.documentElement;
+        const current = html.dataset.theme;
+        const next = current === 'light' ? 'dark' : 'light';
+        html.dataset.theme = next;
+        try { localStorage.setItem('neil-theme', next); } catch {}
+        document.getElementById('theme-icon').textContent = next === 'light' ? '☾' : '☀';
+      }
+      (function() {
+        let theme;
+        try { theme = localStorage.getItem('neil-theme'); } catch {}
+        if (theme === 'light' || theme === 'dark') {
+          document.documentElement.dataset.theme = theme;
+        } else if (matchMedia('(prefers-color-scheme: light)').matches) {
+          document.documentElement.dataset.theme = 'light';
+        }
+        document.getElementById('theme-icon').textContent = 
+          document.documentElement.dataset.theme === 'light' ? '☾' : '☀';
+      })();
+    </script>
+  </body>
+</html>
