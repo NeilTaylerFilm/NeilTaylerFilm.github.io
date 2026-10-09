@@ -10,6 +10,8 @@
 // 3. It cleans up tables so text aligns nicely.
 
 // Resolve Markdown image syntax and <img> elements against the image manifest.
+// --- BORROWED TOOLS (Imports) ---
+// readFileSync: Synchronously reads the generated image manifest during build setup.
 import { readFileSync } from 'node:fs';
 
 // Shared for Markdown image syntax and raw HTML <img> elements.
