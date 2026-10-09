@@ -7,7 +7,9 @@
 // This file is like a Rolodex that looks up the exact sizes and links for any picture.
 
 // Helper to look up responsive image info from the generated manifest
+// --- BORROWED TOOLS (Imports) ---
 // 📚 Load the giant book that lists all generated image sizes
+// This JSON manifest is generated automatically by scripts/prepare-images.mjs during build.
 import manifest from '../generated/images.json';
 
 // 📋 The "Fact Sheet" for a single picture:
@@ -22,6 +24,8 @@ type ImageInfo = {
 
 // 🔍 THE LOOKUP FUNCTION:
 // Give it an image path (like "../assets/photo.jpg"), and it hands back the full fact sheet!
+// What goes in: Any image path string from markdown or frontmatter.
+// What comes out: An ImageInfo object with dimensions and responsive WebP srcsets, or undefined.
 export function imageInfo(src: string) {
   // 🧹 Clean up the path so it always starts nicely with "/assets/"
   // (stripping out any confusing dots like "../..")
