@@ -42,6 +42,7 @@ jobs:
           done
 
           # Keep this URL in sync if the first featured photo is removed from R2.
+          # 📸 Step 2: Ping our Cloudflare R2 worker to verify live photo streaming
           photo='https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/588176e9b85445d319829378ab9beff3-1707.jpeg'
           headers="$(curl --head --fail --location --silent --show-error \
             --retry 2 --retry-all-errors --retry-delay 3 --max-time 20 "$photo")"
