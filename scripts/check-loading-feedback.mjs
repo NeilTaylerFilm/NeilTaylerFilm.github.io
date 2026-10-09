@@ -13,7 +13,10 @@
 // 3. Accessibility: When you hit Escape, does keyboard focus jump back to your starting point?
 
 // Verify loading feedback is visible when images are throttled.
+// --- BORROWED TOOLS (Imports) ---
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// chromium: Playwright automated browser for simulated network testing.
 import { chromium } from '@playwright/test';
 
 // 🤖 Launch a headless Chromium browser in the background
