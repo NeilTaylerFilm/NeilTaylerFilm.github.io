@@ -15,7 +15,10 @@
 // - Scenario 3: No JavaScript: Even if a visitor has JS turned off, the photo still displays!
 
 // Smoke-test the photography listing page across responsive breakpoints.
+// --- BORROWED TOOLS (Imports) ---
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// chromium: Playwright automated headless browser engine.
 import { chromium } from '@playwright/test';
 
 const browser = await chromium.launch({ headless: true });
