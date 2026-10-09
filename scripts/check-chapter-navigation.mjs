@@ -8,7 +8,10 @@
 // 3. Guarantees that text never spills off the edge of mobile screens!
 
 // Test chapter navigation and reading progress at multiple viewport widths.
+// --- BORROWED TOOLS (Imports) ---
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// chromium: Playwright automated headless browser to test responsiveness.
 import { chromium } from '@playwright/test';
 
 const url = process.env.PREVIEW_URL || 'http://127.0.0.1:4321/blog/reading-progress-preview/';
