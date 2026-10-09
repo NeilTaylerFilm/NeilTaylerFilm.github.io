@@ -16,10 +16,16 @@
 
 """Save R2 upload credentials locally without displaying them or using shell history."""
 
+# --- BORROWED TOOLS (Standard Library Imports) ---
+# getpass: Prompts for passwords securely without printing characters on the screen.
 import getpass
+# os & tempfile: Operating system tools for setting strict file permissions and temporary files.
 import os
+# Path: Convenient tool for navigating filesystem folder paths.
 from pathlib import Path
+# re: Pattern matching to ensure Account IDs and Keys are valid hexadecimal strings.
 import re
+# subprocess: Runs git checks to ensure secret files are properly ignored.
 import subprocess
 import tempfile
 
