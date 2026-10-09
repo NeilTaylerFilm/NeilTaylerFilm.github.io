@@ -9,6 +9,7 @@
    - The fullscreen theater modal pop-up */
 
 /* Styles for photography viewer dialog and lightbox */
+/* Stylesheet governing theater projector dimensions, animations, thumbnails, and modal states. */
 .photo-showcase {
   min-width: 0;
 }
