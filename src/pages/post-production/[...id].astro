@@ -10,14 +10,22 @@
 // - Direct links to related blog articles.
 
 // Individual post-production project page with video embed and gallery.
+// --- BORROWED TOOLS (Imports) ---
+// render: Astro's Markdown compiler to turn the project's written backstory into HTML.
 import { render } from 'astro:content';
+// BaseLayout: The shared website frame (header bar, footer, styling).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+// ProjectMetadata: Displays project tags like year, role (Director, Colorist), and client.
 import ProjectMetadata from '../../components/ProjectMetadata.astro';
+// Gallery: Displays behind-the-scenes photo stills.
 import Gallery from '../../components/Gallery.astro';
+// site: Global website configuration.
 import { site } from '../../config/site';
+// postProjects: Helper to fetch all film projects from disk.
 import { postProjects } from '../../lib/content';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each post-production project
+// Tells Astro: "Look through our film shelf and create a dedicated theater page for each one!"
 export async function getStaticPaths() {
   return (await postProjects()).map((project) => ({
     params: { id: project.id },
@@ -25,6 +33,7 @@ export async function getStaticPaths() {
   }));
 }
 
+// Unpack this project's metadata and render its written Markdown story
 const { project } = Astro.props;
 const { data } = project;
 const { Content } = await render(project);
@@ -56,6 +65,7 @@ const { Content } = await render(project);
     {data.demo && <p class="demo-notice">Example project · This sample work is not Neil's.</p>}
 
     {/* 📺 Video player box with poster and play button */}
+    {/* Question: Does this project have a video URL? If yes, show the video player stage. */}
     {data.video && (
       <div class="video-container" data-video-container data-video-url={data.video}>
         <img
@@ -64,12 +74,15 @@ const { Content } = await render(project);
           class="video-poster"
           data-video-poster
         />
+        {/* Play button that triggers video iframe insertion when clicked */}
         <button class="video-play" data-video-play aria-label="Play video" type="button">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" aria-hidden="true">
             <path d="M8 5v14l11-7z" />
           </svg>
         </button>
+        {/* Accessible live region for loading feedback */}
         <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
+        {/* Direct link fallback in case the embed is blocked */}
         <a
           class="video-player-direct"
           data-video-direct
@@ -88,11 +101,13 @@ const { Content } = await render(project);
   </header>
 
   {/* 🖼️ Optional behind-the-scenes image gallery */}
+  {/* Question: Are there behind-the-scenes still photos? If yes, render the gallery grid. */}
   {data.images.length > 0 && (
     <Gallery images={data.images} />
   )}
 
   {/* 📝 List of related blog articles */}
+  {/* Question: Are any blog post slugs linked to this film? If yes, display them. */}
   {data.relatedPosts && data.relatedPosts.length > 0 && (
     <section class="related-writing" aria-label="Related writing">
       <h2 class="eyebrow">Related writing</h2>
@@ -127,6 +142,7 @@ const { Content } = await render(project);
     if (!playBtn) return;
     let activeIframe: HTMLIFrameElement | undefined;
 
+    // Attach click listener to load the video only when requested
     playBtn.addEventListener('click', () => {
       const videoUrl = (container as HTMLElement).dataset.videoUrl;
       if (!videoUrl) return;
@@ -152,6 +168,7 @@ const { Content } = await render(project);
         : `https://vimeo.com/${id}`;
       container.setAttribute('aria-busy', 'true');
       playerStatus.textContent = 'Loading player…';
+      // If the embed takes too long (e.g. adblocker or slow network), show a direct link
       const timer = window.setTimeout(() => {
         if (iframe.isConnected && activeIframe === iframe) {
           playerStatus.textContent = 'Player is taking a while to load.';
@@ -184,6 +201,7 @@ const { Content } = await render(project);
   });
 
   // 🔍 Helper to inspect video link and extract ID and whether it's YouTube or Vimeo
+  // Takes a URL string, checks patterns for YouTube and Vimeo, and returns the ID
   function parseVideoUrl(url: string): { id: string | null; provider: 'youtube' | 'vimeo' | null } {
     if (!url) return { id: null, provider: null };
 
@@ -201,6 +219,7 @@ const { Content } = await render(project);
 </script>
 
 <style>
+  /* 📺 16:9 widescreen movie frame aspect ratio */
   .video-container {
     position: relative;
     aspect-ratio: 16 / 9;
@@ -217,6 +236,7 @@ const { Content } = await render(project);
     height: 100%;
     object-fit: cover;
   }
+  /* Round play button floating in the dead center of the poster */
   .video-play {
     position: absolute;
     top: 50%;
@@ -253,6 +273,7 @@ const { Content } = await render(project);
     color: var(--accent);
     font: 11px var(--mono);
   }
+  /* On mobile phones, use 4:3 so video takes more vertical space */
   @media (max-width: 767px) {
     .video-container {
       aspect-ratio: 4 / 3;
