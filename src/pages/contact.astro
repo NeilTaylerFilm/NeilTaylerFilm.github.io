@@ -9,11 +9,16 @@
 // - Direct links to your Instagram, LinkedIn, and TikTok profiles.
 
 // Contact page with email and social links.
+// --- BORROWED TOOLS (Imports) ---
+// ContactIcon: Draws the matching symbol (like a little mail envelope, camera for Instagram, etc.).
 import ContactIcon from '../components/ContactIcon.astro';
+// BaseLayout: The shared website foundation (header bar, footer, styling).
 import BaseLayout from '../layouts/BaseLayout.astro';
+// site: Our website configuration file containing your email address and profile handles.
 import { site } from '../config/site';
 
 // 🔗 Filter for social links that have a valid URL filled in
+// Like flipping through a business card Rolodex and discarding blank cards.
 const links = site.links.filter((link) => link.url);
 ---
 
@@ -39,6 +44,7 @@ const links = site.links.filter((link) => link.url);
     {/* 📇 List of Contact Channels */}
     <div class="contact-list">
       {/* ✉️ Email Row with "Copy email" and "Email me" buttons */}
+      {/* Question: Is an email address configured in site.email? If yes, show this contact row. */}
       {site.email && (
         <div class="contact-row">
           <strong>
@@ -47,6 +53,7 @@ const links = site.links.filter((link) => link.url);
           </strong>
           <div class="contact-email-actions">
             {/* 📋 1-Click Copy Email Button */}
+            {/* When clicked, the little script below slips the email onto the visitor's clipboard. */}
             <button
               class="control contact-copy-email"
               type="button"
@@ -61,6 +68,7 @@ const links = site.links.filter((link) => link.url);
               <span data-copy-label>Copy email</span>
             </button>
             {/* ↗️ Standard mailto link */}
+            {/* Clicking this opens the user's default email client (Apple Mail, Outlook, etc.). */}
             <a class="control contact-email" href={`mailto:${site.email}`}>
               Email me <span aria-hidden="true">↗</span>
             </a>
@@ -68,9 +76,11 @@ const links = site.links.filter((link) => link.url);
         </div>
       )}
       {/* Invisible live region for screen readers */}
+      {/* Sighted users don't see this, but when text is copied, assistive tech announces it out loud. */}
       <p class="visually-hidden" data-copy-status role="status" aria-live="polite"></p>
 
       {/* 🌐 Social Media Link Rows */}
+      {/* We iterate over every social profile link, displaying its branded icon and user handle. */}
       {links.map((link) => (
         <a class="contact-row" href={link.url}>
           <strong>
@@ -84,6 +94,7 @@ const links = site.links.filter((link) => link.url);
       ))}
 
       {/* Fallback if no contact details were provided */}
+      {/* Question: Are both email and social links missing? If so, show a polite holding message. */}
       {!site.email && !links.length && (
         <p class="contact-row muted">Contact details will be added soon.</p>
       )}
@@ -94,13 +105,16 @@ const links = site.links.filter((link) => link.url);
 <script>
   // 📋 CLIPBOARD COPY CONTROLLER:
   // Copies your email to the visitor's clipboard without navigating away
+  // Grab references to the interactive elements on the page using their data- attributes.
   const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
   const label = document.querySelector<HTMLSpanElement>('[data-copy-label]');
   const status = document.querySelector<HTMLElement>('[data-copy-status]');
 
+  // Only attach the click listener if the button exists on this page.
   if (button) {
     button.addEventListener('click', async () => {
       try {
+        // Ask the browser's clipboard to store the email string like putting a piece of paper in someone's pocket.
         await navigator.clipboard.writeText(button.dataset.email || '');
         const original = label?.textContent || 'Copy email';
         label!.textContent = 'Copied ✓'; // Temporary success text
@@ -111,6 +125,7 @@ const links = site.links.filter((link) => link.url);
           status!.textContent = '';
         }, 2000);
       } catch {
+        // If the browser blocks clipboard access, guide the user to select and copy manually.
         status!.textContent = 'Could not copy email address. Please select and copy it manually.';
       }
     });
