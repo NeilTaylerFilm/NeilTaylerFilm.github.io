@@ -7,11 +7,16 @@
 // - It calculates whether photos are tall (portrait) or wide (landscape) so they fit together like puzzle pieces.
 // - Supports two modes: 'editorial' (big hero shots and pairs) or 'justified' (neat interlocking mosaic rows).
 
+// --- BORROWED TOOLS (Imports) ---
+// ResponsiveImage: Smart picture frame that loads optimized images.
 import ResponsiveImage from './ResponsiveImage.astro';
+// imageInfo: Helper to find dimensions, aspect ratios, and WebP srcsets.
 import { imageInfo } from '../lib/images';
+// gallerySections: Organizes photo lists into grouped chapters based on markdown headings.
 import { gallerySections } from '../lib/gallery-sections';
 
 // 📋 What this gallery accepts:
+// An array of photograph objects and an optional layout design choice.
 interface Props {
   images: {
     src: string;        // Picture web address
@@ -25,6 +30,7 @@ interface Props {
   layout?: 'editorial' | 'justified'; // The display style
 }
 
+// Unpack props: image collection and layout style
 const { images, layout = 'editorial' } = Astro.props;
 ---
 
@@ -35,12 +41,14 @@ const { images, layout = 'editorial' } = Astro.props;
     {group.heading && <h2 class="gallery-section-heading">{group.heading}</h2>}
 
     {/* 🧱 Grid of photos */}
+    {/* The container for photos. Switches to flex-wrap if layout is justified. */}
     <div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
       {group.images.map((image, localIndex) => {
         const index = group.start + localIndex;
         const info = imageInfo(image.src);
 
         // 📐 Calculate the aspect ratio (width divided by height) so rows don't distort
+        // Ratio calculation: prevents image jumping and controls mosaic expansion
         const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
         const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
 
@@ -57,6 +65,7 @@ const { images, layout = 'editorial' } = Astro.props;
             ]}
           >
             {/* 🔍 Clickable link that triggers the full-screen Lightbox zoom */}
+            {/* High-resolution zoom target passed to the Lightbox popover */}
             <a
               href={image.full || info?.full || image.src}
               data-gallery-trigger
@@ -99,6 +108,7 @@ const { images, layout = 'editorial' } = Astro.props;
     flex-wrap: wrap;
     gap: 6px;
   }
+  /* Justified flex items grow according to their aspect ratio variable */
   .gallery.gallery-justified .gallery-item {
     flex: var(--ratio) 1 calc(var(--ratio) * 200px);
     min-width: 0;
@@ -117,6 +127,7 @@ const { images, layout = 'editorial' } = Astro.props;
     height: 100%;
     object-fit: cover;
   }
+  /* Ghost flex item prevents the final row from stretching full width when incomplete */
   .gallery-justified::after {
     content: '';
     flex: 10 1 0;
