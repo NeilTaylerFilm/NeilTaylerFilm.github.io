@@ -1,12 +1,30 @@
+// ==========================================
+// 🔐 CLOUDFLARE R2 VAULT KEY (scripts/lib/r2.mjs)
+// ==========================================
+// This file is the secure key that unlocks your Cloudflare R2 photo storage vault!
+// It does three important jobs:
+// 1. connection(): Safely reads your secret passwords from .env.r2 and connects to Cloudflare.
+// 2. inventory(): Counts every photo currently stored in your online vault.
+// 3. uploadBudget(): A spending guardrail! Prevents uploads if total files would exceed 8 GB,
+//    ensuring you stay completely inside Cloudflare's free storage tier!
+
+// R2 connection helper for Cloudflare storage operations.
 import { readFile, stat } from 'node:fs/promises';
 import { parseEnv } from 'node:util';
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
+
+// 🔑 CONNECT TO THE VAULT: Reads your secrets and opens the door
 export async function connection() {
   const file = new URL('../../.env.r2', import.meta.url);
   const mode = (await stat(file)).mode;
+
+  // 🛡️ Security Check: Make sure only you can read the secret password file (chmod 600)
   if (mode & 0o077)
     throw new Error('Credentials file permissions are too open; run chmod 600 .env.r2.');
+
   const config = parseEnv(await readFile(file, 'utf8'));
+
+  // 🔍 Verify all required Cloudflare credentials and bucket names exist
   if (
     !/^[a-f0-9]{32}$/i.test(config.R2_ACCOUNT_ID || '') ||
     !config.R2_ACCESS_KEY_ID ||
@@ -18,6 +36,8 @@ export async function connection() {
       'R2 configuration is incomplete or does not match this site. Run the setup helper.',
     );
   }
+
+  // 🚀 Open the official S3-compatible communication channel to Cloudflare
   const client = new S3Client({
     region: 'auto',
     endpoint: `https://${config.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -29,9 +49,12 @@ export async function connection() {
   });
   return { client, bucket: config.R2_BUCKET, origin: config.R2_PUBLIC_URL };
 }
+
+// 📦 INVENTORY AUDIT: Lists all files currently stored in your Cloudflare bucket
 export async function inventory(client, bucket) {
   const objects = new Map();
   let token;
+  // Page through files 1,000 at a time until we have counted every single one
   do {
     const page = await client.send(
       new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: token }),
@@ -42,6 +65,8 @@ export async function inventory(client, bucket) {
   } while (token);
   return objects;
 }
+
+// 💰 SPENDING GUARDRAIL: Guarantees you never accidentally exceed 8 Gigabytes of free storage
 export function uploadBudget(objects, files, limit = 8_000_000_000) {
   const used = [...objects.values()].reduce((a, b) => a + b, 0);
   const pending = files.filter((file) => !objects.has(file.key));

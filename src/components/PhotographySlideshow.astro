@@ -1,11 +1,25 @@
 ---
+// ==========================================
+// 📽️ FEATURED PHOTOGRAPHY SLIDESHOW CAROUSEL
+// ==========================================
+// This is the gorgeous interactive slide projector on your Photography page!
+// It features:
+// - A big cinema screen showing your featured photos.
+// - An "Expand" button for dark theater fullscreen viewing.
+// - Previous/Next arrow buttons and a bottom thumbnail filmstrip.
+// - Smooth swipe gestures on phones.
+
 import { featured as originalFeatured, featuredIsDemo } from '../data/featured';
 import { imageInfo } from '../lib/images';
 import '../styles/photography-viewer.css';
+
+// 📚 Merge your featured photos list with image size data from the rolodex
 const featured = originalFeatured.map((photo) => ({ ...photo, ...imageInfo(photo.src) }));
+// The very first photo to display when the page opens
 const first = featured[0];
 ---
 
+{/* Only render if there is at least one photo in the featured list */}
 {first && (
   <section
     class="slideshow photo-showcase"
@@ -15,10 +29,12 @@ const first = featured[0];
     data-slides={JSON.stringify(featured)}
   >
     <div class="photo-panel" data-photo-panel>
+      {/* 🛠️ Top Bar: Title status indicator, Expand button, and Close button */}
       <div class="photo-toolbar">
         <span class="mono">
           <span class="status-dot"></span> Selected photographs
         </span>
+        {/* ⤢ Expand to Fullscreen Theater Button */}
         <button class="control" type="button" data-photo-expand aria-haspopup="dialog" hidden>
           <svg
             viewBox="0 0 24 24"
@@ -33,6 +49,7 @@ const first = featured[0];
           </svg>
           Expand
         </button>
+        {/* ✕ Close Fullscreen Button */}
         <button
           class="control photo-close"
           type="button"
@@ -42,7 +59,10 @@ const first = featured[0];
           <span aria-hidden="true">×</span> Close
         </button>
       </div>
+
+      {/* 🖼️ Viewport: The frame where the active photograph shines */}
       <div class="photo-viewport" data-photo-viewport>
+        {/* ⚡ Fast blurry preview so visitor never sees blank space while high-res loads */}
         {first.thumbnail && (
           <img
             class="photo-preview"
@@ -53,6 +73,7 @@ const first = featured[0];
             aria-hidden="true"
           />
         )}
+        {/* 📸 The main high-definition photograph */}
         <img
           data-slide-image
           src={first.src}
@@ -65,6 +86,8 @@ const first = featured[0];
           decoding="async"
         />
       </div>
+
+      {/* 📝 Details Bar: Caption, Project link, and Next/Prev controls */}
       <div class="photo-details">
         <div class="photo-caption">
           <p data-slide-caption>{first.caption}</p>
@@ -79,6 +102,7 @@ const first = featured[0];
           {featuredIsDemo && <span class="mono muted">Sample photographs</span>}
         </div>
         <div class="slide-navigation">
+          {/* 🔢 Slide counter (e.g. 01 / 04) */}
           <span
             class="mono small"
             data-slide-count
@@ -88,6 +112,7 @@ const first = featured[0];
           >
             01 / {String(featured.length).padStart(2, '0')}
           </span>
+          {/* ⬅️ Previous arrow */}
           <button
             class="control square"
             type="button"
@@ -97,6 +122,7 @@ const first = featured[0];
           >
             ←
           </button>
+          {/* ➡️ Next arrow */}
           <button
             class="control square"
             type="button"
@@ -108,6 +134,8 @@ const first = featured[0];
           </button>
         </div>
       </div>
+
+      {/* 🎞️ Bottom Filmstrip: Clickable row of miniature picture cards */}
       <div
         class="photo-filmstrip"
         data-photo-filmstrip
@@ -135,12 +163,18 @@ const first = featured[0];
           </button>
         ))}
       </div>
+      {/* 🗣️ Invisible message box for blind screen reader users */}
       <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
+
+    {/* 🎭 Dark theater modal for fullscreen mode */}
     <dialog class="photo-dialog" data-photo-dialog aria-label="Expanded photographs"></dialog>
   </section>
 )}
+
 <script>
+  // 🚀 Start up the viewer brain engine we built in photography-viewer.ts!
   import { setupPhotographyViewer } from '../scripts/photography-viewer';
   document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 </script>
+

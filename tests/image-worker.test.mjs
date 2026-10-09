@@ -1,7 +1,18 @@
+// ==========================================
+// 🧪 CLOUDFLARE IMAGE GATEWAY TEST (tests/image-worker.test.mjs)
+// ==========================================
+// This test suite acts like an ethical security hacker testing your website!
+// It verifies:
+// 1. Security Lock: Attackers cannot upload files or view private files outside photos/.
+// 2. Picture Streaming: Photographs, sizes, and ETags download cleanly to browsers.
+// 3. Cache Rules: 1-year browser caching only applies to content-hashed files!
+
+// Tests Cloudflare image worker gateway for security and caching
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../cloudflare/image-worker.mjs';
 
+// 🔒 TEST 1: Security guards stop bad URLs and write attempts before touching R2
 test('image gateway blocks writes and non-public objects without reading R2', async () => {
   const env = {
     IMAGES: {
@@ -32,6 +43,8 @@ test('image gateway blocks writes and non-public objects without reading R2', as
     405,
   );
 });
+
+// ⚡ TEST 2: Valid image requests stream data with correct Content-Type and headers
 test('image gateway streams images, serves HEAD metadata, and handles missing files', async () => {
   const object = { size: 3, httpEtag: '"abc"', body: 'abc' };
   const calls = [];

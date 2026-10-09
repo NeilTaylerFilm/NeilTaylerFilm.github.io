@@ -1,10 +1,24 @@
+// ==========================================
+// 🧪 FEED & DATE LABORATORY TESTS (tests/feed.test.mjs)
+// ==========================================
+// Think of this file like a robot quality tester in a factory!
+// It runs automated checks to guarantee:
+// 1. Dates never get mixed up by world timezones (13 Sept is always 13 Sept).
+// 2. Blog post summaries (excerpts) strip raw computer code cleanly.
+// 3. Category filters handle accents and special characters (like "Café" or "Film / TV").
+// 4. Calendar dates reject impossible days like February 30th!
+
+// Tests feed utilities for excerpts, dates, categories and sorting
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { excerpt, isoDate, categoryKey, comparators } from '../src/lib/feed.ts';
 
+// 📅 TEST 1: Timezone safety (Dates must not shift when traveling)
 test('dates remain ISO dates regardless of local time zone', () => {
   assert.equal(isoDate(new Date('2026-09-13')), '2026-09-13');
 });
+
+// ✂️ TEST 2: Summary teasers strip raw Markdown code and keep clean sentences
 test('manual excerpts win; automatic previews remove Markdown markup and image paths', () => {
   assert.equal(excerpt('Ignored', '  A chosen introduction.  '), 'A chosen introduction.');
   assert.equal(
@@ -20,6 +34,8 @@ test('manual excerpts win; automatic previews remove Markdown markup and image p
   );
   assert.ok(excerpt('A short sentence. '.repeat(50)).length <= 330);
 });
+
+// 🏷️ TEST 3: Category names support accents, slashes, and ampersands
 test('new user-defined categories work, including punctuation and Unicode', () => {
   for (const category of ['Travel', 'Film / TV', 'Café', 'Colour & light']) {
     assert.equal(categoryKey(category), category.toLowerCase());

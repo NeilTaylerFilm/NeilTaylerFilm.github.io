@@ -1,16 +1,30 @@
 ---
+// ==========================================
+// 🎬 INDIVIDUAL FILM PROJECT PAGE (post-production/[...id].astro)
+// ==========================================
+// This is the dedicated theater page for a specific film, music video, or VFX reel!
+// It features:
+// - Movie poster with click-to-play video player.
+// - Project backstory and roles (Director, Editor, Colorist).
+// - Behind-the-scenes photo stills gallery.
+// - Direct links to related blog articles.
+
+// Individual post-production project page with video embed and gallery.
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectMetadata from '../../components/ProjectMetadata.astro';
 import Gallery from '../../components/Gallery.astro';
 import { site } from '../../config/site';
 import { postProjects } from '../../lib/content';
+
+// 🗺️ ROUTE GENERATOR: Creates a webpage for each post-production project
 export async function getStaticPaths() {
   return (await postProjects()).map((project) => ({
     params: { id: project.id },
     props: { project },
   }));
 }
+
 const { project } = Astro.props;
 const { data } = project;
 const { Content } = await render(project);
@@ -26,9 +40,12 @@ const { Content } = await render(project);
   image={data.socialImage || data.poster || data.coverImage || data.cover}
   noindex={data.draft}
 >
+  {/* 🔙 Back to catalog link */}
   <a class="back-link mono" href="/post-production/" data-archive-back="/post-production/">
     ← All post-production
   </a>
+
+  {/* 🎬 Project Introduction Header */}
   <header class="project-intro">
     <ProjectMetadata {...data} />
     <h1>
@@ -37,6 +54,8 @@ const { Content } = await render(project);
     </h1>
     {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
     {data.demo && <p class="demo-notice">Example project · This sample work is not Neil's.</p>}
+
+    {/* 📺 Video player box with poster and play button */}
     {data.video && (
       <div class="video-container" data-video-container data-video-url={data.video}>
         <img
@@ -61,13 +80,19 @@ const { Content } = await render(project);
         >Open video directly</a>
       </div>
     )}
+
+    {/* 📖 Written story / project notes */}
     <div class="prose project-description" data-project-prose>
       <Content />
     </div>
   </header>
+
+  {/* 🖼️ Optional behind-the-scenes image gallery */}
   {data.images.length > 0 && (
     <Gallery images={data.images} />
   )}
+
+  {/* 📝 List of related blog articles */}
   {data.relatedPosts && data.relatedPosts.length > 0 && (
     <section class="related-writing" aria-label="Related writing">
       <h2 class="eyebrow">Related writing</h2>
@@ -80,6 +105,8 @@ const { Content } = await render(project);
       </ul>
     </section>
   )}
+
+  {/* 🏁 Polite sign-off at bottom */}
   <div class="project-end">
     <p class="serif-word">Thanks for looking.</p>
     <a class="control" href="/post-production/" data-archive-back="/post-production/">
@@ -87,7 +114,11 @@ const { Content } = await render(project);
     </a>
   </div>
 </BaseLayout>
+
 <script>
+  // 🔌 VIDEO EMBEDDER:
+  // Waits until the visitor clicks the Play button before downloading YouTube/Vimeo
+  // so the page loads at lightning speed!
   // Lazy-load video iframe on play click
   document.querySelectorAll<HTMLElement>('[data-video-container]').forEach((container) => {
     const playBtn = container.querySelector<HTMLButtonElement>('[data-video-play]');
@@ -152,6 +183,7 @@ const { Content } = await render(project);
     });
   });
 
+  // 🔍 Helper to inspect video link and extract ID and whether it's YouTube or Vimeo
   function parseVideoUrl(url: string): { id: string | null; provider: 'youtube' | 'vimeo' | null } {
     if (!url) return { id: null, provider: null };
 
@@ -227,3 +259,4 @@ const { Content } = await render(project);
     }
   }
 </style>
+

@@ -1,13 +1,26 @@
+# ==========================================
+# 🚀 AUTOMATIC GITHUB PAGES DEPLOYMENT (.github/workflows/deploy.yml)
+# ==========================================
+# This workflow is your automated construction robot living in GitHub's cloud!
+# Whenever you push new writing, photos, or code to the "main" branch:
+# 1. It spins up a fresh virtual computer in GitHub's datacenter.
+# 2. Runs the exact same safety tests (npm test & verify) that you run locally.
+# 3. Builds the production HTML files in the "dist" folder.
+# 4. Deploys them directly to GitHub Pages (https://neiltaylerfilm.com) with zero downtime!
+
 name: Deploy Astro to GitHub Pages
 
+# 🔔 TRIGGER: Runs automatically whenever you push changes to the main branch
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: # Also lets you manually click "Run workflow" in GitHub
 
+# 🛡️ PERMISSIONS: Only grant read access to code for safety
 permissions:
   contents: read
 
+# 🚦 CONCURRENCY: If you push twice quickly, cancels the older build so they don't collide
 concurrency:
   group: github-pages
   cancel-in-progress: true

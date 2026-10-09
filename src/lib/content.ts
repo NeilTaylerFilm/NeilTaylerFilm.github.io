@@ -1,22 +1,49 @@
+// ==========================================
+// 📚 THE CONTENT LIBRARIAN (Fetching & Sorting Work)
+// ==========================================
+// Think of this file like a super helpful librarian.
+// Whenever a page says "Hey, show me all the blog articles!" or
+// "Show me all photography projects!", this librarian goes into
+// the content folders, hides any unfinished drafts, sorts everything
+// by newest first, and hands them over!
+
+// Helpers for loading and sorting blog, photography, and post-production content
 import { getCollection } from 'astro:content';
 import { categoryKey, projectTimestamp, postCategories } from './feed';
+// Re-export helpers so other files can grab them from one convenient place
 export { excerpt, isoDate, categoryKey, comparators, projectTimestamp } from './feed';
+
+// 📝 FETCH BLOG POSTS:
+// Gets all blog articles.
+// - If you are previewing locally on your laptop (DEV mode), drafts will show.
+// - On the live public website, drafts are hidden!
+// - Sorted newest date first.
 // Both listing and route generation use the same publication rule.
 export async function posts() {
   return (await getCollection('blog', ({ data }) => import.meta.env.DEV || !data.draft)).sort(
     (a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id),
   );
 }
+
+// 📷 FETCH PHOTOGRAPHY PROJECTS:
+// Gets all photo projects, filters out drafts, and sorts newest first.
 export async function projects() {
   return (
     await getCollection('photography', ({ data }) => import.meta.env.DEV || !data.draft)
   ).sort((a, b) => projectTimestamp(b.data) - projectTimestamp(a.data) || a.id.localeCompare(b.id));
 }
+
+// 🎬 FETCH POST-PRODUCTION PROJECTS:
+// Gets all film & video projects, filters out drafts, and sorts newest first.
 export async function postProjects() {
   return (
     await getCollection('postProduction', ({ data }) => import.meta.env.DEV || !data.draft)
   ).sort((a, b) => projectTimestamp(b.data) - projectTimestamp(a.data) || a.id.localeCompare(b.id));
 }
+
+// 🏷️ GET ALL UNIQUE CATEGORIES:
+// Looks through a list of articles, finds every category label used,
+// removes duplicates, and sorts them A-to-Z.
 export function categories(entries: { data: { category?: string; categories?: string[] } }[]) {
   return [
     ...new Map(
@@ -26,3 +53,4 @@ export function categories(entries: { data: { category?: string; categories?: st
     ).values(),
   ].sort();
 }
+

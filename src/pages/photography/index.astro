@@ -1,10 +1,25 @@
 ---
+// ==========================================
+// 📷 PHOTOGRAPHY PORTFOLIO (photography/index.astro)
+// ==========================================
+// This is your photography gallery exhibition hall!
+// It features:
+// 1. A top interactive slideshow showing your featured master shots.
+// 2. A "View projects ↓" shortcut link.
+// 3. An album catalog grid showing every photo collection you've created.
+// 4. Filter and sort controls so visitors can browse by theme.
+
+// Photography project index page with slideshow and category filters.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PhotographySlideshow from '../../components/PhotographySlideshow.astro';
 import FeedControls from '../../components/FeedControls.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
 import { projects, categories as getCategories } from '../../lib/content';
+
+// 📚 Fetch all published photography albums (sorted newest first)
 const allProjects = await projects();
+
+// 🏷️ Find all categories used across these albums
 const categories = getCategories(allProjects);
 ---
 
@@ -13,29 +28,42 @@ const categories = getCategories(allProjects);
   description="Photographs, collected into projects. A place to slow down and look."
 >
   <h1 class="visually-hidden">Photography</h1>
+
+  {/* 🌟 HERO SHOWCASE: Interactive featured photograph projector */}
   <div class="photography-intro" data-photography-intro>
+    {/* ⬇️ Quick jump link down to the album catalog */}
     {allProjects.length > 0 && (
       <a class="projects-shortcut mono" href="#projects-heading">
         View projects ↓
       </a>
     )}
+    {/* The interactive slide projector widget */}
     <PhotographySlideshow />
   </div>
+
+  {/* 🗂️ THE PROJECT INDEX: Grid of all photo albums */}
   <section class="project-section" aria-labelledby="projects-heading">
+    {/* 🏷️ Section title */}
     <div class="section-heading">
       <h2 id="projects-heading" class="eyebrow">
         The project index
       </h2>
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
+
+    {/* 🎛️ Filter and sort dropdowns */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}
+
+    {/* 🧱 Grid of album preview cards */}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (
         <ProjectCard project={project} />
       ))}
     </div>
+
+    {/* 🍃 Empty state if no albums exist */}
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>
 </BaseLayout>
@@ -58,6 +86,9 @@ const categories = getCategories(allProjects);
 </style>
 
 <script>
+  // 📐 SMART SCREEN SIZER:
+  // Dynamically measures phone screens so the top hero photo fits comfortably
+  // without mobile browser toolbars squishing it when you scroll!
   const intro = document.querySelector<HTMLElement>('[data-photography-intro]');
   const grid = document.querySelector<HTMLElement>('.project-grid');
   const stage = intro?.querySelector<HTMLElement>('.photo-viewport');
@@ -96,3 +127,4 @@ const categories = getCategories(allProjects);
     fit();
   }
 </script>
+

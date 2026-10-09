@@ -1,16 +1,28 @@
+// ==========================================
+// 🎬 FEATURED POST-PRODUCTION & FILM SHOWCASE
+// ==========================================
+// This file is your film festival lineup!
+// Each item in this list is a short film, music video, or VFX reel
+// that appears in the video viewer on your Post-Production page.
+
+// Curated list of featured post-production work for the post-production page.
 // Curate the post-production page here. Use an uploaded R2 image address or a local image path.
 // Video can be a YouTube or Vimeo URL/ID. Project is the Markdown filename (without .md).
+
+// 📋 The checklist for each film entry:
 type FeaturedWork = {
-  src: string;
-  alt: string;
-  caption?: string;
-  project?: string;
+  src: string;       // Poster / thumbnail image shown before the video plays
+  alt: string;       // Text description of the image for accessibility
+  caption?: string;  // Title / caption shown on screen
+  project?: string;  // Project page link (optional)
   blogPost?: string; // Published blog filename without .md; omit until ready.
-  video?: string; // YouTube/Vimeo URL or ID (optional)
-  poster?: string; // Custom poster for video (optional)
-  width: number;
-  height: number;
+  video?: string;    // YouTube/Vimeo URL or ID (optional)
+  poster?: string;   // Custom poster for video (optional)
+  width: number;     // Width in pixels
+  height: number;    // Height in pixels
 };
+
+// 🎞️ The list of featured videos and films:
 export const featured: FeaturedWork[] = [
   {
     src: 'https://i.ytimg.com/vi/HAkxnRaTW2Q/hqdefault.jpg',
@@ -70,4 +82,7 @@ export const featured: FeaturedWork[] = [
     height: 360,
   },
 ];
+
+// 🚩 Flag indicating this is live finished work, not a test placeholder!
 export const featuredIsDemo = false;
+

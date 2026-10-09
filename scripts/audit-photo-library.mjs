@@ -1,13 +1,27 @@
+// ==========================================
+// 🕵️ THE PHOTO LIBRARY DETECTIVE (scripts/audit-photo-library.mjs)
+// ==========================================
+// This script acts like a detective with a magnifying glass!
+// It double-checks every photo on your website:
+// 1. Scans every blog post and photography project in your codebase.
+// 2. Extracts every Cloudflare image web address you wrote.
+// 3. Cross-references them with your database (src/data/r2-images.json).
+// 4. Catches broken photo links or missing image sizes before your visitors see them!
+
+// Scan source files for photo URLs and cross-reference them against the R2 registry.
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const registryPath = path.join(root, 'src/data/r2-images.json');
+
+// 🔍 Patterns matching valid Cloudflare photo addresses (32-character hash + pixel width)
 const photoUrlPattern = /https:\/\/[^/\s"'<>]+\/photos\/[a-f0-9]{32}-\d+\.(?:jpeg|webp)/gi;
 const validPhotoUrl = /^https:\/\/[^/]+\/photos\/[a-f0-9]{32}-\d+\.(?:jpeg|webp)$/i;
 const extensions = new Set(['.astro', '.js', '.json', '.md', '.mdx', '.ts']);
 
+// 📂 Helper: Recursively finds all code and content files in a directory
 async function sourceFiles(directory) {
   const result = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -19,14 +33,17 @@ async function sourceFiles(directory) {
   return result;
 }
 
+// 🔗 Helper: Extracts all photo URLs found inside a string of text
 function urlsIn(value) {
   return [...value.matchAll(photoUrlPattern)].map(([url]) => url);
 }
 
+// 🆔 Helper: Extracts the unique 32-character photo fingerprint from a URL
 function photoId(url) {
   return new URL(url).pathname.match(/\/photos\/([a-f0-9]{32})-/i)?.[1];
 }
 
+// 📖 Load the database of all registered Cloudflare photos
 const registry = JSON.parse(await readFile(registryPath, 'utf8'));
 const registeredUrls = new Set();
 const errors = [];

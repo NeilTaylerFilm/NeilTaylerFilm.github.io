@@ -1,17 +1,31 @@
 ---
+// ==========================================
+// 🦶 SITE FOOTER (The Bottom of Every Page)
+// ==========================================
+// This component is the welcome mat at the bottom of your website!
+// It shows your site's name with an accent dot and automatically
+// prints the current year's copyright notice so you never have to
+// update it manually on New Year's Eve!
+
+// 📚 Import your site settings (name, author)
 import { site } from '../config/site';
+
 ---
 
 <footer class="site-footer wrap">
+  <!-- 🏠 Site title link that takes visitors back home -->
   <div>
     <a class="footer-name" href="/">
       {site.name}
       <span class="accent">.</span>
     </a>
   </div>
+
+  <!-- 📅 Automatic copyright notice with current calendar year -->
   <div class="footer-bottom mono">
     <span>
       © {new Date().getFullYear()} {site.author}
     </span>
   </div>
 </footer>
+

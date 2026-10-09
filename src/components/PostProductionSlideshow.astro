@@ -1,12 +1,26 @@
 ---
+// ==========================================
+// 🍿 VIDEO & FILM SCREENING ROOM CAROUSEL
+// ==========================================
+// This is the interactive movie theater on your Post-Production page!
+// It features:
+// - Movie posters with a big round "Play" button in the center.
+// - Clicking Play seamlessly pops up a YouTube or Vimeo video player right inside the frame!
+// - A filmstrip at the bottom with video preview thumbnails.
+// - A "Learn more…" button that links directly to a behind-the-scenes blog post if published!
+
 import { featured as originalFeatured, featuredIsDemo } from '../data/post-production-featured';
 import { getCollection } from 'astro:content';
 import { videoEmbedUrl, linkedBlogUrl } from '../lib/post-production';
 import { imageInfo } from '../lib/images';
 import '../styles/photography-viewer.css';
+
+// 📚 Find all blog posts that are live and published (not drafts)
 const publishedPosts = new Set(
   (await getCollection('blog')).filter((post) => !post.data.draft).map((post) => post.id),
 );
+
+// 🎞️ Assemble the video works with images, video embed links, and blog links
 const featured = originalFeatured.map((photo) => ({
   ...photo,
   ...imageInfo(photo.poster || photo.src),
@@ -14,9 +28,11 @@ const featured = originalFeatured.map((photo) => ({
   embedUrl: videoEmbedUrl(photo.video),
   blogUrl: linkedBlogUrl(photo.blogPost, publishedPosts),
 }));
+// The very first video to show on the screen
 const first = featured[0];
 ---
 
+{/* Only render if there is at least one video project in the list */}
 {first && (
   <section
     class="slideshow photo-showcase"
@@ -28,6 +44,7 @@ const first = featured[0];
     data-slides={JSON.stringify(featured)}
   >
     <div class="photo-panel" data-photo-panel>
+      {/* 🛠️ Top Bar: Film title caption and Expand / Close buttons */}
       <div class="photo-toolbar">
         <p class="work-title" data-slide-caption>
           {first.caption}
@@ -55,7 +72,10 @@ const first = featured[0];
           <span aria-hidden="true">×</span> Close
         </button>
       </div>
+
+      {/* 📺 The TV Screen (Viewport) */}
       <div class="photo-viewport" data-photo-viewport>
+        {/* 🖼️ The movie poster / thumbnail image */}
         <img
           data-slide-image
           src={first.src}
@@ -67,6 +87,8 @@ const first = featured[0];
           fetchpriority="high"
           decoding="async"
         />
+
+        {/* ▶️ Big round Play button over the video poster */}
         <button
           class="video-play"
           data-video-play
@@ -78,10 +100,15 @@ const first = featured[0];
             <path d="M8 5v14l11-7z" />
           </svg>
         </button>
+
+        {/* ⏳ Player status feedback (e.g. "Loading player…") */}
         <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
       </div>
+
+      {/* 🎬 Details Bar: Links to blog post, direct YouTube link, and arrows */}
       <div class="photo-details">
         <div class="work-actions">
+          {/* Link to project page */}
           <a
             class="mono"
             data-photo-project
@@ -92,6 +119,8 @@ const first = featured[0];
           </a>
 
           {featuredIsDemo && <span class="mono muted">Sample work</span>}
+
+          {/* 📖 "Learn more…" button linking to a behind-the-scenes blog post */}
           <a
             class="control work-learn-more"
             data-work-learn-more
@@ -102,6 +131,8 @@ const first = featured[0];
           >
             Learn more…
           </a>
+
+          {/* ↗️ External link to watch directly on YouTube or Vimeo */}
           <a
             class="watch-link"
             data-watch-link
@@ -113,6 +144,8 @@ const first = featured[0];
             Watch on <span data-platform-name>YouTube</span>
           </a>
         </div>
+
+        {/* ⬅️ / ➡️ Slide navigation arrows and counter */}
         <div class="slide-navigation">
           <span
             class="mono small"
@@ -143,6 +176,8 @@ const first = featured[0];
           </button>
         </div>
       </div>
+
+      {/* 🎞️ Bottom Filmstrip of video cards with play badges */}
       <div
         class="photo-filmstrip"
         data-photo-filmstrip
@@ -189,13 +224,18 @@ const first = featured[0];
       </div>
       <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
+
+    {/* 🎭 Dark theater modal for expanded fullscreen */}
     <dialog class="photo-dialog" data-photo-dialog aria-label="Expanded work"></dialog>
   </section>
 )}
+
 <script>
+  // 🚀 Start up the base photo slideshow logic
   import { setupPhotographyViewer } from '../scripts/photography-viewer';
   document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 
+  // 🎬 EXTRA VIDEO CONTROLLER: Handles clicking the Play button and embedding video iframes
   document.querySelectorAll<HTMLElement>('[data-video-viewer]').forEach((root) => {
     const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string; video?: string }> =
       JSON.parse(root.dataset.slides || '[]');
@@ -206,6 +246,8 @@ const first = featured[0];
     const watchLink = root.querySelector<HTMLAnchorElement>('[data-watch-link]')!;
     const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
     let playerTimer = 0;
+
+    // 🔄 When user flips to another slide, remove old video player and refresh links
     function update() {
       viewport.querySelector('iframe')?.remove();
       window.clearTimeout(playerTimer);
@@ -232,11 +274,17 @@ const first = featured[0];
         watchLink.hidden = true;
       }
     }
+
+    // Listen for slide change events fired by the photography-viewer engine
     root.addEventListener('photo-change', update);
+
+    // ▶️ When visitor clicks the big Play button:
     play?.addEventListener('click', (event) => {
       event.stopPropagation();
       const work = slides[Number(root.dataset.index || 0)];
       if (!work.embedUrl) return;
+
+      // 📺 Build the YouTube or Vimeo iframe TV screen!
       const iframe = document.createElement('iframe');
       iframe.src = work.embedUrl;
       iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
@@ -246,29 +294,37 @@ const first = featured[0];
       iframe.title = work.caption || 'Film player';
       iframe.setAttribute('aria-busy', 'true');
       playerStatus.textContent = 'Loading player…';
+
+      // If it takes more than 8 seconds, show a polite note
       playerTimer = window.setTimeout(() => {
         if (iframe.isConnected && viewport.querySelector('iframe') === iframe)
           playerStatus.textContent = 'Player is taking a while to load.';
       }, 8000);
+
+      // When the video finishes loading:
       iframe.addEventListener('load', () => {
         if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');
         playerStatus.textContent = '';
       }, { once: true });
+
+      // If video failed to load (e.g. offline):
       iframe.addEventListener('error', () => {
         if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');
         playerStatus.textContent = 'Player could not load. Use the Watch on link below to open it directly.';
       }, { once: true });
+
       viewport.append(iframe);
-      play.hidden = true;
+      play.hidden = true; // Hide the play button since video is playing
       iframe.focus();
     });
     update();
   });
 </script>
+
 
 <style>
   .video-poster {

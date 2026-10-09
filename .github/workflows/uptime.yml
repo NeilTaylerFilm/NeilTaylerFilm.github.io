@@ -1,9 +1,20 @@
+# ==========================================
+# ⏱️ 24/7 WEBSITE UPTIME GUARDIAN (.github/workflows/uptime.yml)
+# ==========================================
+# Think of this script as an automated security guard doing rounds every 6 hours!
+# It wakes up on schedule in the cloud and quietly tests:
+# 1. Is your homepage online and responding fast?
+# 2. Is your photography exhibition page online?
+# 3. Is your Cloudflare R2 photo server delivering images correctly?
+# If anything ever goes offline, GitHub immediately emails you an alert!
+
 name: Check public site
 
+# ⏰ SCHEDULE: Runs automatically every 6 hours (at minute 19 past the hour)
 on:
   schedule:
     - cron: '19 */6 * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Also lets you manually click "Run workflow" to test anytime
 
 permissions:
   contents: read
@@ -15,10 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 🔍 PING CHECK: Sends web requests to verify pages and photos are healthy
       - name: Check website pages and photo delivery
         shell: bash
         run: |
           set -euo pipefail
+          # 🌐 Step 1: Ping the homepage and photography gallery
           for url in \
             'https://neiltaylerfilm.github.io/' \
             'https://neiltaylerfilm.github.io/photography/'; do

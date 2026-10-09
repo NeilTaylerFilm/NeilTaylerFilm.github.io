@@ -1,16 +1,27 @@
 ---
+// ==========================================
+// 📰 BLOG TEASER CARD (Article Preview Box)
+// ==========================================
+// Think of this like a handsome little postcard for one blog post!
+// It shows the cover picture, the article title, what category it is,
+// the date it was written, a two-sentence preview teaser, and an index number.
+
 import type { CollectionEntry } from 'astro:content';
 import ResponsiveImage from './ResponsiveImage.astro';
 import { excerpt, isoDate, categoryKey } from '../lib/content';
+
+// 📋 What this card needs to build itself:
 interface Props {
-  post: CollectionEntry<'blog'>;
-  index: number;
+  post: CollectionEntry<'blog'>; // The blog post content from your markdown files
+  index: number;                  // Where this card sits in the list (0, 1, 2...)
 }
+
 const { post, index } = Astro.props;
 const { data } = post;
-const url = `/blog/${post.id}/`;
+const url = `/blog/${post.id}/`; // Web address to read the full article
 ---
 
+<!-- 📦 The outer card container with data attributes for filtering & sorting -->
 <article
   class:list={['blog-card', { 'has-image': data.image }]}
   data-feed-item
@@ -18,34 +29,49 @@ const url = `/blog/${post.id}/`;
   data-date={data.date.getTime()}
   data-id={post.id}
 >
+  {/* 🖼️ Optional cover picture */}
   {data.image && (
     <a class="card-image" href={url} tabindex="-1" aria-hidden="true">
       <ResponsiveImage
         src={data.image}
         alt=""
         sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 32vw, 420px"
+        {/* Load the very first photo immediately so it appears instantly; lazy-load the rest! */}
         loading={index === 0 ? 'eager' : 'lazy'}
         priority={index === 0}
       />
     </a>
   )}
+
   <div class="card-content">
+    {/* 🏷️ Category tags, date stamp, and optional demo badge */}
     <div class="metadata">
       <span class="category">{data.categories.join(' / ')}</span>
       <span class="meta-divider">/</span>
       <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       {data.demo && <span class="demo-tag">Example</span>}
     </div>
+
+    {/* 📰 Article Headline Title */}
     <h2>
       <a href={url}>{data.title}</a>
     </h2>
+
+    {/* 📝 Optional subtitle */}
     {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
+
+    {/* ✂️ Bite-sized 1-2 sentence preview snippet */}
     <p class="excerpt">{excerpt(post.body, data.excerpt || data.description)}</p>
+
+    {/* ➡️ "Continue reading" arrow button */}
     <a class="read-link" href={url} tabindex="-1" aria-hidden="true">
       Continue reading <span aria-hidden="true">→</span>
     </a>
   </div>
+
+  {/* 🔢 Card numbering badge (e.g. "01", "02") */}
   <span class="item-number mono" aria-hidden="true">
     {String(index + 1).padStart(2, '0')}
   </span>
 </article>
+

@@ -1,47 +1,63 @@
+/* ==========================================
+   🎨 MASTER STYLE & COLOR PALETTE GUIDE (Global CSS)
+   ==========================================
+   Think of this file like the interior decorator for your entire website!
+   It defines:
+   - The dark mode color palette (nighttime notebook)
+   - The light mode color palette (warm parchment paper)
+   - Font choices (clean sans-serif, elegant serif, typewriter mono)
+   - Standard margins and Lego-brick spacing sizes */
+
+/* Global CSS for site-wide tokens, layout, and components */
 /* Editorial notebook: shared tokens for dark and warm-paper themes. */
+
+/* 🌙 DARK MODE PALETTE (Default Nighttime Theme) */
 :root {
   color-scheme: dark;
-  --bg: #191a18;
-  --surface: #21221f;
-  --surface-raised: #292b26;
-  --text: #eeeee6;
-  --muted: #a4a79c;
-  --border: #494c43;
-  --control-border: #6e7464;
-  --subtle-border: #34372f;
-  --accent: #9cbff0;
-  --accent-ink: #172537;
-  --sans: Arial, Helvetica, sans-serif;
-  --serif: Georgia, 'Times New Roman', serif;
-  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  --max-width: 1248px;
-  --reading-width: 700px;
-  --gutter: 48px;
-  --space-1: 8px;
-  --space-2: 16px;
-  --space-3: 24px;
-  --space-4: 40px;
-  --space-5: 64px;
-  --space-6: 96px;
-  --radius: 3px;
-  --shadow: 3px 3px 0 var(--border);
+  --bg: #191a18;             /* Dark chalkboard background */
+  --surface: #21221f;        /* Slightly lighter background for cards and boxes */
+  --surface-raised: #292b26; /* Elevated card surface */
+  --text: #eeeee6;           /* Soft warm white text (easy on the eyes) */
+  --muted: #a4a79c;          /* Dimmed gray for dates and subtitles */
+  --border: #494c43;         /* Subtle dividing outline lines */
+  --control-border: #6e7464; /* Border for clickable buttons */
+  --subtle-border: #34372f;  /* Very soft divider line */
+  --accent: #9cbff0;         /* Soft pastel sky blue (for active buttons & links) */
+  --accent-ink: #172537;     /* Dark contrast text to put on top of blue accent */
+  --sans: Arial, Helvetica, sans-serif;                           /* Clean everyday body font */
+  --serif: Georgia, 'Times New Roman', serif;                    /* Elegant bookish headline font */
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace; /* Typewriter font for dates & numbers */
+  --max-width: 1248px;       /* Maximum width of the webpage on giant desktop monitors */
+  --reading-width: 700px;    /* Comfortable narrow reading width for blog articles */
+  --gutter: 48px;            /* Breathing room padding on left and right screen edges */
+  --space-1: 8px;            /* Tiny gap */
+  --space-2: 16px;           /* Small gap */
+  --space-3: 24px;           /* Medium gap */
+  --space-4: 40px;           /* Large gap */
+  --space-5: 64px;           /* Extra large section gap */
+  --space-6: 96px;           /* Huge gap */
+  --radius: 3px;             /* Gentle rounding on button corners */
+  --shadow: 3px 3px 0 var(--border); /* Retro editorial drop shadow */
 }
+
+/* ☀️ LIGHT MODE PALETTE (Warm Parchment Paper Theme) */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #e5dcc8;
-  --surface: #d9cfb9;
-  --surface-raised: #cec3aa;
-  --text: #292821;
-  --muted: #514d42;
-  --border: #938975;
-  --control-border: #7c715f;
-  --subtle-border: #c8bea9;
-  --accent: #315b88;
-  --accent-ink: #f8f1e4;
+  --bg: #e5dcc8;             /* Warm vintage parchment paper background */
+  --surface: #d9cfb9;        /* Slightly darker warm tone for cards */
+  --surface-raised: #cec3aa; /* Raised card box */
+  --text: #292821;           /* Deep dark charcoal ink text */
+  --muted: #514d42;          /* Faded brown ink for dates and captions */
+  --border: #938975;         /* Warm gray pencil border lines */
+  --control-border: #7c715f; /* Button outline color */
+  --subtle-border: #c8bea9;  /* Faint divider line */
+  --accent: #315b88;         /* Deep rich royal navy blue accent */
+  --accent-ink: #f8f1e4;     /* Cream white text to put on top of navy blue */
 }
 * {
   box-sizing: border-box;
 }
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 24px;

@@ -1,10 +1,24 @@
+// ==========================================
+// 🖼️ LOCAL IMAGE PREPARATION KITCHEN (scripts/prepare-images.mjs)
+// ==========================================
+// Before your website builds, this script preps all your local images!
+// 1. It walks through local picture folders (src/assets and public/images).
+// 2. It creates responsive sizes in public/_images so mobile phones download small files.
+// 3. It strips camera metadata (like private GPS location tags) to protect your privacy!
+// 4. It automatically cooks your browser tab icons (favicon.ico and apple-touch-icon.png).
+// 5. It writes the dimension catalog into src/generated/images.json.
+
+// Generate responsive WebP and JPEG derivatives from source images using sharp.
 import { readdir, mkdir, writeFile, readFile, stat } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import sharp from 'sharp';
 
+// 📖 Load existing Cloudflare image database
 const manifest = JSON.parse(await readFile('src/data/r2-images.json', 'utf8'));
 const processed = new Map();
+
+// 🚶 THE FOLDER WALKER: Recursively checks every picture inside a directory
 async function walk(dir, prefix) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const file = path.join(dir, entry.name);
@@ -13,28 +27,38 @@ async function walk(dir, prefix) {
       await walk(file, url);
       continue;
     }
+    // Only process raster photo formats
     if (!/\.(jpe?g|png|webp|avif)$/i.test(file)) continue;
     const bytes = await readFile(file);
+
+    // 🏷️ Generate unique fingerprint key for this image version
     // Include the recipe version so changed quality/colour settings invalidate old derivatives.
     const key = createHash('sha256').update('web-v2').update(bytes).digest('hex').slice(0, 20);
     if (processed.has(key)) {
       manifest[url] = processed.get(key);
       continue;
     }
+
+    // 📐 Read photo width and height, accounting for phone rotation
     const meta = await sharp(bytes).metadata();
     const rotated = [5, 6, 7, 8].includes(meta.orientation);
     const width = rotated ? meta.height : meta.width;
     const height = rotated ? meta.width : meta.height;
+
+    // 📏 Pick standard responsive widths: 480px, 960px, 1440px, 1920px, 2560px
     const sizes = [
       ...new Set(
         [480, 960, 1440, 1920, 2560].filter((s) => s < width).concat(Math.min(width, 2560)),
       ),
     ];
     const variants = { webp: [], jpeg: [] };
+
+    // 🏭 Generate WebP and JPEG files for every responsive size
     for (const size of sizes) {
       for (const format of ['webp', 'jpeg']) {
         const target = `/\_images/${key}-${size}.${format}`;
         const output = `public${target}`;
+        // Skip converting if the file was already created on a previous build
         if (!(await stat(output).catch(() => null))) {
           // Sharp converts tagged input to standard sRGB and strips EXIF (including GPS).
           // Sources are never overwritten. No cropping, filters or sharpening.
@@ -48,6 +72,8 @@ async function walk(dir, prefix) {
         variants[format].push(`${target} ${size}w`);
       }
     }
+
+    // 📦 Save metadata info
     const info = {
       width,
       height,

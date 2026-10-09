@@ -1,4 +1,19 @@
 #!/usr/bin/env python3
+# ==========================================
+# 🔐 THE SECURE PASSWORD VAULT SETUP TOOL (scripts/setup-r2.py)
+# ==========================================
+# When you set up Cloudflare R2 photo uploads for the first time, you need to store
+# secret keys on your computer. If these keys were committed to GitHub, anyone could
+# access your storage.
+#
+# 🎯 HOW THIS SCRIPT KEEPS YOU SAFE:
+# 1. Blind Typing (getpass): When you paste your passwords, nothing appears on screen.
+#    This stops shoulder-surfers or screen recordings from capturing your keys!
+# 2. Git Guard: Checks that ".env.r2" is in your .gitignore file before doing anything.
+#    If Git could see the file, the script refuses to run!
+# 3. Private File Permissions (chmod 600): Saves the file with strict file locks
+#    so only your user account on your Mac can open it.
+
 """Save R2 upload credentials locally without displaying them or using shell history."""
 
 import getpass
@@ -12,6 +27,8 @@ import tempfile
 def main():
     root = Path(__file__).resolve().parent.parent
     destination = root / '.env.r2'
+
+    # 🛑 SAFETY CHECK 1: Ensure .env.r2 is ignored by Git and never tracked
     ignored = subprocess.run(
         ['git', 'check-ignore', '-q', '--', '.env.r2'], cwd=root
     )
@@ -21,8 +38,12 @@ def main():
     )
     if ignored.returncode != 0 or tracked.returncode == 0:
         raise SystemExit('Stopped: the credentials file must be excluded from Git first.')
+
+    # 🛑 SAFETY CHECK 2: Don't overwrite existing credentials without asking
     if destination.exists():
         raise SystemExit('Credentials are already saved. Ask Codex for help changing them.')
+
+    # ⌨️ PROMPT USER: Blindly enter Cloudflare Account ID and Keys
     print('Paste each value from Cloudflare, then press Return.')
     print('Nothing will appear while you paste. This is expected. Control-C cancels.\n')
     account = getpass.getpass('Account ID (or the S3 endpoint address): ').strip()

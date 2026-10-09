@@ -1,4 +1,12 @@
 ---
+// ==========================================
+// 🙋 ABOUT ME PAGE (about.astro)
+// ==========================================
+// This is your biography page! When visitors click "About",
+// this page pulls in your bio text, portrait photo, and creative tags
+// from src/data/about.ts, presenting them side-by-side in a stylish layout.
+
+// About page with portrait and bio.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { about } from '../data/about';
 import { site } from '../config/site';
@@ -9,12 +17,16 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
   title="About"
   description={`A little about ${site.author}, photography and working in film and post-production.`}
 >
+  {/* 🏷️ Top Page Title */}
   <div class="page-intro">
     <h1>
       A little <span class="serif-word">context.</span>
     </h1>
   </div>
+
+  {/* 🖼️ Two-Column Layout: Portrait on the left, Bio story on the right */}
   <div class="about-grid about-with-portrait">
+    {/* 📷 LEFT COLUMN: Show real portrait photo or show the placeholder graphic */}
     {about.portrait ? (
       <figure class="about-photo">
         <ResponsiveImage
@@ -44,6 +56,8 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
         </div>
       </figure>
     )}
+
+    {/* 📖 RIGHT COLUMN: Biography text & Call to action button */}
     <section class="about-copy">
       <h2>{about.heading}</h2>
       <div class="prose">
@@ -51,6 +65,8 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
           <p>{p}</p>
         ))}
       </div>
+
+      {/* 🏷️ Discipline pill tags (e.g. Photography, Film, Post-production) */}
       {about.areas.length > 0 && (
         <div class="areas" role="group" aria-label="Areas of work">
           {about.areas.map((area) => (
@@ -58,6 +74,8 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
           ))}
         </div>
       )}
+
+      {/* 📬 "Let's talk →" button linking directly to the Contact page */}
       <a class="control" href="/contact/">
         Let’s talk <span aria-hidden="true">→</span>
       </a>
@@ -93,3 +111,4 @@ import ResponsiveImage from '../components/ResponsiveImage.astro';
     }
   }
 </style>
+

@@ -1,14 +1,24 @@
 ---
+// ==========================================
+// 🖼️ SMART PICTURE FRAME (Responsive Images)
+// ==========================================
+// A phone shouldn't download the same gigantic image file as a 30-inch computer screen!
+// This component automatically picks the perfect picture size for the visitor's screen.
+// It also stops the page from jumping around while images load (by setting width and height).
+
 import { imageInfo } from '../lib/images';
+
+// 📋 What we need to display a photo:
 interface Props {
-  src: string;
-  alt: string;
-  width?: number;
-  height?: number;
-  sizes?: string;
-  loading?: 'eager' | 'lazy';
-  priority?: boolean;
+  src: string;                // Image web link or local file path
+  alt: string;                // Description for accessibility
+  width?: number;             // Explicit pixel width (if known)
+  height?: number;            // Explicit pixel height (if known)
+  sizes?: string;             // Screen size rules (e.g. "100vw")
+  loading?: 'eager' | 'lazy'; // 'lazy' waits until visitor scrolls near it; 'eager' loads immediately
+  priority?: boolean;         // Should the browser give this image top download priority?
 }
+
 const {
   src,
   alt,
@@ -18,13 +28,21 @@ const {
   loading = 'lazy',
   priority = false,
 } = Astro.props;
+
+// 🔍 Check our Image Rolodex to find pre-built small, medium, and large versions
 const info = imageInfo(src);
+
+// If we don't know the image dimensions, throw a helpful safety error
 if (!info && (!width || !height))
   throw new Error(`Image needs a local source or explicit dimensions: ${src}`);
 ---
 
+<!-- 🖼️ The HTML5 <picture> element lets the browser pick the best version -->
 <picture>
+  {/* ⚡ High-speed modern WebP format for fast loading */}
   {info && <source type="image/webp" srcset={info.srcset} sizes={sizes} />}
+
+  {/* 📸 Standard fallback image element */}
   <img
     src={info?.src || src}
     alt={alt}
@@ -37,3 +55,4 @@ if (!info && (!width || !height))
     fetchpriority={priority ? 'high' : undefined}
   />
 </picture>
+

@@ -1,14 +1,28 @@
 ---
+// ==========================================
+// 🏛️ THE MASTER HOUSE BLUEPRINT (Base Layout)
+// ==========================================
+// Think of this file like the foundation and walls of your house!
+// Every page on your website (Home, About, Blog, Photography) sits inside
+// this blueprint. It gives every page:
+// 1. The top navigation bar (<Header />)
+// 2. The main living room content (<slot />)
+// 3. The bottom footer (<Footer />)
+// 4. Instant dark/light mode so screens never flicker white!
+
+// Base layout: Header, main slot, Footer, theme script, SEO, and Cloudflare analytics.
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SEO from '../components/SEO.astro';
+
+// What every page can tell this layout:
 interface Props {
-  title: string;
-  description?: string;
-  image?: string;
-  article?: boolean;
-  noindex?: boolean;
+  title: string;        // Page title
+  description?: string; // Summary description
+  image?: string;       // Social sharing card image
+  article?: boolean;    // Is it a blog article?
+  noindex?: boolean;    // Should Google ignore this page?
 }
 ---
 
@@ -17,6 +31,10 @@ interface Props {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* ⚡ ANTI-FLASH SCRIPT:
+        Runs instantly before the screen paints pixels.
+        If user likes dark mode, sets it immediately so they don't get flashed with white light! */}
     <script is:inline>
       let theme;
       try {
@@ -30,22 +48,35 @@ interface Props {
             : 'dark';
     </script>
     <meta name="color-scheme" content="dark light" />
+
+    {/* 📌 Browser tab icons (Favicons) */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    {/* 🔍 SEO and Social Sharing Tags */}
     <SEO {...Astro.props} />
+    {/* 🚪 Custom slot for any extra head tags requested by individual pages */}
     <slot name="head" />
   </head>
   <body>
+    {/* ♿ Accessibility skip link so keyboard users can jump straight to main content */}
     <a class="skip-link" href="#main">
       Skip to content
     </a>
+
+    {/* 🧭 The top navigation menu bar */}
     <Header />
+
+    {/* 🛋️ The living room: Where each specific page inserts its content! */}
     <main id="main" class="wrap" tabindex="-1">
       <slot />
     </main>
+
+    {/* 🦶 The footer at the bottom of the page */}
     <Footer />
 
+    {/* 📊 Cloudflare Web Analytics: Privacy-friendly visitor counter */}
     <!-- Cloudflare Web Analytics -->
     <script
       type="module"
@@ -57,6 +88,9 @@ interface Props {
 </html>
 
 <script>
+  // 🔙 SMART BACK BUTTON:
+  // When visitor clicks "Back to blog" or "Back to photography", this preserves
+  // whatever category filters or sorting they had picked earlier!
   // The archive URL survives an explicit “Back to blog” link as well as browser Back.
   document.querySelectorAll<HTMLAnchorElement>('[data-archive-back]').forEach((link) => {
     const archive = link.dataset.archiveBack!;
@@ -69,3 +103,4 @@ interface Props {
     } catch {}
   });
 </script>
+

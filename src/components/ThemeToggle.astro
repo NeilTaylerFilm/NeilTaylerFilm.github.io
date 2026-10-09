@@ -1,3 +1,11 @@
+<!-- ==========================================
+     💡 LIGHT SWITCH (Dark / Light Mode Toggle)
+     ==========================================
+     This component is the light switch on your wall!
+     It lets visitors toggle between a cozy dark screen and a bright light screen.
+     It also remembers their choice the next time they visit! -->
+
+<!-- 🔘 The clickable button with the half-moon symbol -->
 <button
   class="theme-toggle control"
   type="button"
@@ -11,35 +19,50 @@
   </span>
   <span data-theme-label>Dark</span>
 </button>
+
 <script>
+  // 🔌 Grab the button from the webpage
   const button = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  // ☀️ Check whether visitor's device is set to Light mode by default
   const system = matchMedia('(prefers-color-scheme: light)');
-  let explicit: string | null = null;
+  let explicit: string | null = null; // Stores what the user explicitly clicked
+
+  // 🔄 HELPER: Updates the button's label text and accessibility status
   function sync() {
     const light = document.documentElement.dataset.theme === 'light';
     button?.setAttribute('aria-pressed', String(light));
     const label = button?.querySelector('[data-theme-label]');
     if (label) label.textContent = light ? 'Light' : 'Dark';
   }
+
+  // 🧠 HELPER: Reads saved preference from browser memory (localStorage)
   function restore() {
     try {
       explicit = localStorage.getItem('neil-theme');
     } catch {}
+    // If visitor chose before, use that; otherwise use their operating system setting!
     document.documentElement.dataset.theme =
       explicit === 'light' || explicit === 'dark' ? explicit : system.matches ? 'light' : 'dark';
     sync();
   }
+
+  // 🚀 If JavaScript works, unhide the button and hook up the click listener
   if (button) {
-    button.hidden = false;
-    restore();
+    button.hidden = false; // Only show button if JavaScript is enabled
+    restore();             // Set the theme right away
+
+    // 🖱️ When clicked: flip light to dark or dark to light!
     button.addEventListener('click', () => {
       explicit = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
       document.documentElement.dataset.theme = explicit;
       try {
+        // Save choice in browser memory so it stays when they reload!
         localStorage.setItem('neil-theme', explicit);
       } catch {}
       sync();
     });
+
+    // 👂 Listen for OS system theme changes, page restores, and multi-tab sync
     system.addEventListener('change', restore);
     window.addEventListener('pageshow', restore);
     window.addEventListener('storage', (event) => {
@@ -47,3 +70,4 @@
     });
   }
 </script>
+

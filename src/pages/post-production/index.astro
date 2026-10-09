@@ -1,10 +1,24 @@
 ---
+// ==========================================
+// 🎬 FILM & POST-PRODUCTION PORTFOLIO (post-production/index.astro)
+// ==========================================
+// This is your film and video screening room!
+// It features:
+// 1. The top video player carousel where visitors can watch short films and reels.
+// 2. A catalog grid of all your editing, coloring, and VFX projects.
+// 3. Category filters and sort options.
+
+// Post-production project index page.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostProductionSlideshow from '../../components/PostProductionSlideshow.astro';
 import FeedControls from '../../components/FeedControls.astro';
 import PostProductionCard from '../../components/PostProductionCard.astro';
 import { postProjects, categories as getCategories } from '../../lib/content';
+
+// 📚 Fetch all published film / post-production projects
 const allProjects = await postProjects();
+
+// 🏷️ Find all categories used across these film projects
 const categories = getCategories(allProjects);
 ---
 
@@ -13,22 +27,34 @@ const categories = getCategories(allProjects);
   description="Editing and colour-grading work. A place to slow down and look."
 >
   <h1 class="visually-hidden">Post-Production</h1>
+
+  {/* 🍿 TOP SHOWCASE: The interactive video player carousel */}
   <PostProductionSlideshow />
+
+  {/* 🗂️ THE WORK CATALOG: Grid of film and video projects */}
   <section class="project-section" aria-labelledby="projects-heading">
+    {/* 🏷️ Section Heading */}
     <div class="section-heading">
       <h2 id="projects-heading" class="eyebrow">
         Selected work
       </h2>
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
+
+    {/* 🎛️ Category filter and sorting toolbar */}
     {allProjects.length > 0 && (
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}
+
+    {/* 🧱 Grid of film project cards */}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (
         <PostProductionCard project={project} />
       ))}
     </div>
+
+    {/* 🍃 Empty state if no projects are published yet */}
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>
 </BaseLayout>
+

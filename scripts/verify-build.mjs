@@ -1,3 +1,14 @@
+// ==========================================
+// 🔍 THE FINAL QUALITY CONTROL INSPECTOR (scripts/verify-build.mjs)
+// ==========================================
+// Think of this script as the final customs inspector before your website ships!
+// It examines every single generated HTML page inside the "dist/" folder:
+// 1. Tests every internal link and image to guarantee NO 404 broken links exist.
+// 2. Confirms every page has an SEO title, description, and social sharing image.
+// 3. Verifies that private drafts (draft: true) never accidentally get published.
+// 4. Checks that sitemap.xml is completely valid.
+
+// Walk the build output and check for broken links, missing files, and invalid metadata.
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -6,6 +17,8 @@ const root = path.resolve('dist');
 const origin = 'https://neiltaylerfilm.github.io';
 const errors = [];
 const htmlFiles = [];
+
+// 🚶 Find all generated HTML pages in the output dist folder
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const file = path.join(dir, entry.name);
@@ -14,12 +27,16 @@ async function walk(dir) {
   }
 }
 await walk(root);
+
+// 🔤 Clean HTML entity characters (&amp; -> &, etc.)
 function decode(value) {
   return value.replaceAll('&amp;', '&').replaceAll('&#39;', "'").replaceAll('&quot;', '"');
 }
+
+// 🔗 LINK VERIFIER: Checks that a link actually points to a real file on disk
 async function resolveURL(raw, base) {
   const url = new URL(decode(raw), base);
-  if (url.origin !== origin) return;
+  if (url.origin !== origin) return; // External links (e.g. YouTube) don't live in dist/
   let target = path.join(root, decodeURIComponent(url.pathname));
   if (!target.startsWith(root + path.sep) && target !== root) {
     errors.push(`Outside build: ${url}`);
@@ -30,6 +47,7 @@ async function resolveURL(raw, base) {
   if (!(await stat(target).catch(() => null))?.isFile())
     errors.push(`Broken internal URL: ${url} from ${base}`);
   else if (url.hash && target.endsWith('.html')) {
+    // If link has a #chapter hash, check that the chapter heading ID really exists on that page!
     const html = await readFile(target, 'utf8');
     if (!html.includes(`id="${decodeURIComponent(url.hash.slice(1))}"`))
       errors.push(`Missing fragment: ${url}`);

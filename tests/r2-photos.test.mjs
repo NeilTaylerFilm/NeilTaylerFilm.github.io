@@ -1,3 +1,13 @@
+// ==========================================
+// 🧪 R2 CLOUD STORAGE & PHOTO RESIZER TESTS (tests/r2-photos.test.mjs)
+// ==========================================
+// This test suite tests the heavy lifting behind your photo management:
+// 1. Budget Safety: Stops uploads if bucket would exceed the 8 GB free tier.
+// 2. Inventory: Counts thousands of stored files across multiple list pages.
+// 3. Privacy & Quality: Strips GPS metadata and rotates photos automatically.
+// 4. Apple iPhone HEIC: Tests decoding native camera formats on macOS.
+
+// Tests R2 photo upload budget, inventory and variant generation
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
@@ -9,6 +19,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
+// 💰 TEST 1: Storage budget stops before you ever exceed the free tier threshold
 test('R2 budget counts all objects, skips duplicates and stops before the threshold', () => {
   const objects = new Map([
     ['private-object', 70],

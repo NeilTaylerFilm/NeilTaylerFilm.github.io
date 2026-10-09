@@ -1,25 +1,42 @@
 ---
+// ==========================================
+// 🚫 404 PAGE NOT FOUND (404.astro)
+// ==========================================
+// This is the safety net for lost visitors!
+// If someone types the wrong web address or clicks a broken link,
+// this page gives them a charming film-themed apology ("This one’s out of frame")
+// and provides rescue buttons back to the Blog and Photography galleries.
+
+// 404 page for missing routes.
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
+{/* noindex={true} tells Google not to index this missing page in search results */}
 <BaseLayout
   title="Page not found"
   description="This page could not be found. Return to the blog or browse photography projects by Neil Tayler."
   noindex={true}
 >
   <section class="not-found">
+    {/* 🏷️ Technical error label */}
     <div class="error-label">
       <span aria-hidden="true">⌕</span> Error 404 / File not found
     </div>
+
+    {/* 🎬 Film-themed headline */}
     <h1>
       This one’s
       <br />
       <span class="serif-word accent">out of frame.</span>
     </h1>
+
+    {/* 📖 Friendly explanation message */}
     <p>
       The page you’re looking for has moved, or never quite made the final edit. There’s plenty more
       to explore.
     </p>
+
+    {/* 🚪 Rescue buttons guiding visitors back to safety */}
     <div class="error-actions">
       <a class="control" href="/">
         Back to blog →
@@ -30,3 +47,4 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 </BaseLayout>
+

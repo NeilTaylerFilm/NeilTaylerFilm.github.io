@@ -1,16 +1,29 @@
 ---
+// ==========================================
+// 🎬 FILM & VIDEO PROJECT CARD (Post-Production Teaser)
+// ==========================================
+// This is the movie poster card shown on your Post-Production page!
+// It features the video's movie poster or cover image, project title,
+// and role/date metadata.
+
 import type { CollectionEntry } from 'astro:content';
 import ProjectMetadata from './ProjectMetadata.astro';
 import ResponsiveImage from './ResponsiveImage.astro';
 import { projectTimestamp, categoryKey } from '../lib/content';
+
+// 📋 What this card needs to show a film project:
 interface Props {
-  project: CollectionEntry<'postProduction'>;
+  project: CollectionEntry<'postProduction'>; // One film / video project
 }
+
 const { project } = Astro.props;
 const { data } = project;
+
+// 🖼️ Pick the movie poster or cover picture
 const cover = data.poster || data.coverImage || data.cover || data.images[0]?.src;
 ---
 
+<!-- 📦 Card container with sorting/filtering attributes -->
 <article
   class="project-card"
   data-feed-item
@@ -18,6 +31,7 @@ const cover = data.poster || data.coverImage || data.cover || data.images[0]?.sr
   data-date={projectTimestamp(data)}
   data-id={project.id}
 >
+  {/* 🎞️ Movie poster image with link to open the film details */}
   {cover && (
     <a
       class="project-cover"
@@ -30,14 +44,22 @@ const cover = data.poster || data.coverImage || data.cover || data.images[0]?.sr
         alt=""
         sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
       />
+      {/* ➡️ Sleek hover indicator arrow */}
       <span class="project-open" aria-hidden="true">
         →
       </span>
     </a>
   )}
+
+  {/* 🏷️ Project metadata tags (category, year/date) */}
   <ProjectMetadata {...data} />
+
+  {/* 🎬 Film title headline */}
   <h2>
     <a href={`/post-production/${project.id}/`}>{data.title}</a>
   </h2>
+
+  {/* 📝 Optional subtitle */}
   {data.subtitle && <p class="muted">{data.subtitle}</p>}
 </article>
+

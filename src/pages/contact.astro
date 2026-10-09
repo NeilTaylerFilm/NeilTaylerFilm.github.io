@@ -1,7 +1,19 @@
 ---
+// ==========================================
+// 📬 CONTACT & GET IN TOUCH (contact.astro)
+// ==========================================
+// This is your contact hub! When people want to reach out to you,
+// this page provides:
+// - A 1-click "Copy email" button (with instant "Copied ✓" confirmation).
+// - An "Email me ↗" button that opens their email client.
+// - Direct links to your Instagram, LinkedIn, and TikTok profiles.
+
+// Contact page with email and social links.
 import ContactIcon from '../components/ContactIcon.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site } from '../config/site';
+
+// 🔗 Filter for social links that have a valid URL filled in
 const links = site.links.filter((link) => link.url);
 ---
 
@@ -9,18 +21,24 @@ const links = site.links.filter((link) => link.url);
   title="Contact"
   description="Get in touch with Neil Tayler about photography, film, post-production or a blog post."
 >
+  {/* 🏷️ Page Header */}
   <div class="page-intro">
     <p class="eyebrow">Keep in touch</p>
     <h1>
       Contact<span class="accent">.</span>
     </h1>
   </div>
+
   <div class="contact-layout">
+    {/* 💬 Friendly introduction note */}
     <div class="contact-intro">
       <h2>Say hello.</h2>
       <p>For a conversation about images, an idea, or something you’ve read here.</p>
     </div>
+
+    {/* 📇 List of Contact Channels */}
     <div class="contact-list">
+      {/* ✉️ Email Row with "Copy email" and "Email me" buttons */}
       {site.email && (
         <div class="contact-row">
           <strong>
@@ -28,6 +46,7 @@ const links = site.links.filter((link) => link.url);
             Email
           </strong>
           <div class="contact-email-actions">
+            {/* 📋 1-Click Copy Email Button */}
             <button
               class="control contact-copy-email"
               type="button"
@@ -41,13 +60,17 @@ const links = site.links.filter((link) => link.url);
               </svg>
               <span data-copy-label>Copy email</span>
             </button>
+            {/* ↗️ Standard mailto link */}
             <a class="control contact-email" href={`mailto:${site.email}`}>
               Email me <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
       )}
+      {/* Invisible live region for screen readers */}
       <p class="visually-hidden" data-copy-status role="status" aria-live="polite"></p>
+
+      {/* 🌐 Social Media Link Rows */}
       {links.map((link) => (
         <a class="contact-row" href={link.url}>
           <strong>
@@ -59,23 +82,30 @@ const links = site.links.filter((link) => link.url);
           </span>
         </a>
       ))}
+
+      {/* Fallback if no contact details were provided */}
       {!site.email && !links.length && (
         <p class="contact-row muted">Contact details will be added soon.</p>
       )}
     </div>
   </div>
 </BaseLayout>
+
 <script>
+  // 📋 CLIPBOARD COPY CONTROLLER:
+  // Copies your email to the visitor's clipboard without navigating away
   const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
   const label = document.querySelector<HTMLSpanElement>('[data-copy-label]');
   const status = document.querySelector<HTMLElement>('[data-copy-status]');
+
   if (button) {
     button.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(button.dataset.email || '');
         const original = label?.textContent || 'Copy email';
-        label!.textContent = 'Copied ✓';
+        label!.textContent = 'Copied ✓'; // Temporary success text
         status!.textContent = 'Email address copied to clipboard.';
+        // Reset back to "Copy email" after 2 seconds
         setTimeout(() => {
           label!.textContent = original;
           status!.textContent = '';
@@ -86,3 +116,4 @@ const links = site.links.filter((link) => link.url);
     });
   }
 </script>
+

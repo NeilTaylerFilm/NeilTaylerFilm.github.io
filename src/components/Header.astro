@@ -1,7 +1,21 @@
 ---
+// ==========================================
+// 🧭 SITE HEADER & NAVIGATION BAR
+// ==========================================
+// This is the control deck at the very top of your site!
+// It shows your brand logo ("Neil Tayler Film."), the main menu
+// buttons (Blog, Photography, Post-Production, Contact), and
+// the dark/light mode toggle switch.
+
+// 📚 Grab your site name and the light-switch component
 import { site } from '../config/site';
 import ThemeToggle from './ThemeToggle.astro';
+
+
+// 📍 Check what page URL the visitor is currently on
 const path = Astro.url.pathname;
+
+// 🗺️ The menu items to display in the navigation bar:
 const nav = [
   { label: 'Blog', href: '/' },
   { label: 'Photography', href: '/photography/' },
@@ -11,14 +25,18 @@ const nav = [
 ---
 
 <header class="site-header wrap">
+  <!-- 🪧 The brand wordmark logo linking back to home -->
   <a class="wordmark" href="/" aria-label={`${site.name} — blog`}>
     {site.name}
     <span class="wordmark-dot">.</span>
   </a>
+
+  <!-- 🧭 The row of navigation menu buttons -->
   <nav aria-label="Primary navigation">
     {nav.map(({ label, href }) => (
       <a
         href={href}
+        {/* 💡 Light up the link if visitor is currently on this page */}
         aria-current={
           (href === '/' ? path === '/' || path.startsWith('/blog/') : path.startsWith(href))
             ? 'page'
@@ -29,5 +47,8 @@ const nav = [
       </a>
     ))}
   </nav>
+
+  <!-- 💡 The Light / Dark mode switch button on the right -->
   <ThemeToggle />
 </header>
+

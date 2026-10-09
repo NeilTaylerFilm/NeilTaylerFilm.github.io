@@ -1,31 +1,49 @@
 ---
+// ==========================================
+// 🏛️ THE PHOTO WALL GALLERY (Editorial & Mosaic Layouts)
+// ==========================================
+// This component arranges a collection of photographs into a stunning wall!
+// - It automatically splits photos into chapters if you gave them section headings.
+// - It calculates whether photos are tall (portrait) or wide (landscape) so they fit together like puzzle pieces.
+// - Supports two modes: 'editorial' (big hero shots and pairs) or 'justified' (neat interlocking mosaic rows).
+
 import ResponsiveImage from './ResponsiveImage.astro';
 import { imageInfo } from '../lib/images';
 import { gallerySections } from '../lib/gallery-sections';
+
+// 📋 What this gallery accepts:
 interface Props {
   images: {
-    src: string;
-    section?: string;
-    full?: string;
-    alt?: string;
-    caption?: string;
-    width?: number;
-    height?: number;
+    src: string;        // Picture web address
+    section?: string;   // Optional chapter heading
+    full?: string;      // High-res version for zooming
+    alt?: string;       // Screen reader description
+    caption?: string;   // Optional caption text
+    width?: number;     // Pixel width
+    height?: number;    // Pixel height
   }[];
-  layout?: 'editorial' | 'justified';
+  layout?: 'editorial' | 'justified'; // The display style
 }
+
 const { images, layout = 'editorial' } = Astro.props;
 ---
 
+{/* 📖 Loop through each chapter section created by our chapter helper */}
 {gallerySections(images).map((group) => (
   <Fragment>
+    {/* 🏷️ Chapter Title Heading (if this group has one) */}
     {group.heading && <h2 class="gallery-section-heading">{group.heading}</h2>}
+
+    {/* 🧱 Grid of photos */}
     <div class:list={['gallery', { 'gallery-justified': layout === 'justified' }]}>
       {group.images.map((image, localIndex) => {
         const index = group.start + localIndex;
         const info = imageInfo(image.src);
+
+        // 📐 Calculate the aspect ratio (width divided by height) so rows don't distort
         const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
         const tileSizes = `(max-width: 540px) ${Math.ceil(Math.max(1, ratio) * 160)}px, ${Math.ceil(Math.max(1, ratio) * 260)}px`;
+
         return (
           <figure
             style={
@@ -38,6 +56,7 @@ const { images, layout = 'editorial' } = Astro.props;
               { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
             ]}
           >
+            {/* 🔍 Clickable link that triggers the full-screen Lightbox zoom */}
             <a
               href={image.full || info?.full || image.src}
               data-gallery-trigger
@@ -58,6 +77,7 @@ const { images, layout = 'editorial' } = Astro.props;
                 loading={index === 0 ? 'eager' : 'lazy'}
               />
             </a>
+            {/* 📝 Photo caption underneath */}
             {image.caption && <figcaption>{image.caption}</figcaption>}
           </figure>
         );
@@ -66,6 +86,7 @@ const { images, layout = 'editorial' } = Astro.props;
   </Fragment>
 ))}
 
+{/* 🎨 CSS Styles that make justified interlocking rows look beautiful */}
 <style>
   .gallery-section-heading {
     margin: 36px 0 18px;
@@ -112,3 +133,4 @@ const { images, layout = 'editorial' } = Astro.props;
     }
   }
 </style>
+

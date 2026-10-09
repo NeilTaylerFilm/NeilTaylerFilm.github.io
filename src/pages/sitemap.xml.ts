@@ -1,3 +1,11 @@
+// ==========================================
+// 🗺️ WEBSITE TREASURE MAP (sitemap.xml.ts)
+// ==========================================
+// This file automatically builds a clean catalog of every published article,
+// gallery, and page on your website. Search engines like Google read this
+// map so they know exactly which links to display in search results!
+
+// Sitemap XML generator listing all published pages and posts.
 import type { APIContext } from 'astro';
 import { posts, projects, isoDate } from '../lib/content';
 export async function GET({ site }: APIContext) {

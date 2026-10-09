@@ -1,4 +1,15 @@
 ---
+// ==========================================
+// 📰 INDIVIDUAL BLOG ARTICLE (blog/[...id].astro)
+// ==========================================
+// This is the reader view for a single blog post!
+// It features:
+// - Top reading progress bar that fills up as you scroll down.
+// - Chapter navigation outline for long essays.
+// - Clickable citation links and footnotes.
+// - Related articles list at the bottom.
+// - Structured SEO data so search engines understand the article.
+
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ResponsiveImage from '../../components/ResponsiveImage.astro';
@@ -6,14 +17,22 @@ import { posts, isoDate, excerpt } from '../../lib/content';
 import { imageInfo } from '../../lib/images';
 import { categoryKey } from '../../lib/feed';
 import { site } from '../../config/site';
+
+// 🗺️ ROUTE GENERATOR: Creates a webpage for each blog post file
 export async function getStaticPaths() {
   return (await posts()).map((post) => ({ params: { id: post.id }, props: { post } }));
 }
+
+// 📦 Extract current article data and Markdown body renderer
 const { post } = Astro.props;
 const { data } = post;
 const { Content, headings } = await render(post);
+
+// 📑 Build chapter outline from H2 through H6 headings
 const chapters = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
 const minChapterDepth = Math.min(...chapters.map((chapter) => chapter.depth));
+
+// 🔗 Find up to 3 related articles sharing matching categories
 const related = (await posts())
   .filter(
     (p) =>
@@ -23,7 +42,11 @@ const related = (await posts())
       ),
   )
   .slice(0, 3);
+
+// 🖼️ Pick social sharing card image
 const socialImage = data.socialImage || data.image || site.defaultImage;
+
+// 🔍 Structured Schema.org data for Google search indexing
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',

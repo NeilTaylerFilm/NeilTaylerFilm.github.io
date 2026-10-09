@@ -1,7 +1,18 @@
+// ==========================================
+// 🧪 GALLERY CHAPTER GROUPING TEST (tests/gallery-sections.test.mjs)
+// ==========================================
+// This test makes sure your photo albums divide into chapters properly!
+// When you add chapter headings like "Day 01 - Bangkok" or "Day 02 - Chiang Mai":
+// 1. Every single photograph stays in exact chronological order.
+// 2. Zero photos get dropped or misplaced.
+// 3. Photo counters and grid indexes start at the exact right picture.
+
+// Tests gallerySections grouping of images by section headings
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { gallerySections } from '../src/lib/gallery-sections.ts';
 
+// 📸 TEST: Photo order and chapter headers must remain 100% faithful
 test('optional day headings preserve every photograph and its order', () => {
   const images = [
     { src: 'a' },

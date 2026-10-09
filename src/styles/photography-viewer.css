@@ -1,11 +1,24 @@
+/* ==========================================
+   🎨 PHOTOGRAPHY VIEWER STYLES
+   ==========================================
+   This stylesheet styles the photo and video showcase!
+   It defines:
+   - The dark cinema screen background (#11130f)
+   - The spinning circular loading wheel
+   - The scrolling thumbnail filmstrip along the bottom
+   - The fullscreen theater modal pop-up */
+
+/* Styles for photography viewer dialog and lightbox */
 .photo-showcase {
   min-width: 0;
 }
+/* 🪟 The main panel container holding the viewer */
 .photo-panel {
   min-width: 0;
   background: var(--surface);
   color: var(--text);
 }
+/* 🛠️ The top bar with title, expand button, and close button */
 .photo-toolbar {
   display: flex;
   justify-content: space-between;
@@ -24,6 +37,7 @@
 .photo-toolbar .photo-close {
   display: none;
 }
+
 .photo-viewport {
   position: relative;
   aspect-ratio: 3 / 2;

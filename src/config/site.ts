@@ -1,12 +1,23 @@
+// ==========================================
+// 🏠 SITE CONFIGURATION (The Website's ID Card)
+// ==========================================
+// Think of this file like an ID badge or business card for your entire website.
+// Any page that needs to know your name, bio, or social links comes here to look it up!
+
+// 📋 This "interface" is like a blank form checklist.
+// It tells the computer: "Every website ID card MUST have these exact pieces of info."
 interface SiteConfig {
-  name: string;
-  author: string;
-  description: string;
-  tagline: string;
-  defaultImage: string;
-  email: string;
+  name: string;         // The name of the website (text)
+  author: string;       // Who made it (text)
+  description: string;  // A short summary for Google and social previews (text)
+  tagline: string;      // A catchy mini-motto (text)
+  defaultImage: string; // The picture to show when someone shares your link (file path)
+  email: string;        // Where people can email you (text)
+  // A list of social media buttons with a label, web address, and handle
   links: { label: string; url: string; username: string }[];
 }
+
+// ✍️ Here we fill in the blank form with your actual real-world details!
 export const site: SiteConfig = {
   name: 'Neil Tayler Film',
   author: 'Neil Tayler',
@@ -15,6 +26,7 @@ export const site: SiteConfig = {
   tagline: 'Images. Ideas. Everything in between.',
   defaultImage: '/images/social-card.png',
   email: 'tayler.neil@icloud.com',
+  // Your list of social profiles to display on the site
   links: [
     {
       label: 'Instagram',
@@ -25,3 +37,4 @@ export const site: SiteConfig = {
     { label: 'TikTok', url: 'https://www.tiktok.com/@neiltaylerfilm', username: '@neiltaylerfilm' },
   ],
 };
+

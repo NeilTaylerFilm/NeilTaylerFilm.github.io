@@ -1,6 +1,17 @@
+// ==========================================
+// 🧪 FILM & VIDEO LINK VALIDATION TEST (tests/post-production.test.mjs)
+// ==========================================
+// This test ensures video players and related blog links work reliably!
+// 1. YouTube & Vimeo URLs turn into clean, privacy-friendly embeds (youtube-nocookie.com).
+// 2. Dangerous or broken links are blocked for security.
+// 3. Related blog post links only connect to published articles, never drafts.
+
+// Tests post-production video embeds and blog link validation
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { videoEmbedUrl, linkedBlogUrl } from '../src/lib/post-production.ts';
+
+// 🎬 TEST: Embed URLs and blog connections must be safe and valid
 test('film embeds and blog links accept supported sources and published posts only', () => {
   for (const url of [
     'https://www.youtube.com/watch?v=HAkxnRaTW2Q',

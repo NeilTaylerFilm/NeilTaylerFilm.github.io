@@ -1,3 +1,13 @@
+// ==========================================
+// 📚 CITATION CLUSTER & DROPDOWN TEST (scripts/check-citation-groups.mjs)
+// ==========================================
+// When you cite multiple sources together in a sentence (like 3 or 4 papers),
+// this script tests that they collapse into a tidy "+2 more sources" badge!
+// 1. Ensures large groups of links don't crowd or clutter reading paragraphs.
+// 2. Tests that clicking the badge opens a clean menu with every cited source.
+// 3. Tests both desktop mouse clicks and mobile touchscreen taps.
+
+// Run a Playwright test against the citation preview page at various viewports.
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 

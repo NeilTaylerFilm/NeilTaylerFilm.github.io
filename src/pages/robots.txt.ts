@@ -1,3 +1,11 @@
+// ==========================================
+// 🤖 SEARCH ROBOT INSTRUCTIONS (robots.txt.ts)
+// ==========================================
+// This file acts like a "Please Do Not Enter" sign for automated web bots.
+// It asks AI scrapers (like ChatGPT and Claude) not to crawl your personal work,
+// while inviting search engines like Google to index your sitemap!
+
+// Robots.txt - requests that AI crawlers (GPTBot, ClaudeBot, Google-Extended) not index the site.
 import type { APIContext } from 'astro';
 export function GET({ site }: APIContext) {
   const policy = [

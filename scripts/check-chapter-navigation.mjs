@@ -1,3 +1,13 @@
+// ==========================================
+// 📱 CHAPTER NAVIGATION & SCREEN SIZE TESTER (scripts/check-chapter-navigation.mjs)
+// ==========================================
+// This script opens an automated browser (Playwright) and tests your blog
+// across 4 screen sizes (Desktop, Laptop, Tablet, Mobile Phone):
+// 1. Checks that the chapter menu is a sidebar on computers and a popup drawer on phones.
+// 2. Checks that the reading progress bar fills smoothly as you scroll.
+// 3. Guarantees that text never spills off the edge of mobile screens!
+
+// Test chapter navigation and reading progress at multiple viewport widths.
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
 

@@ -1,9 +1,22 @@
 ---
+// ==========================================
+// 🏠 HOMEPAGE & BLOG ARCHIVE (index.astro)
+// ==========================================
+// This is the front door of your website! When people visit
+// https://neiltaylerfilm.com, this is the page they see.
+// It fetches your published blog posts, displays the category filter
+// toolbar, and arranges your posts into neat magazine cards.
+
+// Blog archive page.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
 import FeedControls from '../components/FeedControls.astro';
 import { posts, categories as getCategories } from '../lib/content';
+
+// 📚 Fetch all published articles (sorted newest first)
 const allPosts = await posts();
+
+// 🏷️ Find all categories used across these articles
 const categories = getCategories(allPosts);
 ---
 
@@ -12,17 +25,26 @@ const categories = getCategories(allPosts);
   description="Blog posts by Neil Tayler on photography, film, post-production, technology and the things that catch his attention."
 >
   <section class="content-start" aria-label="Blog articles">
+    {/* 🏷️ Top Section Heading: "Latest posts" */}
     <div class="section-heading">
       <h1 class="eyebrow">Latest posts</h1>
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
+
+    {/* 🎛️ Filter dropdowns (Category and Sort) */}
     {allPosts.length > 0 && <FeedControls categories={categories} count={allPosts.length} />}
+
+    {/* 📰 Grid list of blog cards */}
     <div class="blog-feed" data-feed>
       {allPosts.map((post, index) => (
         <BlogCard post={post} index={index} />
       ))}
     </div>
+
+    {/* 🍃 Empty message if you haven't published anything yet */}
     {!allPosts.length && <p class="empty-state">No posts published yet.</p>}
+
+    {/* 🏁 Friendly end marker when visitor reaches the bottom */}
     {allPosts.length > 0 && (
       <div class="end-note mono">
         <span aria-hidden="true">■</span> You’re all caught up. More when there’s more.
@@ -30,3 +52,4 @@ const categories = getCategories(allPosts);
     )}
   </section>
 </BaseLayout>
+

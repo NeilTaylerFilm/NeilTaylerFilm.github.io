@@ -1,18 +1,32 @@
 ---
+// ==========================================
+// 🔍 FULLSCREEN LIGHTBOX POPUP (Theater Zoom)
+// ==========================================
+// When someone clicks any photograph on a project page,
+// this component darkens the room and shows the photo huge!
+// - Shows crisp full-resolution photos.
+// - Lets visitors click "Next" / "Previous" or press Left/Right arrows.
+// - Instantly shows a temporary snapshot while the giant photo downloads.
+
 interface Props {
-  title: string;
+  title: string; // The title of the current project or page
 }
 const { title } = Astro.props;
 ---
 
+<!-- 🎭 The pop-up dialog container (native HTML <dialog> element) -->
 <dialog class="lightbox" aria-label={`${title} — photographs`} data-lightbox>
+  {/* 🛠️ Top toolbar: slide counter (01/10) and close "×" button */}
   <div class="lightbox-toolbar">
     <span class="mono" data-lightbox-count role="status" aria-live="off"></span>
     <button class="control square" type="button" data-lightbox-close aria-label="Close gallery">
       ×
     </button>
   </div>
+
+  {/* 🖼️ The main viewing stage where the photograph sits */}
   <div class="lightbox-stage">
+    {/* ⬅️ Previous photo button */}
     <button
       class="control square"
       type="button"
@@ -21,6 +35,8 @@ const { title } = Astro.props;
     >
       ←
     </button>
+
+    {/* 📸 The enlarged photograph */}
     <img
       data-lightbox-image
       decoding="async"
@@ -29,20 +45,31 @@ const { title } = Astro.props;
       width="1600"
       height="1067"
     />
+
+    {/* ⏳ Loading / status badge */}
     <p class="lightbox-feedback" data-lightbox-feedback role="status" aria-live="polite"></p>
+
+    {/* ⚠️ Error actions: Retry button or open in a new tab if loading fails */}
     <div class="lightbox-actions" data-lightbox-actions hidden>
       <button class="control" type="button" data-lightbox-retry>Retry</button>
       <a class="control" data-lightbox-open target="_blank" rel="noopener noreferrer">Open photograph</a>
     </div>
+
+    {/* ➡️ Next photo button */}
     <button class="control square" type="button" data-lightbox-next aria-label="Next photograph">
       →
     </button>
   </div>
+
+  {/* 📝 Caption text shown below the enlarged picture */}
   <p class="lightbox-caption" data-lightbox-caption></p>
 </dialog>
+
 <script>
+  // 🔌 INTERACTIVE LIGHTBOX CONTROLLER:
   const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
   if (dialog && typeof dialog.showModal === 'function') {
+    // 🔍 Turn regular photos inside blog text into clickable lightbox triggers too!
     // Markdown photographs participate too, without changing the author's copy or captions.
     document.querySelectorAll<HTMLImageElement>('[data-project-prose] img').forEach((img) => {
       if (img.closest('a')) return;
@@ -57,6 +84,8 @@ const { title } = Astro.props;
       img.before(link);
       link.append(img);
     });
+
+    // Collect all zoomable photos on the page
     const triggers = Array.from(
       document.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'),
     );
@@ -73,23 +102,30 @@ const { title } = Astro.props;
     let current = 0;
     let revision = 0;
     let opener: HTMLAnchorElement | undefined;
+
+    // 🎬 DISPLAY PHOTO FUNCTION:
     function show(index: number) {
-      current = (index + triggers.length) % triggers.length;
+      current = (index + triggers.length) % triggers.length; // Loop around edges
       const token = ++revision;
       const trigger = triggers[current];
       const thumbnail = trigger.querySelector('img')!;
+
+      // ⚡ TRICK: Clone the small thumbnail immediately so visitor sees a preview instantly!
       const preview = thumbnail.cloneNode(true) as HTMLImageElement;
       preview.src = thumbnail.currentSrc || thumbnail.src;
       preview.removeAttribute('srcset');
       preview.dataset.lightboxImage = '';
       image.replaceWith(preview);
       image = preview;
+
       caption.textContent = trigger.dataset.caption || '';
       count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(triggers.length).padStart(2, '0')}`;
       previous.hidden = next.hidden = triggers.length < 2;
       feedback.textContent = `Loading photograph ${current + 1} of ${triggers.length}…`;
       dialog!.dataset.loading = '';
       actions.hidden = true;
+
+      // 📥 Now download the giant crystal-clear high-res image
       const candidate = new Image();
       candidate.sizes = '(max-width: 767px) 95vw, 90vw';
       candidate.srcset = trigger.dataset.lightboxSrcset || '';
@@ -97,6 +133,8 @@ const { title } = Astro.props;
       candidate.alt = thumbnail.alt;
       candidate.width = thumbnail.width;
       candidate.height = thumbnail.height;
+
+      // When the high-res image is ready, swap it in smoothly
       candidate.onload = () => {
         if (token !== revision || !dialog!.open) return;
         image.replaceWith(candidate);
@@ -105,6 +143,8 @@ const { title } = Astro.props;
         feedback.textContent = '';
         delete dialog!.dataset.loading;
       };
+
+      // If downloading fails, show the retry button
       candidate.onerror = () => {
         if (token !== revision || !dialog!.open) return;
         feedback.textContent = 'Photograph could not load.';
@@ -113,6 +153,8 @@ const { title } = Astro.props;
         delete dialog!.dataset.loading;
       };
     }
+
+    // 🖱️ Hook up clicks on photos to open the lightbox
     triggers.forEach((trigger, index) => {
       const open = () => {
         opener = trigger;
@@ -133,6 +175,8 @@ const { title } = Astro.props;
         }
       });
     });
+
+    // 🎮 Controls: Close, Retry, Arrows, Keyboard navigation
     close.addEventListener('click', () => dialog.close());
     retry.addEventListener('click', (event) => {
       event.preventDefault();
@@ -146,13 +190,15 @@ const { title } = Astro.props;
         show(current + (event.key === 'ArrowLeft' ? -1 : 1));
       }
     });
+
+    // 🚪 Clean up when dialog closes
     dialog.addEventListener('close', () => {
       revision++;
       feedback.textContent = '';
       delete dialog.dataset.loading;
       actions.hidden = true;
       document.documentElement.classList.remove('modal-open');
-      opener?.focus({ preventScroll: true });
+      opener?.focus({ preventScroll: true }); // Return focus to thumbnail
       image.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
       image.removeAttribute('srcset');
     });
@@ -191,3 +237,4 @@ const { title } = Astro.props;
     min-width: 1px;
   }
 </style>
+

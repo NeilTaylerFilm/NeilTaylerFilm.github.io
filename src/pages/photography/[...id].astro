@@ -1,14 +1,30 @@
 ---
+// ==========================================
+// 📸 INDIVIDUAL PHOTO PROJECT ROOM (photography/[...id].astro)
+// ==========================================
+// This is the dedicated exhibition room for one specific photo album!
+// For example, if you have an album named "japan-2024.md", this file builds
+// the /photography/japan-2024/ webpage.
+// It shows your album title, written introduction, full photo gallery wall,
+// and the fullscreen zoom lightbox!
+
+// Individual photography project page with gallery and lightbox.
 import { render } from 'astro:content';
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProjectMetadata from '../../components/ProjectMetadata.astro';
 import Lightbox from '../../components/Lightbox.astro';
 import Gallery from '../../components/Gallery.astro';
 import { site } from '../../config/site';
 import { projects } from '../../lib/content';
+
+// 🗺️ THE TOUR GUIDE (Dynamic Route Generator):
+// Tells Astro to create a unique webpage for EVERY photo project in your folder!
 export async function getStaticPaths() {
   return (await projects()).map((project) => ({ params: { id: project.id }, props: { project } }));
 }
+
+// Unpack the current project's data and render its written Markdown story
 const { project } = Astro.props;
 const { data } = project;
 const { Content } = await render(project);
@@ -22,9 +38,12 @@ const { Content } = await render(project);
   image={data.socialImage || data.coverImage || data.cover}
   noindex={data.draft}
 >
+  {/* 🔙 Back button (remembers previous filters) */}
   <a class="back-link mono" href="/photography/" data-archive-back="/photography/">
     ← All photography
   </a>
+
+  {/* 📖 Album Introduction Header */}
   <header class="project-intro">
     <ProjectMetadata {...data} />
     <h1>
@@ -35,13 +54,20 @@ const { Content } = await render(project);
     {data.demo && (
       <p class="demo-notice">Example project · These sample photographs are not Neil’s work.</p>
     )}
+    {/* The written story / artist statement from your markdown */}
     <div class="prose project-description" data-project-prose>
       <Content />
     </div>
     <p class="mono small muted">Select a frame to take a closer look</p>
   </header>
+
+  {/* 🧱 The photo gallery wall */}
   <Gallery images={data.images} layout={data.galleryLayout} />
+
+  {/* 🔍 The full-screen zoom pop-up widget */}
   <Lightbox title={data.title} />
+
+  {/* 🏁 Polite sign-off at the end of the album */}
   <div class="project-end">
     <p class="serif-word">Thanks for looking.</p>
     <a class="control" href="/photography/" data-archive-back="/photography/">
@@ -49,3 +75,4 @@ const { Content } = await render(project);
     </a>
   </div>
 </BaseLayout>
+

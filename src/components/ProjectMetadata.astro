@@ -1,21 +1,41 @@
 ---
+// ==========================================
+// 🏷️ PROJECT INFO STRIP (Category, City & Date)
+// ==========================================
+// This little component prints the stylish info strip under project titles.
+// It puts things like "Landscape / Tokyo · 15 June 2024" in a neat single line,
+// handling slashes and middle dots cleanly!
+
+// Project metadata line with category, location and date
 import { isoDate } from '../lib/feed';
+
+// 📋 What this component can display:
 interface Props {
-  category?: string;
-  location?: string;
-  date?: Date;
-  year?: string | number;
+  category?: string;      // Creative category (e.g. 'Street', 'Music Video')
+  location?: string;      // Where it was shot (e.g. 'Thailand', 'London')
+  date?: Date;            // The exact calendar date
+  year?: string | number; // Or just the year (e.g. 2024)
 }
+
 const { category, location, date, year } = Astro.props;
+// Build a simple date text stamp
 const stamp = date ? isoDate(date) : year?.toString();
 ---
 
+{/* Only show this line if at least one piece of info exists */}
 {(category || location || stamp) && (
   <div class="metadata">
+    {/* 🏷️ Category pill */}
     {category && <span class="category">{category}</span>}
+    {/* Slash separator if location or date follows */}
     {category && (location || stamp) && <span aria-hidden="true">/</span>}
+    
+    {/* 📍 Location name */}
     {location && <span>{location}</span>}
+    {/* Middle dot separator if date follows */}
     {location && stamp && <span aria-hidden="true">·</span>}
+
+    {/* 📅 Nicely formatted date (e.g., "12 October 2024") */}
     {stamp && (
       <time datetime={stamp}>
         {date
@@ -30,3 +50,4 @@ const stamp = date ? isoDate(date) : year?.toString();
     )}
   </div>
 )}
+

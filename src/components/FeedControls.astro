@@ -1,15 +1,26 @@
 ---
+// ==========================================
+// 🎛️ FEED FILTER & SORT CONTROLS
+// ==========================================
+// This is the toolbar right above your list of articles or photo projects!
+// It gives visitors two handy dropdown menus:
+// 1. "Category" (e.g., show only 'Film' or 'Street')
+// 2. "Sort" (newest first vs oldest first)
+// It also shows a live count badge (like "08 articles").
+
 interface Props {
-  categories: string[];
-  count: number;
-  noun?: string;
+  categories: string[]; // List of all categories available to filter by
+  count: number;        // Total number of items
+  noun?: string;        // Word to show after number (e.g. 'articles' or 'projects')
 }
 const { categories, count, noun = 'articles' } = Astro.props;
 import { categoryKey } from '../lib/feed';
 ---
 
+<!-- 🛠️ Toolbar wrapper containing dropdowns and item counter -->
 <div class="feed-toolbar">
   <form class="feed-controls" data-feed-controls hidden>
+    {/* 🏷️ Dropdown 1: Category Filter */}
     <label>
       <span>Category</span>
       <div class="select-wrap">
@@ -21,6 +32,8 @@ import { categoryKey } from '../lib/feed';
         </select>
       </div>
     </label>
+
+    {/* ⏳ Dropdown 2: Sort Order */}
     <label>
       <span>Sort</span>
       <div class="select-wrap">
@@ -31,34 +44,49 @@ import { categoryKey } from '../lib/feed';
       </div>
     </label>
   </form>
+
+  {/* 🔢 Live count text (e.g. "08 articles") */}
   <p class="feed-count mono" data-feed-count data-noun={noun} role="status" aria-live="polite">
     {String(count).padStart(2, '0')} {noun}
   </p>
 </div>
+
+{/* ℹ️ Backup message for visitors with JavaScript turned off */}
 <noscript>
   <p class="small muted">
     All {noun} are shown, newest first. Enable JavaScript to filter and sort.
   </p>
 </noscript>
+
 <script>
+  // 🔌 INTERACTIVE FILTER LOGIC:
+  // Runs entirely in the visitor's browser for instant, smooth filtering!
   import { comparators, matchesCategory } from '../lib/feed';
   const form = document.querySelector<HTMLFormElement>('[data-feed-controls]');
   const feed = document.querySelector<HTMLElement>('[data-feed]');
+
   if (form && feed) {
-    form.hidden = false;
+    form.hidden = false; // Reveal the toolbar now that JavaScript is ready
     const category = form.elements.namedItem('category') as HTMLSelectElement;
     const sort = form.elements.namedItem('sort') as HTMLSelectElement;
     const items = Array.from(feed.querySelectorAll<HTMLElement>('[data-feed-item]'));
     const count = document.querySelector<HTMLElement>('[data-feed-count]');
+
+    // 🪄 Function that sorts and hides/shows items based on what user picked
     function apply(fromURL = false) {
       const url = new URL(location.href);
+      // If loading from URL (like someone opened a shared link), pre-select dropdowns
       if (fromURL) {
         const value = url.searchParams.get('category') || '';
         category.value = Array.from(category.options).some((o) => o.value === value) ? value : '';
         sort.value = url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
       }
+
+      // Pick our sorting rule (newest vs oldest)
       const comparator = comparators[sort.value as keyof typeof comparators] || comparators.newest;
       let visible = 0;
+
+      // Sort the cards and show only those matching the selected category
       items
         .sort((a, b) =>
           comparator(
@@ -72,9 +100,13 @@ import { categoryKey } from '../lib/feed';
             : [item.dataset.category || ''];
           item.hidden = !matchesCategory(itemCategories, category.value);
           if (!item.hidden) visible++;
-          feed!.append(item);
+          feed!.append(item); // Reorder on screen
         });
+
+      // Update the counter badge text (e.g. "04 articles")
       if (count) count.textContent = `${String(visible).padStart(2, '0')} ${count.dataset.noun}`;
+
+      // Update the browser URL bar so visitor can bookmark or share this exact view
       if (!fromURL) {
         category.value
           ? url.searchParams.set('category', category.value)
@@ -85,10 +117,16 @@ import { categoryKey } from '../lib/feed';
         if (url.href !== location.href) history.pushState({}, '', url);
       }
     }
+
+    // Stop page from submitting like an old-fashioned form
     form.addEventListener('submit', (event) => event.preventDefault());
+    // Apply changes whenever a dropdown changes
     form.addEventListener('change', () => apply());
+    // Handle browser back/forward buttons
     window.addEventListener('popstate', () => apply(true));
     window.addEventListener('pageshow', () => apply(true));
+
+    // 💾 Remember current filters in session memory so hitting "Back" preserves choices
     const remember = () => {
       try {
         sessionStorage.setItem(`archive:${location.pathname}`, location.pathname + location.search);
@@ -100,3 +138,4 @@ import { categoryKey } from '../lib/feed';
     remember();
   }
 </script>
+

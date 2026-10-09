@@ -1,3 +1,12 @@
+// ==========================================
+// 🔎 CITATION FAVICON TESTER (scripts/check-citation-icons.mjs)
+// ==========================================
+// When you reference external articles, this test verifies:
+// 1. External websites get clean favicon icons attached.
+// 2. Secret passwords or usernames in URLs are stripped for privacy.
+// 3. Local links and email links don't accidentally try to load fake favicons!
+
+// Validate that citation icons render correctly by testing against markdown-images.
 import assert from 'node:assert/strict';
 import markdownImages from './markdown-images.mjs';
 

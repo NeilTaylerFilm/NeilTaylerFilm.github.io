@@ -1,16 +1,31 @@
 ---
+// ==========================================
+// 📸 PHOTOGRAPHY PROJECT CARD (Album Teaser)
+// ==========================================
+// This is a photo album box shown in your photography portfolio gallery!
+// It displays the big cover photo, the album title, year/location,
+// and how many photos are inside (e.g., "14 photographs").
+
+// Photography project card with cover image and metadata
 import type { CollectionEntry } from 'astro:content';
+
 import ProjectMetadata from './ProjectMetadata.astro';
 import ResponsiveImage from './ResponsiveImage.astro';
 import { projectTimestamp, categoryKey } from '../lib/content';
+
+// 📋 What this card needs to show an album:
 interface Props {
-  project: CollectionEntry<'photography'>;
+  project: CollectionEntry<'photography'>; // One photography collection project
 }
+
 const { project } = Astro.props;
 const { data } = project;
+
+// 🖼️ Pick the cover photo: use coverImage, or cover, or fallback to photo #1 in the album
 const cover = data.coverImage || data.cover || data.images[0]?.src;
 ---
 
+<!-- 📦 Card wrapper with filtering tags for category and date -->
 <article
   class="project-card"
   data-feed-item
@@ -18,6 +33,7 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
   data-date={projectTimestamp(data)}
   data-id={project.id}
 >
+  {/* 🖼️ Big cover photo linking into the album */}
   {cover && (
     <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
       <ResponsiveImage
@@ -27,17 +43,27 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
         alt=""
         sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
       />
+      {/* ➡️ Sleek hover arrow indicator */}
       <span class="project-open" aria-hidden="true">
         →
       </span>
     </a>
   )}
+
+  {/* 🏷️ Metadata tags (category, year/date) */}
   <ProjectMetadata {...data} />
+
+  {/* 🏷️ Album title headline */}
   <h2>
     <a href={`/photography/${project.id}/`}>{data.title}</a>
   </h2>
+
+  {/* 📝 Optional album subtitle */}
   {data.subtitle && <p class="muted">{data.subtitle}</p>}
+
+  {/* 🔢 Count of photographs inside this album */}
   {data.images.length > 0 && (
     <p class="mono small">{String(data.images.length).padStart(2, '0')} photographs</p>
   )}
 </article>
+
