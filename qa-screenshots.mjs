@@ -10,7 +10,10 @@
 // 3. Interactive States: Captures the mobile menu while open and closed.
 // 4. Stores proof PNGs in "/tmp/qa-screenshots/" so you can visually verify designs in seconds!
 
+// --- BORROWED TOOLS (Imports) ---
+// chromium: Playwright automated headless browser to snap real device viewports.
 import { chromium } from 'playwright-core';
+// mkdirSync: Synchronous folder creation tool to create screenshot destination folder.
 import { mkdirSync } from 'fs';
 
 const baseURL = 'http://127.0.0.1:4333';
