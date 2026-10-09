@@ -9,8 +9,12 @@
 //    ensuring you stay completely inside Cloudflare's free storage tier!
 
 // R2 connection helper for Cloudflare storage operations.
+// --- BORROWED TOOLS (Imports) ---
+// readFile, stat: Node.js filesystem tools to inspect permissions and read secrets.
 import { readFile, stat } from 'node:fs/promises';
+// parseEnv: Node.js standard tool that parses .env key-value pairs safely.
 import { parseEnv } from 'node:util';
+// S3Client, ListObjectsV2Command: Standard AWS SDK client that connects to Cloudflare R2's S3-compatible API.
 import { S3Client, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 // 🔑 CONNECT TO THE VAULT: Reads your secrets and opens the door
