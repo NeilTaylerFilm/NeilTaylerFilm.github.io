@@ -11,6 +11,8 @@
 // 5. Footer: Does the bottom footer contain all navigation links (including Post-Production)?
 // 6. Theme Switching: Does light mode render correctly on mobile screens?
 
+// --- BORROWED TOOLS (Imports) ---
+// chromium: Playwright Core browser automation engine.
 import { chromium } from 'playwright-core';
 const baseURL = 'http://127.0.0.1:4322';
 
