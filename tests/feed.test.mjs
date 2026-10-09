@@ -9,8 +9,12 @@
 // 4. Calendar dates reject impossible days like February 30th!
 
 // Tests feed utilities for excerpts, dates, categories and sorting
+// --- BORROWED TOOLS (Imports) ---
+// test: Node.js built-in test runner.
 import test from 'node:test';
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// excerpt, isoDate, categoryKey, comparators: The feed helpers we are testing!
 import { excerpt, isoDate, categoryKey, comparators } from '../src/lib/feed.ts';
 
 // 📅 TEST 1: Timezone safety (Dates must not shift when traveling)
