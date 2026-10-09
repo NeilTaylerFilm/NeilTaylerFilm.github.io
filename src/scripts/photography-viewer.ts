@@ -21,8 +21,11 @@ type Photo = {
 };
 
 // 🎬 MAIN CONTROLLER: Starts up the slideshow on the webpage
+// What goes in: A slideshow container element (root) from the webpage DOM.
+// What comes out: Wires up the interactive slideshow, buttons, swipes, keyboard controls, and preloaders!
 export function setupPhotographyViewer(root: HTMLElement) {
   // Is this viewer showing videos or still photos?
+  // (In video mode, clicking the screen plays the film rather than expanding to fullscreen theater).
   const videoViewer = root.hasAttribute('data-video-viewer');
 
   // Read the list of slides baked into the page's HTML data
