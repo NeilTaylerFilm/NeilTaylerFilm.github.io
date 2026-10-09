@@ -7,21 +7,30 @@
 // and how many photos are inside (e.g., "14 photographs").
 
 // Photography project card with cover image and metadata
+// --- BORROWED TOOLS (Imports) ---
+// CollectionEntry: A strict TypeScript rule defining a valid photography album from the content drawers.
 import type { CollectionEntry } from 'astro:content';
 
+// ProjectMetadata: The neat little label component showing the category, year, and location.
 import ProjectMetadata from './ProjectMetadata.astro';
+// ResponsiveImage: Our smart photo frame that serves lightweight WebP images at exact visitor screen sizes.
 import ResponsiveImage from './ResponsiveImage.astro';
+// projectTimestamp & categoryKey: Helpers that calculate sortable timestamps and URL-friendly category filter keys.
 import { projectTimestamp, categoryKey } from '../lib/content';
 
 // 📋 What this card needs to show an album:
+// Like a recipe checklist, declaring this component requires one photography project album.
 interface Props {
   project: CollectionEntry<'photography'>; // One photography collection project
 }
 
+// Open the envelope passed to this card by the gallery page
 const { project } = Astro.props;
+// Unpack the album's notebook sheet (title, cover, images list, year, category)
 const { data } = project;
 
 // 🖼️ Pick the cover photo: use coverImage, or cover, or fallback to photo #1 in the album
+// Like picking the prettiest photo to put on the cover of a physical photo book!
 const cover = data.coverImage || data.cover || data.images[0]?.src;
 ---
 
