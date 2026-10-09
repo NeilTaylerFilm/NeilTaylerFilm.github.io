@@ -9,6 +9,7 @@
 
 // Helper to group gallery images into sections by heading
 // A heading on a photograph starts a new section; photo order is never changed.
+// TypeScript generic <T extends { section?: string }>: Works with any photo object type that has an optional section tag.
 export function gallerySections<T extends { section?: string }>(images: T[]) {
   // 🗂️ This will hold all of our finished photo binders (chapters)
   const groups: { heading?: string; start: number; images: T[] }[] = [];
@@ -17,6 +18,7 @@ export function gallerySections<T extends { section?: string }>(images: T[]) {
   images.forEach((image, index) => {
     // If this photo has a new chapter title, or if we haven't started a binder yet:
     // start a brand new binder!
+    // 'start: index' remembers the photo's global album position for slide navigation.
     if (image.section || !groups.length)
       groups.push({ heading: image.section, start: index, images: [] });
     // Slip this photograph into the current binder
