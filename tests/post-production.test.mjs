@@ -7,8 +7,12 @@
 // 3. Related blog post links only connect to published articles, never drafts.
 
 // Tests post-production video embeds and blog link validation
+// --- BORROWED TOOLS (Imports) ---
+// test: Node.js built-in test runner.
 import test from 'node:test';
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// videoEmbedUrl, linkedBlogUrl: Helpers that build video players and check blog links.
 import { videoEmbedUrl, linkedBlogUrl } from '../src/lib/post-production.ts';
 
 // 🎬 TEST: Embed URLs and blog connections must be safe and valid
