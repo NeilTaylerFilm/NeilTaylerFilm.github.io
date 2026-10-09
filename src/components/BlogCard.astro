@@ -6,22 +6,29 @@
 // It shows the cover picture, the article title, what category it is,
 // the date it was written, a two-sentence preview teaser, and an index number.
 
+// --- BORROWED TOOLS (Imports) ---
+// CollectionEntry: TypeScript type describing a blog post's data structure.
 import type { CollectionEntry } from 'astro:content';
+// ResponsiveImage: Picture frame component that serves the right image size.
 import ResponsiveImage from './ResponsiveImage.astro';
+// excerpt, isoDate, categoryKey: Helper tools to trim summaries, format dates, and normalize categories.
 import { excerpt, isoDate, categoryKey } from '../lib/content';
 
 // 📋 What this card needs to build itself:
+// Requires the blog post object and its index number in the list.
 interface Props {
   post: CollectionEntry<'blog'>; // The blog post content from your markdown files
   index: number;                  // Where this card sits in the list (0, 1, 2...)
 }
 
+// Unpack props: post content and sequence number
 const { post, index } = Astro.props;
 const { data } = post;
 const url = `/blog/${post.id}/`; // Web address to read the full article
 ---
 
 <!-- 📦 The outer card container with data attributes for filtering & sorting -->
+<!-- HTML data attributes store category keys and publication timestamp for live client filtering -->
 <article
   class:list={['blog-card', { 'has-image': data.image }]}
   data-feed-item
@@ -30,6 +37,7 @@ const url = `/blog/${post.id}/`; // Web address to read the full article
   data-id={post.id}
 >
   {/* 🖼️ Optional cover picture */}
+  {/* If an article image exists, render clickable preview picture */}
   {data.image && (
     <a class="card-image" href={url} tabindex="-1" aria-hidden="true">
       <ResponsiveImage
@@ -45,6 +53,7 @@ const url = `/blog/${post.id}/`; // Web address to read the full article
 
   <div class="card-content">
     {/* 🏷️ Category tags, date stamp, and optional demo badge */}
+    {/* Displays formatted categories and publication date */}
     <div class="metadata">
       <span class="category">{data.categories.join(' / ')}</span>
       <span class="meta-divider">/</span>
@@ -53,6 +62,7 @@ const url = `/blog/${post.id}/`; // Web address to read the full article
     </div>
 
     {/* 📰 Article Headline Title */}
+    {/* Clickable article title linked to the reading page */}
     <h2>
       <a href={url}>{data.title}</a>
     </h2>
@@ -70,6 +80,7 @@ const url = `/blog/${post.id}/`; // Web address to read the full article
   </div>
 
   {/* 🔢 Card numbering badge (e.g. "01", "02") */}
+  {/* Formats sequence number like '01' or '02' with padding */}
   <span class="item-number mono" aria-hidden="true">
     {String(index + 1).padStart(2, '0')}
   </span>
