@@ -6,6 +6,7 @@
      It also remembers their choice the next time they visit! -->
 
 <!-- 🔘 The clickable button with the half-moon symbol -->
+<!-- The button starts out hidden so visitors with disabled JavaScript don't see a broken control. -->
 <button
   class="theme-toggle control"
   type="button"
@@ -14,6 +15,7 @@
   data-theme-toggle
   hidden
 >
+  {/* The half-moon glyph visually indicating day/night theme modes */}
   <span class="theme-symbol" aria-hidden="true">
     ◐
   </span>
@@ -28,6 +30,7 @@
   let explicit: string | null = null; // Stores what the user explicitly clicked
 
   // 🔄 HELPER: Updates the button's label text and accessibility status
+  // Keeps the screen-reader state (aria-pressed) aligned with the visual appearance.
   function sync() {
     const light = document.documentElement.dataset.theme === 'light';
     button?.setAttribute('aria-pressed', String(light));
@@ -36,6 +39,7 @@
   }
 
   // 🧠 HELPER: Reads saved preference from browser memory (localStorage)
+  // Like checking a sticky note on the fridge to remember what the user picked last time.
   function restore() {
     try {
       explicit = localStorage.getItem('neil-theme');
@@ -52,6 +56,7 @@
     restore();             // Set the theme right away
 
     // 🖱️ When clicked: flip light to dark or dark to light!
+    // Swaps the dataset.theme attribute on the root <html> element so CSS variables flip colors.
     button.addEventListener('click', () => {
       explicit = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
       document.documentElement.dataset.theme = explicit;
@@ -63,6 +68,7 @@
     });
 
     // 👂 Listen for OS system theme changes, page restores, and multi-tab sync
+    // When the user changes their operating system theme or flips the toggle in another open tab:
     system.addEventListener('change', restore);
     window.addEventListener('pageshow', restore);
     window.addEventListener('storage', (event) => {
