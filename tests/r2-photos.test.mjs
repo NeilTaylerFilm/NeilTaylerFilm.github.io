@@ -8,9 +8,14 @@
 // 4. Apple iPhone HEIC: Tests decoding native camera formats on macOS.
 
 // Tests R2 photo upload budget, inventory and variant generation
+// --- BORROWED TOOLS (Imports) ---
+// test: Node.js built-in test runner.
 import test from 'node:test';
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// sharp: High-performance image conversion and analysis tool.
 import sharp from 'sharp';
+// photoVariants, uploadBudget, inventory: The vault and darkroom helpers we are testing!
 import { photoVariants } from '../scripts/lib/photo-variants.mjs';
 import { uploadBudget, inventory } from '../scripts/lib/r2.mjs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
