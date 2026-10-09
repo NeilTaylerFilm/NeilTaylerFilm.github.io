@@ -8,22 +8,28 @@
 // 2. "Sort" (newest first vs oldest first)
 // It also shows a live count badge (like "08 articles").
 
+// 📋 What this toolbar needs to know:
+// Like setting up an exhibition catalog desk with the category labels and total piece count.
 interface Props {
   categories: string[]; // List of all categories available to filter by
   count: number;        // Total number of items
   noun?: string;        // Word to show after number (e.g. 'articles' or 'projects')
 }
 const { categories, count, noun = 'articles' } = Astro.props;
+// --- BORROWED TOOLS (Imports) ---
+// categoryKey: Converts nice category names like "Post-Production" into clean URL keys like "post-production".
 import { categoryKey } from '../lib/feed';
 ---
 
 <!-- 🛠️ Toolbar wrapper containing dropdowns and item counter -->
 <div class="feed-toolbar">
+  <!-- The form starts hidden until JavaScript initializes so visitors don't see non-functioning selects -->
   <form class="feed-controls" data-feed-controls hidden>
     {/* 🏷️ Dropdown 1: Category Filter */}
     <label>
       <span>Category</span>
       <div class="select-wrap">
+        {/* Generates an option for each unique category found in this section */}
         <select name="category" aria-label="Filter by category">
           <option value="">All categories</option>
           {categories.map((category) => (
@@ -37,6 +43,7 @@ import { categoryKey } from '../lib/feed';
     <label>
       <span>Sort</span>
       <div class="select-wrap">
+        {/* Sort choices: Newest first (descending date) or Oldest first (ascending date) */}
         <select name="sort" aria-label="Sort by date">
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
@@ -46,6 +53,7 @@ import { categoryKey } from '../lib/feed';
   </form>
 
   {/* 🔢 Live count text (e.g. "08 articles") */}
+  {/* role="status" and aria-live="polite" announce count changes to screen readers */}
   <p class="feed-count mono" data-feed-count data-noun={noun} role="status" aria-live="polite">
     {String(count).padStart(2, '0')} {noun}
   </p>
@@ -73,6 +81,7 @@ import { categoryKey } from '../lib/feed';
     const count = document.querySelector<HTMLElement>('[data-feed-count]');
 
     // 🪄 Function that sorts and hides/shows items based on what user picked
+    // Calculates which items match the filter, sorts them by date, and updates the URL bar
     function apply(fromURL = false) {
       const url = new URL(location.href);
       // If loading from URL (like someone opened a shared link), pre-select dropdowns
@@ -127,6 +136,7 @@ import { categoryKey } from '../lib/feed';
     window.addEventListener('pageshow', () => apply(true));
 
     // 💾 Remember current filters in session memory so hitting "Back" preserves choices
+    // Saves the current filter search string in sessionStorage so hitting the Back button restores it
     const remember = () => {
       try {
         sessionStorage.setItem(`archive:${location.pathname}`, location.pathname + location.search);
