@@ -9,9 +9,13 @@
 // 5. It writes the dimension catalog into src/generated/images.json.
 
 // Generate responsive WebP and JPEG derivatives from source images using sharp.
+// --- BORROWED TOOLS (Imports) ---
+// readdir, mkdir, writeFile, readFile, stat: Filesystem tools to read folders and write processed images.
 import { readdir, mkdir, writeFile, readFile, stat } from 'node:fs/promises';
+// createHash: Generates cryptographic hashes for content-addressed image filenames.
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+// sharp: High-performance image conversion and resizing engine.
 import sharp from 'sharp';
 
 // 📖 Load existing Cloudflare image database
