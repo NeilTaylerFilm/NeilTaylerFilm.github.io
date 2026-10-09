@@ -8,14 +8,19 @@
 // the dark/light mode toggle switch.
 
 // 📚 Grab your site name and the light-switch component
+// --- BORROWED TOOLS (Imports) ---
+// site: Provides the brand name ("Neil Tayler Film") from src/config/site.ts.
 import { site } from '../config/site';
+// ThemeToggle: The little sunshine/moon button that flips between dark and light modes.
 import ThemeToggle from './ThemeToggle.astro';
 
 
 // 📍 Check what page URL the visitor is currently on
+// Like looking at a map pin to see where you are standing right now.
 const path = Astro.url.pathname;
 
 // 🗺️ The menu items to display in the navigation bar:
+// Each entry has a human-readable title and its destination URL path.
 const nav = [
   { label: 'Blog', href: '/' },
   { label: 'Photography', href: '/photography/' },
@@ -24,6 +29,7 @@ const nav = [
 ];
 ---
 
+<!-- The main sticky header bar pinned to the top of the browser window -->
 <header class="site-header wrap">
   <!-- 🪧 The brand wordmark logo linking back to home -->
   <a class="wordmark" href="/" aria-label={`${site.name} — blog`}>
@@ -33,6 +39,7 @@ const nav = [
 
   <!-- 🧭 The row of navigation menu buttons -->
   <nav aria-label="Primary navigation">
+    {/* Loop through our nav list and render an anchor tag for each link */}
     {nav.map(({ label, href }) => (
       <a
         href={href}
@@ -49,6 +56,7 @@ const nav = [
   </nav>
 
   <!-- 💡 The Light / Dark mode switch button on the right -->
+  <!-- Light switch toggle letting users switch between sunshine and moon modes -->
   <ThemeToggle />
 </header>
 
