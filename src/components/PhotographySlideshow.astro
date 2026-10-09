@@ -9,17 +9,23 @@
 // - Previous/Next arrow buttons and a bottom thumbnail filmstrip.
 // - Smooth swipe gestures on phones.
 
+// --- BORROWED TOOLS (Imports) ---
+// featured & featuredIsDemo: The curated list of master showcase photographs and sample flag from src/data/featured.ts.
 import { featured as originalFeatured, featuredIsDemo } from '../data/featured';
+// imageInfo: Helper to find image dimensions, aspect ratios, and WebP srcsets.
 import { imageInfo } from '../lib/images';
+// photography-viewer.css: Style rules for the projector layout, animations, and dark theater mode.
 import '../styles/photography-viewer.css';
 
 // 📚 Merge your featured photos list with image size data from the rolodex
+// Combines each curated image with its calculated WebP srcset and pixel dimensions.
 const featured = originalFeatured.map((photo) => ({ ...photo, ...imageInfo(photo.src) }));
 // The very first photo to display when the page opens
 const first = featured[0];
 ---
 
 {/* Only render if there is at least one photo in the featured list */}
+{/* Safety check: If no featured photographs exist in src/data/featured.ts, render nothing */}
 {first && (
   <section
     class="slideshow photo-showcase"
@@ -174,7 +180,9 @@ const first = featured[0];
 
 <script>
   // 🚀 Start up the viewer brain engine we built in photography-viewer.ts!
+  // Borrow the setup helper function from our browser script library.
   import { setupPhotographyViewer } from '../scripts/photography-viewer';
+  // Find every slideshow carousel on this web page and wake it up so buttons and gestures work!
   document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 </script>
 
