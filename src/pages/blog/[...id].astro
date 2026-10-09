@@ -10,29 +10,41 @@
 // - Related articles list at the bottom.
 // - Structured SEO data so search engines understand the article.
 
+// --- BORROWED TOOLS (Imports) ---
+// render: Astro's Markdown engine that turns raw article text into rich HTML.
 import { render } from 'astro:content';
+// BaseLayout: The outer website framework (navbar, footer, SEO tags).
 import BaseLayout from '../../layouts/BaseLayout.astro';
+// ResponsiveImage: An image loader that serves properly sized pictures.
 import ResponsiveImage from '../../components/ResponsiveImage.astro';
+// posts, isoDate, excerpt: Content helpers for getting articles, clean dates, and short summaries.
 import { posts, isoDate, excerpt } from '../../lib/content';
+// imageInfo: Helper to find picture dimensions and paths.
 import { imageInfo } from '../../lib/images';
+// categoryKey: Normalizes category names like "Post-Production" to match consistently.
 import { categoryKey } from '../../lib/feed';
+// site: Global website info like the author's name and default social image.
 import { site } from '../../config/site';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each blog post file
+// Astro calls this during build time: "Make a page for every single article in our blog drawer!"
 export async function getStaticPaths() {
   return (await posts()).map((post) => ({ params: { id: post.id }, props: { post } }));
 }
 
 // 📦 Extract current article data and Markdown body renderer
+// Grab this specific post's metadata and render its headings and content.
 const { post } = Astro.props;
 const { data } = post;
 const { Content, headings } = await render(post);
 
 // 📑 Build chapter outline from H2 through H6 headings
+// Like collecting chapter titles from a book to print a Table of Contents at the start.
 const chapters = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 6);
 const minChapterDepth = Math.min(...chapters.map((chapter) => chapter.depth));
 
 // 🔗 Find up to 3 related articles sharing matching categories
+// Looks for other published articles that talk about the same topics so readers can keep reading.
 const related = (await posts())
   .filter(
     (p) =>
@@ -44,9 +56,11 @@ const related = (await posts())
   .slice(0, 3);
 
 // 🖼️ Pick social sharing card image
+// Chooses the best picture to show when this article is shared on iMessage, Twitter, or Slack.
 const socialImage = data.socialImage || data.image || site.defaultImage;
 
 // 🔍 Structured Schema.org data for Google search indexing
+// A tidy digital index card for search engine robots telling them who wrote this and when.
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -61,6 +75,7 @@ const structuredData = {
 };
 ---
 
+{/* Master frame wrapping this article page. */}
 <BaseLayout
   title={data.title}
   description={data.description || excerpt(post.body, data.excerpt)}
@@ -68,19 +83,23 @@ const structuredData = {
   noindex={data.draft}
   article={true}
 >
+  {/* Injects JSON-LD search engine metadata into the <head> tag. */}
   <script
     is:inline
     slot="head"
     type="application/ld+json"
     set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')}
   ></script>
+  {/* Reading progress line: a thin bar at the top that fills from 0% to 100% as you scroll down. */}
   <div class="reading-progress" aria-hidden="true">
     <span data-reading-progress></span>
   </div>
+  {/* Back link returning to the blog archive list. */}
   <a class="back-link mono" href="/" data-archive-back="/">
     ← Back to blog
   </a>
   <article>
+    {/* Article header: displays categories, publication date, title, and author byline. */}
     <header class="article-header">
       <div class="metadata">
         <span class="category">{data.categories.join(' / ')}</span>
@@ -89,6 +108,7 @@ const structuredData = {
       </div>
       <h1>{data.title}</h1>
       {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+      {/* Question: Was this post updated after its original publish date? If so, show the update timestamp. */}
       {data.updated && isoDate(data.updated) !== isoDate(data.date) && (
         <p class="mono muted">
           Updated <time datetime={isoDate(data.updated)}>{isoDate(data.updated)}</time>
@@ -101,6 +121,7 @@ const structuredData = {
         </p>
       )}
     </header>
+    {/* Hero image: High-priority banner photo shown at the top of the article. */}
     {data.image && (
       <figure class="article-hero">
         <ResponsiveImage
@@ -112,7 +133,9 @@ const structuredData = {
         />
       </figure>
     )}
+    {/* Two-column layout on desktop: sticky table of contents on the left, reading content on the right. */}
     <div class="article-reading-layout">
+      {/* Question: Does the article have 2 or more chapter headings? If yes, show the desktop sidebar outline. */}
       {chapters.length >= 2 && (
         <nav class="chapter-nav chapter-nav-desktop" aria-label="Chapters">
           <p class="eyebrow">Chapters</p>
@@ -125,6 +148,7 @@ const structuredData = {
           </ol>
         </nav>
       )}
+      {/* Mobile chapter navigation: A collapsible dropdown menu for small screens. */}
       {chapters.length >= 2 && (
         <details class="chapter-nav chapter-nav-mobile">
           <summary class="mono">
@@ -141,6 +165,7 @@ const structuredData = {
           </nav>
         </details>
       )}
+      {/* Dark overlay backdrop behind mobile chapter menu when opened. */}
       {chapters.length >= 2 && (
         <button
           class="chapter-dimmer"
@@ -150,9 +175,11 @@ const structuredData = {
           hidden
         ></button>
       )}
+      {/* The main body content: where the Markdown text is converted into HTML paragraphs. */}
       <div class="prose article-body" data-article-body>
         <Content />
       </div>
+      {/* Friendly sign-off marker at the bottom of the article. */}
       <div class="article-signoff mono">
         <span aria-hidden="true">■</span> End of entry{' '}
         <a href="/" data-archive-back="/">
@@ -161,6 +188,7 @@ const structuredData = {
       </div>
     </div>
   </article>
+  {/* Related articles shelf: Suggests up to 3 similar stories sharing the same topics. */}
   {related.length > 0 && (
     <section class="related" aria-labelledby="related-heading">
       <div class="section-heading">
@@ -190,9 +218,12 @@ const structuredData = {
   )}
 </BaseLayout>
 <script>
+  // --- CLIENT-SIDE INTERACTIVITY ---
+  // Handles reading progress, citation popovers, collapsible sections, and table-of-contents scrolling.
   const body = document.querySelector<HTMLElement>('[data-article-body]');
   let updateProgress = () => {};
   let updateChapter = () => {};
+  // Opens any closed details accordion containing the target anchor link, then scrolls it into view.
   const openHashTarget = (hash = location.hash) => {
     let id = hash.slice(1);
     try {
@@ -205,6 +236,7 @@ const structuredData = {
     return target;
   };
   if (body) {
+    // Cleans up broken citation icons: if an external website's favicon fails to load, hide it neatly.
     const bindCitationIcons = (root: ParentNode) => {
       for (const icon of root.querySelectorAll<HTMLImageElement>(
         'img[data-citation-icon]',
@@ -216,6 +248,7 @@ const structuredData = {
     };
     bindCitationIcons(body);
 
+    // Citation bundling: When an author cites 3 or more sources in a row, group them into a compact dropdown.
     const citationRuns: { parent: Node; nodes: Node[]; links: HTMLAnchorElement[] }[] = [];
     const isCitation = (node: Node) =>
       node instanceof HTMLAnchorElement && node.matches('a[title="cite"]');
@@ -284,6 +317,7 @@ const structuredData = {
       cluster.append(disclosure);
       groups.push(disclosure);
     }
+    // Closes any open citation popover when the visitor presses the Escape key.
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape') return;
       const open = groups.find((details) => details.open);
@@ -291,6 +325,7 @@ const structuredData = {
       open.open = false;
       open.querySelector('summary')?.focus();
     });
+    // Closes citation popovers if the visitor taps outside of them.
     document.addEventListener('pointerdown', (event) => {
       const target = event.target;
       for (const details of groups)
@@ -300,6 +335,7 @@ const structuredData = {
       passive: true,
     });
     window.addEventListener('resize', () => groups.forEach((details) => (details.open = false)));
+    // Converts article headings into collapsible <details> accordions so readers can collapse long sections.
     const sections: HTMLDetailsElement[] = [];
     const parents: { depth: number; details: HTMLDetailsElement }[] = [];
     for (const node of [...body.childNodes]) {
@@ -331,6 +367,7 @@ const structuredData = {
       });
     });
   }
+  // Progress bar controller: scales the top progress line from 0 to 1 based on page scroll depth.
   const bar = document.querySelector<HTMLElement>('[data-reading-progress]');
   if (body && bar) {
     let scheduled = false;
@@ -358,6 +395,7 @@ const structuredData = {
     update();
   }
 
+  // Active chapter highlighter: marks the current reading position in the table of contents.
   const chapterLinks = [
     ...document.querySelectorAll<HTMLAnchorElement>('.chapter-nav a[href^="#"]'),
   ];
