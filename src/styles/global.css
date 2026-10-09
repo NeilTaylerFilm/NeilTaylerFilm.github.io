@@ -10,6 +10,7 @@
 
 /* Global CSS for site-wide tokens, layout, and components */
 /* Editorial notebook: shared tokens for dark and warm-paper themes. */
+/* CSS variables (tokens) act like labeled paint buckets; changing a color here updates the whole site. */
 
 /* 🌙 DARK MODE PALETTE (Default Nighttime Theme) */
 :root {
