@@ -9,13 +9,21 @@
 // and the fullscreen zoom lightbox!
 
 // Individual photography project page with gallery and lightbox.
+// --- BORROWED TOOLS (Imports) ---
+// render: Astro's Markdown reader to transform the project's text notes into HTML.
 import { render } from 'astro:content';
 
+// BaseLayout: Master page framework providing the navigation header and footer.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+// ProjectMetadata: Displays project details like date, camera, and location pills.
 import ProjectMetadata from '../../components/ProjectMetadata.astro';
+// Lightbox: The full-screen zoom pop-up modal when you click a photograph.
 import Lightbox from '../../components/Lightbox.astro';
+// Gallery: The responsive wall of images arranged in editorial rows or masonry.
 import Gallery from '../../components/Gallery.astro';
+// site: Website configuration like the author's name and default images.
 import { site } from '../../config/site';
+// projects: Helper to fetch all published photo projects.
 import { projects } from '../../lib/content';
 
 // 🗺️ THE TOUR GUIDE (Dynamic Route Generator):
@@ -30,6 +38,7 @@ const { data } = project;
 const { Content } = await render(project);
 ---
 
+{/* The master website frame wrapping this project's gallery room */}
 <BaseLayout
   title={data.title}
   description={
@@ -45,12 +54,14 @@ const { Content } = await render(project);
 
   {/* 📖 Album Introduction Header */}
   <header class="project-intro">
+    {/* Metadata bar showing date, location, and camera gear */}
     <ProjectMetadata {...data} />
     <h1>
       {data.title}
       <span class="accent">.</span>
     </h1>
     {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+    {/* Optional notice if this project is sample demonstration content */}
     {data.demo && (
       <p class="demo-notice">Example project · These sample photographs are not Neil’s work.</p>
     )}
@@ -62,9 +73,11 @@ const { Content } = await render(project);
   </header>
 
   {/* 🧱 The photo gallery wall */}
+  {/* Renders all photographs in this project with responsive sizing and layout */}
   <Gallery images={data.images} layout={data.galleryLayout} />
 
   {/* 🔍 The full-screen zoom pop-up widget */}
+  {/* Listens for image clicks and opens a high-resolution lightbox viewer */}
   <Lightbox title={data.title} />
 
   {/* 🏁 Polite sign-off at the end of the album */}
