@@ -9,10 +9,15 @@
 // 3. It gives every photo a unique fingerprint hash so the website never mixes them up.
 
 // Generate responsive image variants using sharp.
+// --- BORROWED TOOLS (Imports) ---
+// sharp: High-performance image processing engine for resizing, converting, and rotating.
 import sharp from 'sharp';
+// createHash: Generates cryptographic SHA-256 fingerprints to identify photos uniquely.
 import { createHash } from 'node:crypto';
+// execFile & promisify: Runs system terminal programs (like Apple's 'sips') cleanly from async code.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+// mkdtemp, readFile, writeFile, rm: File management helpers to create and clean up temporary workspaces.
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
