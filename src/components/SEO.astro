@@ -9,10 +9,14 @@
 // 3. Which preview picture should pop up?
 // This component packages up all those secret signals!
 
+// --- BORROWED TOOLS (Imports) ---
+// imageInfo: Helper to find image file paths and dimensions in our public folders.
 import { imageInfo } from '../lib/images';
+// site: Global website configuration containing author name and default preview artwork.
 import { site } from '../config/site';
 
 // 📋 Checklist of options this SEO component can take:
+// Like a form listing the details needed to announce a webpage to the world.
 interface Props {
   title: string;         // The page title (e.g. 'About')
   description?: string;  // Short teaser description
@@ -22,6 +26,7 @@ interface Props {
 }
 
 // Extract props or use sensible defaults from site config
+// If a page forgets to provide an image or description, fall back to our site defaults.
 const {
   title,
   description = site.description,
@@ -31,26 +36,31 @@ const {
 } = Astro.props;
 
 // 🌐 The official canonical web address for this page
+// Tells Google: "This is the official address for this page, not a copy!"
 const canonical = new URL(
   Astro.url.pathname === '/404/' ? '/404.html' : Astro.url.pathname,
   Astro.site,
 );
 
 // 🏷️ Full title displayed on browser tab (e.g. "Photography — Neil Tayler Film")
+// Combines the specific page topic with your site's brand name.
 const fullTitle = `${title} — ${site.name}`;
 
 // 🖼️ Full web address for the social preview card image
+// Converts relative file paths into absolute URLs so external chat apps can download the thumbnail.
 const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 ---
 <!-- SECURITY: JSON.stringify sanitizes '<' to '\u003c' to prevent HTML injection in structured data. -->
 
 <!-- 🏷️ Tab Title & Meta Description for Google -->
+<!-- Tells the browser what to write on the tab and gives Google the search result snippet. -->
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
 {noindex && <meta name="robots" content="noindex" />}
 
 <!-- 📱 Open Graph Tags (used by Facebook, LinkedIn, iMessage, Discord) -->
+<!-- These special tags dictate how the link unfurls inside chat apps like WhatsApp, Slack, and iMessage. -->
 <meta property="og:type" content={article ? 'article' : 'website'} />
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
@@ -59,12 +69,14 @@ const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 <meta property="og:image" content={socialImage} />
 
 <!-- 🐦 Twitter / X Preview Card Tags -->
+<!-- Instructs Twitter/X to show a prominent large picture card instead of a tiny icon. -->
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImage} />
 
 <!-- 🤖 JSON-LD Structured Data: A digital business card for Google Search -->
+<!-- Formats site and author profile data into machine-readable JSON for search engines. -->
 <script
   is:inline
   type="application/ld+json"
