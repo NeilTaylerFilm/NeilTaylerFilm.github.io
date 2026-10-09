@@ -7,6 +7,8 @@
 // something impossible like February 31st or year 99999.
 
 // Helpers for validating and matching project dates and years
+// --- BORROWED TOOLS (Imports) ---
+// z (Zod): A schema validation library that acts like a strict security guard checking forms.
 import { z } from 'astro/zod';
 
 // 🔍 RULE 1: The Exact Date Checker
@@ -16,11 +18,14 @@ import { z } from 'astro/zod';
 // 3. Turns the text into a real digital clock timestamp so the computer understands it.
 export const projectDate = z
   .string()
+  // Pattern matching: 4-digit year, 2-digit month, 2-digit day
   .regex(/^[1-9]\d{3}-\d{2}-\d{2}$/)
+  // Verify that the calendar day is real (JavaScript parses Feb 30 as March 2; this catch stops that)
   .refine((value) => {
     const parsed = new Date(`${value}T00:00:00.000Z`);
     return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
   }, 'Use a real calendar date in YYYY-MM-DD format')
+  // Turn the verified text into a real Date object locked to midnight UTC
   .transform((value) => new Date(`${value}T00:00:00.000Z`));
 
 // 🗓️ RULE 2: The Year Checker
