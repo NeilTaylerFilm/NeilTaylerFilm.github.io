@@ -11,11 +11,16 @@
 //    Markdown and image links so you can paste them directly into your blog posts!
 
 // Upload photos from photo-inbox to R2, create responsive derivatives, and update the image registry.
+// --- BORROWED TOOLS (Imports) ---
+// readdir, readFile, writeFile, mkdir, rename, open, unlink: Node.js filesystem tools.
 import { readdir, readFile, writeFile, mkdir, rename, open, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+// PutObjectCommand: S3 upload instruction that pushes bytes to the Cloudflare R2 bucket.
 import { PutObjectCommand } from '@aws-sdk/client-s3';
+// connection, inventory, uploadBudget: Our R2 vault keys and safety checks.
 import { connection, inventory, uploadBudget } from './lib/r2.mjs';
+// photoVariants: The darkroom resizing engine generating WebP/JPEG sizes.
 import { photoVariants } from './lib/photo-variants.mjs';
 
 // 📂 Set current directory to the project root folder
