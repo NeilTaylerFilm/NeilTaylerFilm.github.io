@@ -8,8 +8,12 @@
 // 3. Photo counters and grid indexes start at the exact right picture.
 
 // Tests gallerySections grouping of images by section headings
+// --- BORROWED TOOLS (Imports) ---
+// test: Node.js built-in test runner.
 import test from 'node:test';
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// gallerySections: The chapter organizing helper function we are testing!
 import { gallerySections } from '../src/lib/gallery-sections.ts';
 
 // 📸 TEST: Photo order and chapter headers must remain 100% faithful
