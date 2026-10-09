@@ -7,9 +7,12 @@
 // handling slashes and middle dots cleanly!
 
 // Project metadata line with category, location and date
+// --- BORROWED TOOLS (Imports) ---
+// isoDate: Formats raw calendar dates into universal computer-friendly strings (YYYY-MM-DD).
 import { isoDate } from '../lib/feed';
 
 // 📋 What this component can display:
+// A menu of optional details: projects can have some, all, or none of these.
 interface Props {
   category?: string;      // Creative category (e.g. 'Street', 'Music Video')
   location?: string;      // Where it was shot (e.g. 'Thailand', 'London')
@@ -17,8 +20,10 @@ interface Props {
   year?: string | number; // Or just the year (e.g. 2024)
 }
 
+// Unpack the provided props
 const { category, location, date, year } = Astro.props;
 // Build a simple date text stamp
+// If an exact calendar date is available, convert it to YYYY-MM-DD; otherwise use the plain year string.
 const stamp = date ? isoDate(date) : year?.toString();
 ---
 
