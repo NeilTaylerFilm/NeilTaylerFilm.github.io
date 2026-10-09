@@ -9,6 +9,8 @@
 // 4. Catches broken photo links or missing image sizes before your visitors see them!
 
 // Scan source files for photo URLs and cross-reference them against the R2 registry.
+// --- BORROWED TOOLS (Imports) ---
+// readdir, readFile: Filesystem tools to scan project directories and inspect file text.
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
