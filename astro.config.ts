@@ -10,11 +10,18 @@
 // Neil Tayler Film - Astro build configuration.
 // @ts-check
 
+// --- BORROWED TOOLS (Imports) ---
+// unified: The Markdown processing pipeline factory.
 import { unified } from '@astrojs/markdown-remark';
+// mdx: Allows embedding interactive components directly inside Markdown articles.
 import mdx from '@astrojs/mdx';
+// rehypeRaw: Allows writing custom HTML elements inside Markdown files safely.
 import rehypeRaw from 'rehype-raw';
+// rehypeSanitize: Security guard scrubbing away dangerous or malicious scripts.
 import rehypeSanitize from 'rehype-sanitize';
+// markdownImages & sourceImagePaths: Our custom image optimizers converting markdown images into responsive pictures.
 import markdownImages, { sourceImagePaths } from './scripts/markdown-images.mjs';
+// defineConfig: Astro's official helper validating all configuration options.
 import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
