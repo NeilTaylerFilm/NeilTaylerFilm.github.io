@@ -8,10 +8,13 @@
 // update it manually on New Year's Eve!
 
 // 📚 Import your site settings (name, author)
+// --- BORROWED TOOLS (Imports) ---
+// site: Provides brand details like site.name and site.author from src/config/site.ts.
 import { site } from '../config/site';
 
 ---
 
+<!-- The persistent footer container anchored at the bottom of every page -->
 <footer class="site-footer wrap">
   <!-- 🏠 Site title link that takes visitors back home -->
   <div>
@@ -22,6 +25,7 @@ import { site } from '../config/site';
   </div>
 
   <!-- 📅 Automatic copyright notice with current calendar year -->
+  <!-- Automatically retrieves the current calendar year from the system clock so copyright never expires. -->
   <div class="footer-bottom mono">
     <span>
       © {new Date().getFullYear()} {site.author}
