@@ -9,8 +9,11 @@
 // 4. Checks that sitemap.xml is completely valid.
 
 // Walk the build output and check for broken links, missing files, and invalid metadata.
+// --- BORROWED TOOLS (Imports) ---
+// readdir, readFile, stat: Filesystem tools to inspect generated output HTML files.
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+// assert: Node.js strict assertion library used to fail the build if invariant rules break.
 import assert from 'node:assert/strict';
 
 const root = path.resolve('dist');
