@@ -23,6 +23,8 @@ const types = {
 
 export default {
   // 🚪 The main door: Runs whenever someone requests an image URL
+  // What goes in: request (incoming HTTP request), env (Cloudflare bindings including R2 bucket)
+  // What comes out: HTTP Response containing image bytes and headers, or 404/405 error
   async fetch(request, env) {
     // 🛑 Rule 1: Only allow looking (GET) or checking file size (HEAD). No uploading or deleting!
     if (!['GET', 'HEAD'].includes(request.method)) {
