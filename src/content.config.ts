@@ -7,10 +7,16 @@
 // "Did you include a title? Is the date formatted correctly? Did you pick a category?"
 // If anything is missing or broken, it catches it before the website builds!
 
+// --- BORROWED TOOLS (Imports) ---
+// defineCollection: Tells Astro how to set up a new content drawer with strict rules.
 import { defineCollection } from 'astro:content';
+// glob: A file-finding radar that scans folders for all Markdown (.md/.mdx) documents.
 import { glob } from 'astro/loaders';
+// z (Zod): A schema validation library that acts like a strict security guard checking forms.
 import { z } from 'astro/zod';
+// postCategories: Normalizes category names and merges single or multiple category fields.
 import { postCategories } from './lib/feed';
+// projectDate, projectYear, matchingProjectYear: Custom date validators ensuring consistent timeline years.
 import { projectDate, projectYear, matchingProjectYear } from './lib/project-date';
 
 // 📝 COMMON CHECKLIST: Rules that apply to all content items
