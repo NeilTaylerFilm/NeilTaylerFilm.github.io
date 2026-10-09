@@ -8,6 +8,7 @@
 // Curated list of featured photography projects for the portfolio page.
 // Curate the photography page here. Use an uploaded R2 image address or a local image path.
 // Project is the Markdown filename (without .md). Omit it for an unlinked image.
+// This list is imported directly by src/components/PhotographySlideshow.astro.
 
 // 📋 The checklist of what each featured picture needs:
 type FeaturedPhoto = {
