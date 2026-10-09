@@ -9,10 +9,16 @@
 // - A filmstrip at the bottom with video preview thumbnails.
 // - A "Learn more…" button that links directly to a behind-the-scenes blog post if published!
 
+// --- BORROWED TOOLS (Imports) ---
+// originalFeatured & featuredIsDemo: The showcase list of films/videos and demo watermark indicator.
 import { featured as originalFeatured, featuredIsDemo } from '../data/post-production-featured';
+// getCollection: Astro tool that opens content drawers to read our articles and projects.
 import { getCollection } from 'astro:content';
+// videoEmbedUrl & linkedBlogUrl: Smart converters turning video links into embed players and connecting blog posts.
 import { videoEmbedUrl, linkedBlogUrl } from '../lib/post-production';
+// imageInfo: Helper finding image dimensions and WebP responsive formats.
 import { imageInfo } from '../lib/images';
+// photography-viewer.css: Stylesheet for slide projector animations, buttons, and theater dialog.
 import '../styles/photography-viewer.css';
 
 // 📚 Find all blog posts that are live and published (not drafts)
@@ -237,14 +243,22 @@ const first = featured[0];
 
   // 🎬 EXTRA VIDEO CONTROLLER: Handles clicking the Play button and embedding video iframes
   document.querySelectorAll<HTMLElement>('[data-video-viewer]').forEach((root) => {
+    // Unpack the film metadata list stored right inside the HTML element's data pocket
     const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string; video?: string }> =
       JSON.parse(root.dataset.slides || '[]');
+    // Grab the screen box where posters and video players appear
     const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
+    // The big round play button hovering over the poster
     const play = root.querySelector<HTMLButtonElement>('[data-video-play]')!;
+    // Status text element to inform visitors if video is taking long to load
     const playerStatus = root.querySelector<HTMLElement>('[data-video-status]')!;
+    // The "Learn more..." link button leading to behind-the-scenes stories
     const more = root.querySelector<HTMLAnchorElement>('[data-work-learn-more]')!;
+    // External link button allowing direct playback on YouTube or Vimeo
     const watchLink = root.querySelector<HTMLAnchorElement>('[data-watch-link]')!;
+    // The label text saying "YouTube" or "Vimeo"
     const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
+    // A stopwatch timer ID so we can alert the visitor if video loading stalls
     let playerTimer = 0;
 
     // 🔄 When user flips to another slide, remove old video player and refresh links
