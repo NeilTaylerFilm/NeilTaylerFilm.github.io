@@ -7,7 +7,10 @@
 // 3. Local links and email links don't accidentally try to load fake favicons!
 
 // Validate that citation icons render correctly by testing against markdown-images.
+// --- BORROWED TOOLS (Imports) ---
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// markdownImages: Our HTML tree editor that injects favicon icons into citations.
 import markdownImages from './markdown-images.mjs';
 
 const citation = {
