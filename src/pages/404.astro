@@ -8,22 +8,28 @@
 // and provides rescue buttons back to the Blog and Photography galleries.
 
 // 404 page for missing routes.
+// --- BORROWED TOOLS (Imports) ---
+// BaseLayout: The master layout frame that holds the top navigation bar and bottom copyright footer.
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 {/* noindex={true} tells Google not to index this missing page in search results */}
+{/* This is like hanging a "Do Not Disturb" sign so search bots don't recommend this dead end. */}
 <BaseLayout
   title="Page not found"
   description="This page could not be found. Return to the blog or browse photography projects by Neil Tayler."
   noindex={true}
 >
+  {/* The main container centered on the screen like a spotlight on an empty stage. */}
   <section class="not-found">
     {/* 🏷️ Technical error label */}
+    {/* The badge displaying the standard HTTP 404 status code with a search magnifying glass symbol. */}
     <div class="error-label">
       <span aria-hidden="true">⌕</span> Error 404 / File not found
     </div>
 
     {/* 🎬 Film-themed headline */}
+    {/* A playful cinematic pun ('out of frame') matching the creative theme of the site. */}
     <h1>
       This one’s
       <br />
@@ -37,6 +43,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
 
     {/* 🚪 Rescue buttons guiding visitors back to safety */}
+    {/* Direct escape buttons so visitors never feel trapped on an error page. */}
     <div class="error-actions">
       <a class="control" href="/">
         Back to blog →
