@@ -8,7 +8,10 @@
 // 3. Tests both desktop mouse clicks and mobile touchscreen taps.
 
 // Run a Playwright test against the citation preview page at various viewports.
+// --- BORROWED TOOLS (Imports) ---
+// assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
+// chromium: Playwright automated headless browser engine.
 import { chromium } from '@playwright/test';
 
 const url = process.env.PREVIEW_URL || 'http://127.0.0.1:4323/blog/citation-preview/';
