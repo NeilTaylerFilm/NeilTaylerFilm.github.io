@@ -3,7 +3,7 @@
   "title": "Flackwell Heath vs Barton - Women's Football",
   "description": "Photographed womens football on the sidelines, focusing on capturing key moments between players.",
   "date": "2025-11-30",
-  "category": "Sports",
+  "type": "Sports",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/c79b1baa1cacfd78ffd77c209b1077fa-2560.jpeg",

@@ -4,7 +4,7 @@
   "subtitle": "Engagement Session",
   "description": "",
   "date": "2026-06-27",
-  "category": "Engagement",
+  "type": "Engagement",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/c8684f2f6b94f7d8b4877f4b8d2f1511-1706.jpeg",
