@@ -12,7 +12,7 @@ interface Props {
   photos?: PortfolioPhoto[];
 }
 const { photos = portfolioPhotos } = Astro.props;
-const TEST_GRID = true;
+const TEST_GRID = false;
 const galleryProjects = await projects();
 let displayPhotos = [...photos];
 
@@ -80,11 +80,7 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
   <script is:inline>
     document.currentScript.parentElement.setAttribute('data-enhanced', '');
   </script>
-  <div
-    class="portfolio-grid"
-    data-portfolio-grid
-    data-has-more={displayPhotos.length > 24 ? 'true' : 'false'}
-  >
+  <div class="portfolio-grid" data-portfolio-grid>
     {displayPhotos.map((photo, index) => {
       const info = imageInfo(photo.src)!;
       const projectUrl = photo.projectSlug ? `/photography/${photo.projectSlug}/` : undefined;
@@ -187,17 +183,11 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
 <style>
   .portfolio {
     --photo-gap: 6px;
-    --target-row-height: 280px;
-    --last-row-spacer-grow: 1000;
-  }
-  @media (min-width: 900px) and (max-width: 1599px) {
-    .portfolio {
-      --target-row-height: 260px;
-    }
+    --target-row-height: 320px;
   }
   @media (max-width: 899px) {
     .portfolio {
-      --target-row-height: 180px;
+      --target-row-height: 260px;
     }
   }
   .portfolio-grid {
@@ -206,10 +196,11 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
     gap: var(--photo-gap);
   }
   .portfolio-photo {
-    flex: var(--ar) 1 calc(var(--ar) * var(--target-row-height));
+    flex: 0 0 var(--row-width);
     min-width: 0;
     align-self: start;
     display: block;
+    height: var(--row-height);
     aspect-ratio: var(--ar);
   }
   .portfolio-photo :global(picture),
@@ -220,23 +211,6 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
   }
   .portfolio-photo:hover {
     opacity: 0.9;
-  }
-  /* Set the spacer grow value to 0 to stretch the last row fully. */
-  .portfolio-grid::after {
-    content: '';
-    flex: var(--last-row-spacer-grow) 1 0;
-    margin-inline-start: calc(var(--photo-gap) * -1);
-  }
-  .portfolio-grid[data-has-more='true']::after {
-    content: none;
-  }
-  .portfolio-grid[data-has-more='false'] > .portfolio-photo[data-short-final-row] {
-    flex-grow: 0;
-  }
-  @media (min-width: 1400px) {
-    .portfolio-grid:not(:has(> .portfolio-photo:nth-child(5))) {
-      --last-row-spacer-grow: 0;
-    }
   }
   .portfolio[data-enhanced] .portfolio-photo:nth-child(n + 25):not([data-revealed]),
   .portfolio-photo[hidden] {
@@ -430,23 +404,41 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
     position: absolute;
     top: calc(50% - 5px);
     left: 50%;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    appearance: none;
+    transition: transform 0.2s ease-out;
+  }
+  :global(.portfolio-dot::before) {
+    content: '';
     display: block;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--muted);
-    opacity: 0.55;
+    opacity: var(--dot-opacity, 0.55);
+    transform: scale(var(--dot-scale, 1));
     transition:
       transform 0.2s ease-out,
       opacity 0.2s ease-out,
       background-color 0.2s ease-out,
       scale 0.15s ease-out;
-    pointer-events: none;
-    transform-origin: center;
   }
-  :global(.portfolio-dot[aria-current='true']) {
+  :global(.portfolio-dot[aria-current='true']::before) {
     background: var(--text);
-    opacity: 1;
+    opacity: var(--dot-opacity, 1);
+  }
+  :global(.portfolio-dot:focus-visible) {
+    outline: 1px solid var(--text);
+    outline-offset: -1px;
     z-index: 1;
   }
   .portfolio-pagination.is-scrubbing {
@@ -454,7 +446,7 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
     min-height: 56px;
     background-color: rgb(255 255 255 / 12%);
   }
-  .portfolio-pagination.is-scrubbing :global(.portfolio-dot) {
+  .portfolio-pagination.is-scrubbing :global(.portfolio-dot::before) {
     scale: 1.2;
   }
   .portfolio-pagination-count {
@@ -495,6 +487,7 @@ const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug)
   @media (prefers-reduced-motion: reduce) {
     .portfolio-track,
     .portfolio-dot,
+    .portfolio-dot::before,
     .portfolio-pagination {
       transition: none !important;
     }

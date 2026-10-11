@@ -1,3 +1,5 @@
+import { partitionRows, targetRowHeightForWidth } from './justified-grid.ts';
+
 export function setupPortfolio(root: HTMLElement) {
   const photos = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-portfolio-photo]'));
   const grid = root.querySelector<HTMLElement>('[data-portfolio-grid]')!;
@@ -5,37 +7,40 @@ export function setupPortfolio(root: HTMLElement) {
   const status = root.querySelector<HTMLElement>('[data-portfolio-status]')!;
   const limit = Math.min(photos.length, 72);
   let visibleCount = Math.min(limit, 24);
+  let rowEnds: number[] = [];
   const setShown = (photo: HTMLElement, on: boolean) => {
     photo.hidden = !on;
     photo.toggleAttribute('data-revealed', on);
   };
-  const updateVisiblePhotos = () => {
-    const hasMore = visibleCount < limit;
-    photos.forEach((photo, index) => setShown(photo, index < visibleCount));
-    grid.dataset.hasMore = String(hasMore);
-    photos.forEach((photo) => photo.removeAttribute('data-short-final-row'));
-    if (hasMore && visibleCount > 0) {
-      const last = photos[visibleCount - 1];
-      const lookahead = photos[visibleCount];
-      setShown(lookahead, true);
-      const lastTop = last.offsetTop;
-      const holdsLastRow = lookahead.offsetTop === lastTop;
-      const lastRowStart = holdsLastRow
-        ? photos.slice(0, visibleCount).findIndex((photo) => photo.offsetTop === lastTop)
-        : -1;
-      setShown(lookahead, false);
-      if (lastRowStart >= 0)
-        photos.slice(lastRowStart, visibleCount).forEach((photo) => setShown(photo, false));
-    }
-    more.hidden = !hasMore;
-    if (!hasMore) {
-      const shown = photos.filter((photo) => !photo.hidden);
-      const lastTop = shown.at(-1)?.offsetTop;
-      const lastRow = shown.filter((photo) => photo.offsetTop === lastTop);
-      if (lastRow.length <= 2)
-        lastRow.forEach((photo) => photo.setAttribute('data-short-final-row', ''));
-    }
+  const completeRowCount = (count: number) =>
+    count >= limit ? limit : (rowEnds.find((end) => end >= count) ?? limit);
+  const layoutRows = () => {
+    const width = grid.getBoundingClientRect().width;
+    if (width <= 0 || !limit) return;
+    const styles = getComputedStyle(root);
+    const gapValue = Number.parseFloat(styles.getPropertyValue('--photo-gap'));
+    const targetValue = Number.parseFloat(styles.getPropertyValue('--target-row-height'));
+    const gap = Number.isFinite(gapValue) ? gapValue : 6;
+    const target = Number.isFinite(targetValue) ? targetValue : targetRowHeightForWidth(width);
+    const ratios = photos.slice(0, limit).map((photo) => {
+      const image = photo.querySelector<HTMLImageElement>('img')!;
+      return Number(image.getAttribute('width')) / Number(image.getAttribute('height'));
+    });
+    const plan = partitionRows(ratios, width, gap, target);
+    rowEnds = plan.rows.map((row) => row.end);
+    plan.rows.forEach(({ start, end, height, widths }) => {
+      for (let index = start; index < end; index++) {
+        photos[index].style.setProperty('--row-height', `${height}px`);
+        photos[index].style.setProperty('--row-width', `${widths[index - start]}px`);
+      }
+    });
+    if (visibleCount < limit) visibleCount = completeRowCount(visibleCount);
   };
+  const updateVisiblePhotos = () => {
+    photos.forEach((photo, index) => setShown(photo, index < visibleCount));
+    more.hidden = visibleCount >= limit;
+  };
+  layoutRows();
   updateVisiblePhotos();
   const prioritizeFirstRow = () => {
     const firstTop = photos.find((photo) => !photo.hidden)?.offsetTop;
@@ -45,17 +50,16 @@ export function setupPortfolio(root: HTMLElement) {
     });
   };
   prioritizeFirstRow();
-  window.addEventListener(
-    'resize',
-    () => {
-      updateVisiblePhotos();
-      prioritizeFirstRow();
-    },
-    { passive: true },
-  );
+  const updateLayout = () => {
+    layoutRows();
+    updateVisiblePhotos();
+    prioritizeFirstRow();
+  };
+  window.addEventListener('resize', updateLayout, { passive: true });
+  window.addEventListener('orientationchange', updateLayout, { passive: true });
   more.addEventListener('click', () => {
-    const firstNew = photos.findIndex((photo) => photo.hidden);
-    visibleCount = Math.min(visibleCount + 12, limit);
+    const firstNew = visibleCount;
+    visibleCount = completeRowCount(Math.min(visibleCount + 12, limit));
     updateVisiblePhotos();
     status.textContent = `${photos.filter((photo) => !photo.hidden).length} of ${limit} photographs shown.`;
     photos
@@ -116,7 +120,7 @@ export function setupPortfolio(root: HTMLElement) {
   const loadingImages = new Map<number, number>();
   const failedImages = new Set<number>();
   let swiped = false;
-  let dots: HTMLElement[] = [];
+  let dots: HTMLButtonElement[] = [];
 
   function makeImage(index: number) {
     const photo = photos[index];
@@ -226,21 +230,19 @@ export function setupPortfolio(root: HTMLElement) {
         dotWindowStart = current - 3;
       dotWindowStart = Math.max(0, Math.min(visibleCount - 5, dotWindowStart));
     }
-    const thumbnail = photos[current].querySelector('img')!;
-    const bounds = imageStage.getBoundingClientRect();
-    const ratio = thumbnail.width / (thumbnail.height || 1);
-    const photoWidth = Math.min(bounds.width, bounds.height * ratio);
-    const stripWidth = Math.min(96, Math.max(1, photoWidth || bounds.width || 96));
     const windowCount = Math.min(5, visibleCount);
-    const step = windowCount > 1 ? Math.min(16, (stripWidth - 8) / (windowCount - 1)) : 0;
+    const stripWidth = windowCount * 24;
+    const step = windowCount > 1 ? 24 : 0;
     const label = `Photo ${current + 1} of ${visibleCount}`;
     pagination.style.width = `${stripWidth}px`;
     pagination.setAttribute('aria-label', label);
     count.textContent = label;
     if (renderedVisibleCount !== visibleCount) {
       dots = Array.from({ length: visibleCount }, () => {
-        const dot = document.createElement('span');
+        const dot = document.createElement('button');
+        dot.type = 'button';
         dot.className = 'portfolio-dot';
+        dot.addEventListener('click', () => show(Number(dot.dataset.index)));
         return dot;
       });
       dotHost.replaceChildren(...dots);
@@ -273,12 +275,13 @@ export function setupPortfolio(root: HTMLElement) {
         dot.setAttribute('aria-current', 'true');
       } else dot.removeAttribute('aria-current');
       dot.dataset.index = String(index);
-      dot.setAttribute('role', 'img');
       dot.setAttribute('aria-label', `Photo ${index + 1} of ${visibleCount}`);
+      dot.tabIndex = inWindow ? 0 : -1;
       if (inWindow) dot.removeAttribute('aria-hidden');
       else dot.setAttribute('aria-hidden', 'true');
-      dot.style.transform = `translate3d(calc(-50% + ${offset * step - ((windowCount - 1) * step) / 2}px), -50%, 0) scale(${inWindow ? scale : 0})`;
-      dot.style.opacity = inWindow ? String(opacity) : '0';
+      dot.style.transform = `translate3d(calc(-50% + ${offset * step - ((windowCount - 1) * step) / 2}px), -50%, 0)`;
+      dot.style.setProperty('--dot-scale', String(inWindow ? scale : 0));
+      dot.style.setProperty('--dot-opacity', inWindow ? String(opacity) : '0');
     });
   }
 
@@ -445,6 +448,7 @@ export function setupPortfolio(root: HTMLElement) {
   if (pagination) {
     pagination.addEventListener('pointerdown', (event) => {
       if (event.isPrimary === false || event.button !== 0) return;
+      if ((event.target as HTMLElement).closest('.portfolio-dot')) return;
       const timer = setTimeout(() => {
         if (!scrubPointer || scrubPointer.id !== event.pointerId) return;
         scrubPointer.active = true;

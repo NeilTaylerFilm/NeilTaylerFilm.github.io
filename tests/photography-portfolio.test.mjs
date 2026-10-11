@@ -116,7 +116,8 @@ class Element {
     this.replacement = next;
   }
   getBoundingClientRect() {
-    return { left: 10, top: 10, right: 990, bottom: 790, width: 980, height: 780 };
+    const width = this.layoutWidth ?? 980;
+    return { left: 10, top: 10, right: 10 + width, bottom: 790, width, height: 780 };
   }
   getClientRects() {
     return [this.getBoundingClientRect()];
@@ -134,7 +135,9 @@ function fixture(length) {
     dialog.fire('close');
   };
   root.children['[data-portfolio-dialog]'] = dialog;
-  root.children['[data-portfolio-grid]'] = new Element();
+  const grid = new Element();
+  grid.layoutWidth = 980;
+  root.children['[data-portfolio-grid]'] = grid;
   for (const name of ['more', 'status']) root.children[`[data-portfolio-${name}]`] = new Element();
   for (const name of [
     'close',
@@ -163,6 +166,7 @@ function fixture(length) {
     photo.children.img = Object.assign(new Element(), {
       src: `/thumb-${index}.jpeg`,
       alt: `Photograph ${index}`,
+      attributes: { width: '1600', height: '1000' },
       width: 1600,
       height: 1000,
     });
@@ -197,6 +201,12 @@ function fixture(length) {
       this.lastScroll = options;
     },
   };
+  globalThis.getComputedStyle = () => ({
+    getPropertyValue(name) {
+      if (name === '--photo-gap') return '6px';
+      return grid.layoutWidth < 900 ? '260px' : '320px';
+    },
+  });
   setupPortfolio(root);
   return {
     root,
@@ -237,6 +247,23 @@ test('36 and 48 photo fixtures reveal 24 then 12, focus the first new photo and 
     }
     assert.equal(more.hidden, true);
   }
+});
+
+test('grid replans from intrinsic dimensions on resize and orientation change', () => {
+  const { photos, root, window } = fixture(36);
+  const grid = root.children['[data-portfolio-grid]'];
+  const originalWidth = photos[0].style['--row-width'];
+  photos[0].children.img.width = 800;
+  photos[0].children.img.height = 1200;
+
+  grid.layoutWidth = 350;
+  window.listeners.resize.forEach((listener) => listener());
+  assert.notEqual(photos[0].style['--row-width'], originalWidth);
+  assert.ok(Math.abs(parseFloat(photos[0].style['--row-height']) - 218.75) < 1e-9);
+
+  grid.layoutWidth = 1248;
+  window.listeners.orientationchange.forEach((listener) => listener());
+  assert.ok(Math.abs(parseFloat(photos[0].style['--row-height']) - 257.5) < 1e-9);
 });
 
 test('an oversized DOM fixture cannot reveal beyond the 72-photo ceiling', () => {
@@ -294,7 +321,7 @@ test('horizontal touch swipe advances; vertical gesture does not; backdrop close
   assert.equal(dialog.open, false);
 });
 
-test('fast short swipes advance and dots stay indicators inside a five-photo window', () => {
+test('fast short swipes advance and tappable dots stay inside a five-photo window', () => {
   const component = fs.readFileSync('src/components/PhotographyPortfolio.astro', 'utf8');
   assert.match(component, /class="portfolio-pagination-dots" data-portfolio-dots>/);
 
@@ -316,14 +343,18 @@ test('fast short swipes advance and dots stay indicators inside a five-photo win
   const strip = get('pagination');
   const dots = get('dots').childNodes;
   assert.equal(dots.length, 12);
-  assert.equal(strip.style.width, '96px');
+  assert.equal(strip.style.width, '120px');
   assert.equal(strip.getAttribute('aria-label'), 'Photo 2 of 12');
   const activeDot = dots.find((dot) => dot.getAttribute('aria-current') === 'true');
-  assert.equal(activeDot.tagName, 'SPAN');
+  assert.equal(activeDot.tagName, 'BUTTON');
   assert.equal(activeDot.dataset.index, '1');
-  assert.match(dots[5].style.transform, /scale\(0\)$/);
+  assert.equal(activeDot.getAttribute('aria-label'), 'Photo 2 of 12');
+  assert.equal(activeDot.tabIndex, 0);
+  assert.equal(dots[5].tabIndex, -1);
+  assert.equal(dots[5].style['--dot-scale'], '0');
   dots.find((dot) => dot.dataset.index === '4').fire('click');
-  assert.equal(get('count').textContent, 'Photo 2 of 12');
+  assert.equal(get('count').textContent, 'Photo 5 of 12');
+  assert.equal(dots.find((dot) => dot.getAttribute('aria-current') === 'true').dataset.index, '4');
   taskWindow.reduceMotion = true;
   get('next').fire('click');
   assert.equal(get('track').style.transitionDuration, '0ms');
@@ -333,14 +364,14 @@ test('dot window pins near the ends and tapers only toward hidden photos', () =>
   const { photos, get } = fixture(7);
   photos[0].fire('click');
   const dots = get('dots').childNodes;
-  assert.equal(dots[1].style.transform.endsWith('scale(1)'), true);
-  assert.equal(dots[4].style.transform.endsWith('scale(0.5)'), true);
+  assert.equal(dots[1].style['--dot-scale'], '1');
+  assert.equal(dots[4].style['--dot-scale'], '0.5');
   for (let index = 0; index < 6; index++) get('next').fire('click');
   assert.equal(get('pagination').getAttribute('aria-label'), 'Photo 7 of 7');
-  assert.match(dots[0].style.transform, /scale\(0\)$/);
-  assert.equal(dots[2].style.transform.endsWith('scale(0.5)'), true);
-  assert.equal(dots[3].style.transform.endsWith('scale(0.75)'), true);
-  assert.equal(dots[5].style.transform.endsWith('scale(1)'), true);
+  assert.equal(dots[0].style['--dot-scale'], '0');
+  assert.equal(dots[2].style['--dot-scale'], '0.5');
+  assert.equal(dots[3].style['--dot-scale'], '0.75');
+  assert.equal(dots[5].style['--dot-scale'], '1');
   assert.equal(dots[6].getAttribute('aria-current'), 'true');
 });
 
