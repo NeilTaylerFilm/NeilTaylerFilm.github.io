@@ -244,7 +244,8 @@ h4 {
   left: calc(50% - 2px);
   background: var(--accent);
 }
-.control {
+.control,
+.contact-email-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -253,6 +254,7 @@ h4 {
   border: 1px solid var(--control-border);
   padding: 9px 16px;
   background: var(--surface);
+  text-transform: capitalize;
   font-size: 12px;
   line-height: 1.5;
   transition:
@@ -295,7 +297,7 @@ h4 {
 
 /* Large shared headline style used for the main title on each page. */
 h1 {
-  font-size: clamp(48px, 7vw, 100px);
+  font-size: clamp(45px, 6.5vw, 94px);
   line-height: 0.99;
   letter-spacing: -5px;
   font-weight: 700;
@@ -426,7 +428,7 @@ h1 {
   line-height: 1.6;
 }
 .blog-card h2 {
-  font-size: clamp(27px, 2.7vw, 36px);
+  font-size: clamp(25px, 2.5vw, 32px);
   letter-spacing: -1.25px;
   line-height: 1.12;
   margin-top: 14px;
@@ -438,7 +440,7 @@ h1 {
 }
 .card-subtitle {
   color: var(--muted);
-  font-size: 16px;
+  font-size: 15px;
   margin-top: 10px;
   line-height: 1.5;
 }
@@ -521,7 +523,7 @@ h1 {
   margin-bottom: 25px;
 }
 .page-intro h1 {
-  font-size: clamp(54px, 6.6vw, 90px);
+  font-size: clamp(50px, 6.2vw, 84px);
   letter-spacing: -4px;
   line-height: 1.06;
 }
@@ -585,7 +587,7 @@ h1 {
 }
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 46px 30px;
   margin-top: 32px;
 }
@@ -618,16 +620,21 @@ h1 {
   border: 1px solid var(--border);
   color: var(--text);
 }
+.project-open > span {
+  width: max-content;
+  justify-self: center;
+  transform: translateY(-1px);
+}
 .project-card h2 {
-  font-size: 30px;
+  font-size: 24px;
   line-height: 1.15;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   margin-top: 12px;
   overflow-wrap: anywhere;
 }
 .project-card > p {
   margin-top: 9px;
-  font-size: 14px;
+  font-size: 13px;
 }
 .project-card > p.mono {
   font-size: 11px;
@@ -645,13 +652,16 @@ h1 {
 .project-intro {
   padding: 36px 0 44px;
   max-width: 950px;
+  margin-inline: auto;
 }
 .project-intro h1 {
+  font-size: clamp(38px, 5.1vw, 70px);
+  letter-spacing: -3px;
   margin-top: 22px;
   line-height: 1.05;
 }
 .project-description {
-  margin: 24px 0;
+  margin: 24px auto;
   max-width: 700px;
 }
 .project-description p {
@@ -763,14 +773,14 @@ h1 {
   margin: 38px auto 40px;
 }
 .article-header h1 {
-  font-size: clamp(40px, 5.5vw, 76px);
+  font-size: clamp(38px, 5.1vw, 70px);
   letter-spacing: -3px;
   line-height: 1.06;
   margin-top: 22px;
 }
 .article-subtitle {
   color: var(--muted);
-  font-size: clamp(19px, 2.1vw, 25px);
+  font-size: clamp(18px, 1.9vw, 22px);
   line-height: 1.5;
   margin-top: 24px;
   max-width: 760px;
@@ -852,6 +862,10 @@ h1 {
 .article-reading-layout > .article-body,
 .article-reading-layout > .article-signoff {
   grid-column: 2;
+  width: 100%;
+}
+.article-extra {
+  grid-column: 1 / -1;
   width: 100%;
 }
 .prose > * + * {
@@ -1152,12 +1166,10 @@ h1 {
 /* Script turns article headings into native disclosure sections that can be opened or folded. */
 .article-body > .article-section,
 .article-section > .article-section {
-  margin-top: 1.4em;
+  margin-top: 1.2em;
 }
 .article-section > summary {
-  display: flex;
-  align-items: baseline;
-  gap: 0.65em;
+  position: relative;
   list-style: none;
   cursor: pointer;
 }
@@ -1167,11 +1179,17 @@ h1 {
 .article-section > * + * {
   margin-top: 1.4em;
 }
+.article-section > summary + * {
+  margin-top: 1.1em;
+}
 .article-section > summary::before {
   content: '▾';
-  flex: 0 0 0.8em;
+  position: absolute;
+  top: 0.45em;
+  left: max(-1.35em, calc(0px - var(--gutter)));
   color: var(--accent);
   font: 0.75em var(--mono);
+  line-height: 1;
 }
 .article-section:not([open]) > summary::before {
   content: '▸';
@@ -1191,6 +1209,63 @@ h1 {
   .article-section > summary h5,
   .article-section > summary h6 {
     scroll-margin-top: 72px;
+  }
+}
+@media (max-width: 767px) {
+  .article-section > summary,
+  .chapter-nav-mobile > summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+  }
+  .article-section > summary > :is(h2, h3, h4, h5, h6),
+  .chapter-nav-mobile > summary > .chapter-label {
+    order: 0;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .article-section > summary::before,
+  .chapter-nav-mobile > summary::before {
+    position: static;
+    order: 1;
+    flex: none;
+    left: auto;
+    top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1lh;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: inherit;
+  }
+  .chapter-nav-mobile > summary {
+    line-height: 1.6em;
+  }
+  .chapter-nav-mobile nav a {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .article-section > summary:has(> h2) {
+    font-size: 29px;
+    line-height: 1.2em;
+  }
+  .article-section > summary:has(> h3) {
+    font-size: 24px;
+    line-height: 1.3em;
+  }
+  .article-section > summary:has(> h4) {
+    font-size: 20px;
+    line-height: 1.8em;
+  }
+  .article-section > summary:has(> h5) {
+    line-height: calc(1.8 * 0.83em);
+  }
+  .article-section > summary:has(> h6) {
+    line-height: calc(1.8 * 0.67em);
   }
 }
 /* Related articles are shown in three columns on wide screens. */
@@ -1283,24 +1358,9 @@ h1 {
 .about-copy > .control {
   margin-top: 32px;
 }
-.contact-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
-  margin: 15px 0 100px;
-}
-.contact-intro h2 {
-  font-size: 34px;
-  line-height: 1.2;
-  letter-spacing: -1px;
-}
-.contact-intro p {
-  color: var(--muted);
-  margin-top: 22px;
-  max-width: 400px;
-}
 .contact-list {
   border-top: 1px solid var(--border);
+  margin-bottom: 100px;
 }
 .contact-row {
   display: flex;
@@ -1332,10 +1392,88 @@ h1 {
 .contact-email {
   white-space: nowrap;
 }
+.contact-row.contact-email-row {
+  padding-block: 20px;
+}
 .contact-email-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+.contact-email-action {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 40px;
+  padding: 6px 8px;
+  font-size: 11px;
+  transition:
+    background-color 90ms ease,
+    border-color 90ms ease,
+    transform 90ms ease,
+    box-shadow 90ms ease;
+}
+.contact-copy-email {
+  min-width: 112px;
+}
+.contact-email {
+  min-width: 88px;
+}
+.contact-copy-email > svg {
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+}
+.contact-email-action [data-copy-label] {
+  display: block;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+a.contact-email-action > span {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  font: inherit;
+  color: inherit;
+  text-align: center;
+}
+a.contact-email-action {
+  color: inherit;
+}
+@media (hover: hover) {
+  .contact-email-action:hover {
+    background: var(--surface-raised);
+    border-color: var(--accent);
+  }
+}
+.contact-email-action:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px var(--border);
+}
+.contact-email-action:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .contact-row.contact-email-row {
+    padding-block: 17px;
+  }
+  .contact-email-actions {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+  .contact-email-actions > .contact-email-action {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 6px;
+  }
 }
 .not-found {
   max-width: 760px;
@@ -1384,13 +1522,16 @@ h1 {
     padding-block: 42px;
   }
   .blog-card h2 {
-    font-size: 39px;
+    font-size: 35px;
   }
   .excerpt {
     font-size: 16px;
   }
 }
 @media (max-width: 1050px) {
+  .project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   :root {
     --gutter: 32px;
   }
@@ -1409,13 +1550,12 @@ h1 {
     gap: 25px;
   }
   .blog-card h2 {
-    font-size: 29px;
+    font-size: 27px;
   }
   .card-subtitle {
-    font-size: 15px;
+    font-size: 14px;
   }
-  .about-grid,
-  .contact-layout {
+  .about-grid {
     gap: 40px;
   }
   .prose figure {
@@ -1470,9 +1610,17 @@ h1 {
   }
   .feed-controls {
     gap: 14px;
+    flex: 1;
   }
   .feed-controls label {
     display: block;
+    flex: 1;
+    min-width: 0;
+  }
+  .feed-controls select {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .feed-controls label > span {
     display: block;
@@ -1493,11 +1641,11 @@ h1 {
     grid-template-columns: 1fr;
   }
   .blog-card h2 {
-    font-size: 32px;
+    font-size: 29px;
     max-width: 95%;
   }
   .card-subtitle {
-    font-size: 16px;
+    font-size: 15px;
   }
   .excerpt {
     font-size: 16px;
@@ -1524,7 +1672,7 @@ h1 {
     padding: 38px 0;
   }
   .page-intro h1 {
-    font-size: 60px;
+    font-size: 55px;
     letter-spacing: -3px;
   }
   .slideshow-top {
@@ -1556,7 +1704,7 @@ h1 {
     gap: 35px 22px;
   }
   .project-card h2 {
-    font-size: 25px;
+    font-size: 23px;
   }
   .project-card .metadata {
     font-size: 10px;
@@ -1566,7 +1714,7 @@ h1 {
     padding-top: 24px;
   }
   .project-intro h1 {
-    font-size: 59px;
+    font-size: 52px;
     letter-spacing: -3px;
   }
   .gallery {
@@ -1576,11 +1724,14 @@ h1 {
     margin-top: 24px;
   }
   .article-header h1 {
-    font-size: 46px;
+    font-size: 42px;
     letter-spacing: -2px;
   }
   .article-body {
     margin-top: 32px;
+  }
+  .article-subtitle {
+    font-size: 17px;
   }
   .prose {
     font-size: 18px;
@@ -1605,12 +1756,6 @@ h1 {
   }
   .about-copy h2 {
     font-size: 30px;
-  }
-  .contact-layout {
-    gap: 35px;
-  }
-  .contact-intro h2 {
-    font-size: 28px;
   }
   .lightbox {
     padding: 16px;
@@ -1653,9 +1798,6 @@ h1 {
     gap: 12px;
     flex: 1;
   }
-  .feed-controls label:first-child {
-    flex: 1;
-  }
   .feed-controls select {
     width: 100%;
     padding-left: 10px;
@@ -1678,7 +1820,7 @@ h1 {
     justify-content: space-between;
   }
   .blog-card h2 {
-    font-size: 30px;
+    font-size: 27px;
     letter-spacing: -1px;
   }
   .blog-card .excerpt {
@@ -1700,7 +1842,7 @@ h1 {
     line-height: 1.7;
   }
   .page-intro h1 {
-    font-size: 52px;
+    font-size: 48px;
     letter-spacing: -2.8px;
   }
   .intro-description {
@@ -1726,7 +1868,7 @@ h1 {
     grid-template-columns: 1fr;
   }
   .project-card h2 {
-    font-size: 29px;
+    font-size: 26px;
   }
   .gallery {
     grid-template-columns: 1fr;
@@ -1741,15 +1883,15 @@ h1 {
     max-width: 90%;
   }
   .project-intro h1 {
-    font-size: 48px;
+    font-size: 44px;
     letter-spacing: -2px;
   }
   .article-header h1 {
-    font-size: 40px;
+    font-size: 37px;
     letter-spacing: -1.8px;
   }
   .article-subtitle {
-    font-size: 20px;
+    font-size: 18px;
   }
   .article-hero {
     margin-bottom: 30px;
@@ -1775,9 +1917,7 @@ h1 {
   .about-copy h2 {
     font-size: 34px;
   }
-  .contact-layout {
-    grid-template-columns: 1fr;
-    gap: 35px;
+  .contact-list {
     margin-bottom: 60px;
   }
   .contact-row {
@@ -1804,7 +1944,7 @@ h1 {
     gap: 8px;
   }
   .blog-card h2 {
-    font-size: 28px;
+    font-size: 26px;
   }
   .section-heading > a {
     font-size: 10px;
@@ -1848,7 +1988,8 @@ h1 {
   .card-image:hover img,
   .project-cover:hover img,
   .control:hover,
-  .control:active {
+  .control:active,
+  .contact-email-action:active {
     transform: none;
   }
 }
@@ -1996,12 +2137,12 @@ picture {
   content: '';
   position: absolute;
   right: 14px;
-  top: calc(50% - 5px);
+  top: calc(50% - 3px);
   width: 7px;
   height: 7px;
   border-right: 1px solid currentColor;
   border-bottom: 1px solid currentColor;
-  transform: rotate(45deg);
+  transform: translateY(-50%) rotate(45deg);
   pointer-events: none;
 }
 .feed-controls .select-wrap select {

@@ -35,8 +35,12 @@ import { fileURLToPath } from 'node:url';
 // Finds the root directory of this project (one level above this "scripts" folder)
 const root = fileURLToPath(new URL('../', import.meta.url));
 
-// Folder where your blog posts are stored
-const blogDir = path.join(root, 'src/content/blog');
+// Folders to scan for draft posts
+const contentDirs = [
+  path.join(root, 'src/content/blog'),
+  path.join(root, 'src/content/post-production'),
+  path.join(root, 'src/content/photography'),
+];
 
 // File containing the list of uploaded images
 const manifestPath = path.join(root, 'src/data/r2-images.json');
@@ -115,19 +119,27 @@ async function main() {
   }
 
   // ----------------------------------------------------------------------------
-  // Step 3: Find all markdown blog post files in src/content/blog/
+  // Step 3: Find all markdown post files across content directories
   // ----------------------------------------------------------------------------
-  const entries = await readdir(blogDir, { withFileTypes: true });
-  const markdownFiles = entries.filter((e) => e.isFile() && e.name.endsWith('.md'));
+  const markdownFiles = [];
+  for (const dir of contentDirs) {
+    if (!(await fileExists(dir))) continue;
+    const entries = await readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        markdownFiles.push({ name: entry.name, dir });
+      }
+    }
+  }
 
   let totalReplacements = 0;
   const skipped = [];
 
   // ----------------------------------------------------------------------------
-  // Step 4: Process each blog post file
+  // Step 4: Process each post file
   // ----------------------------------------------------------------------------
-  for (const entry of markdownFiles) {
-    const filePath = path.join(blogDir, entry.name);
+  for (const { name, dir } of markdownFiles) {
+    const filePath = path.join(dir, name);
     const originalContent = await readFile(filePath, 'utf8');
 
     // SAFETY CHECK: Only edit posts marked as drafts (`draft: true` in the front matter).
@@ -136,7 +148,7 @@ async function main() {
     const frontMatter = originalContent.match(/^---\r?\n([\s\S]*?)\r?\n---/);
     const isDraft = !!frontMatter && /^draft:\s*true\s*$/m.test(frontMatter[1]);
     if (!isDraft) {
-      skipped.push(entry.name);
+      skipped.push({ name, dir, reason: frontMatter ? 'not a draft' : 'no frontmatter' });
       continue;
     }
 
@@ -157,7 +169,7 @@ async function main() {
       if (!IMAGE_EXT.test(filename)) return null;
       const url = nameToR2.get(filename);
       // If the photo was not found in the upload report, keep it unchanged and print a warning
-      if (!url) console.warn(`[${entry.name}] Unknown image: ${filename}`);
+      if (!url) console.warn(`[${name}] Unknown image: ${filename}`);
       return url ?? null;
     };
 
@@ -202,10 +214,10 @@ async function main() {
     // --------------------------------------------------------------------------
     if (newContent !== originalContent) {
       if (dryRun) {
-        console.log(`[dry-run] Would update ${entry.name}`);
+        console.log(`[dry-run] Would update ${name}`);
       } else {
         await writeFile(filePath, newContent);
-        console.log(`Updated ${entry.name}`);
+        console.log(`Updated ${name}`);
       }
     }
   }
@@ -213,9 +225,18 @@ async function main() {
   // ----------------------------------------------------------------------------
   // Step 8: Print summary of results
   // ----------------------------------------------------------------------------
-  console.log(`Done. ${totalReplacements} replacement(s). ${skipped.length} non-draft file(s) skipped.`);
+  console.log(`\nSummary: ${totalReplacements} replacement(s). ${skipped.length} file(s) skipped.`);
+
+  if (skipped.length > 0) {
+    console.log('\nSkipped files (only drafts are processed):');
+    for (const file of skipped) {
+      const relativeDir = path.relative(root, file.dir);
+      console.log(`- [${file.reason}] ${path.join(relativeDir, file.name)}`);
+    }
+  }
+
   if (dryRun) {
-    console.log('Use without --dry-run to apply changes.');
+    console.log('\n[dry-run] No files were actually modified. Use without --dry-run to apply changes.');
   }
 }
 

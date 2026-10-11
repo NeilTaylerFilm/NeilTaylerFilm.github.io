@@ -8,7 +8,7 @@
     "predev": "npm run images",
     "prebuild": "npm run images",
     "precheck": "npm run images",
-    "dev": "astro dev --host 127.0.0.1 --background",
+    "dev": "astro dev --host 0.0.0.0 --background",
     "build": "astro build",
     "preview": "astro preview --host 127.0.0.1",
     "check": "astro check",

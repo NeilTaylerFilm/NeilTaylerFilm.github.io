@@ -35,7 +35,12 @@ export default defineConfig({
   // 🔀 Send visitors from /blog to homepage
   redirects: { '/blog': '/' },
   // Local recovery copies and package caches are not application source.
-  vite: { server: { watch: { ignored: ['**/.qa/**', '**/.npm-cache/**'] } } },
+  vite: {
+    server: {
+      allowedHosts: ['neilmbp14.taild0d7b9.ts.net'],
+      watch: { ignored: ['**/.qa/**', '**/.npm-cache/**'] },
+    },
+  },
   markdown: {
     processor: unified({
       remarkPlugins: [sourceImagePaths],

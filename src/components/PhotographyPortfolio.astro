@@ -1,0 +1,516 @@
+---
+import ResponsiveImage from './ResponsiveImage.astro';
+import {
+  portfolioPhotos,
+  validatePortfolio,
+  type PortfolioPhoto,
+} from '../data/photography-portfolio';
+import { imageInfo } from '../lib/images';
+import { projects } from '../lib/content';
+
+interface Props {
+  photos?: PortfolioPhoto[];
+}
+const { photos = portfolioPhotos } = Astro.props;
+const TEST_GRID = true;
+const galleryProjects = await projects();
+let displayPhotos = [...photos];
+
+if (TEST_GRID && !Astro.props.photos) {
+  const featuredSources = new Set(displayPhotos.map((photo) => photo.src));
+  const galleryPhotos = galleryProjects.flatMap((project) =>
+    project.data.images.flatMap((photo, index) => {
+      const info = imageInfo(photo.src);
+      if (!info || featuredSources.has(photo.src)) return [];
+      return [
+        {
+          src: photo.src,
+          width: info.width,
+          height: info.height,
+          alt: photo.alt || `${project.data.title}, photograph ${index + 1}`,
+          projectSlug: project.id,
+        },
+      ];
+    }),
+  );
+  const select = (orientation: 'portrait' | 'landscape', quotas: Record<string, number>) =>
+    Object.entries(quotas).flatMap(([projectSlug, count]) =>
+      galleryPhotos
+        .filter((photo) => {
+          const ratio = photo.width / photo.height;
+          return (
+            photo.projectSlug === projectSlug &&
+            (orientation === 'portrait' ? ratio < 1 : ratio > 1)
+          );
+        })
+        .sort((a, b) => {
+          const ratioA = a.width / a.height;
+          const ratioB = b.width / b.height;
+          return orientation === 'portrait' ? ratioA - ratioB : ratioB - ratioA;
+        })
+        .slice(0, count),
+    );
+  const portraits = select('portrait', {
+    '20260809-late-night-drive-bts': 6,
+    '20260627-matt-louise-engagement': 8,
+    '20251130-flackwell-heath-vs-barton': 2,
+  });
+  const landscapes = select('landscape', {
+    '20260809-late-night-drive-bts': 11,
+    '20260627-matt-louise-engagement': 5,
+    '20251130-flackwell-heath-vs-barton': 4,
+  });
+  const testPhotos = [
+    ...Array.from({ length: portraits.length / 2 }, (_, index) => [
+      ...portraits.slice(index * 2, index * 2 + 2),
+      ...landscapes.slice(index * 2, index * 2 + 2),
+    ]).flat(),
+    ...landscapes.slice(portraits.length),
+  ];
+  if (testPhotos.length !== 36)
+    throw new Error(`Photography grid test expected 36 extra photos, got ${testPhotos.length}.`);
+  displayPhotos = [...displayPhotos, ...testPhotos];
+}
+
+validatePortfolio(displayPhotos, new Set(galleryProjects.map((project) => project.id)), imageInfo);
+const hasProjectLinks = displayPhotos.some((photo) => Boolean(photo.projectSlug));
+---
+
+<section class="portfolio" data-portfolio aria-label="Selected photographs">
+  <script is:inline>
+    document.currentScript.parentElement.setAttribute('data-enhanced', '');
+  </script>
+  <div
+    class="portfolio-grid"
+    data-portfolio-grid
+    data-has-more={displayPhotos.length > 24 ? 'true' : 'false'}
+  >
+    {displayPhotos.map((photo, index) => {
+      const info = imageInfo(photo.src)!;
+      const projectUrl = photo.projectSlug ? `/photography/${photo.projectSlug}/` : undefined;
+      const isLandscape = photo.width > photo.height;
+      return (
+        <a
+          class:list={['portfolio-photo', { 'portfolio-photo--landscape': isLandscape }]}
+          href={projectUrl ?? photo.src}
+          data-project-url={projectUrl}
+          style={`--ar: ${photo.width / photo.height}`}
+          data-portfolio-photo
+          data-full={info.full}
+          data-srcset={info.srcset}
+        >
+          <ResponsiveImage
+            {...photo}
+            sizes={`${index < 8 ? '' : 'auto, '}(max-width: 640px) ${isLandscape ? '100vw' : '50vw'}, (max-width: 900px) 33vw, 400px`}
+            loading={index === 0 ? 'eager' : 'lazy'}
+            priority={index === 0}
+          />
+        </a>
+      );
+    })}
+  </div>
+  <div class="portfolio-more">
+    <button class="control" type="button" data-portfolio-more hidden>
+      Load More Photographs
+    </button>
+    <span class="mono small" data-portfolio-status role="status" aria-live="polite"></span>
+  </div>
+  <dialog
+    class="lightbox portfolio-dialog"
+    data-portfolio-dialog
+    aria-label="Selected photographs"
+    aria-modal="true"
+  >
+    <div class="lightbox-toolbar">
+      <button class="control" type="button" data-portfolio-close autofocus>
+        Close <span aria-hidden="true">×</span>
+      </button>
+    </div>
+    <div class="portfolio-stage" data-portfolio-stage>
+      <button
+        class="control square"
+        type="button"
+        data-portfolio-prev
+        aria-label="Previous photograph"
+      >
+        ←
+      </button>
+      <div class="portfolio-media">
+        <div class="portfolio-image-stage" data-portfolio-image-stage>
+          <div class="portfolio-track" data-portfolio-track></div>
+        </div>
+      </div>
+      <button class="control square" type="button" data-portfolio-next aria-label="Next photograph">
+        →
+      </button>
+    </div>
+    <div
+      class="portfolio-controls"
+      data-portfolio-controls
+      data-has-project-links={String(hasProjectLinks)}
+    >
+      <div
+        class="portfolio-pagination"
+        data-portfolio-pagination
+        role="group"
+        aria-label="Photo 1 of 1"
+      >
+        <span
+          class="portfolio-pagination-count"
+          data-portfolio-count
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></span>
+        <div class="portfolio-pagination-dots" data-portfolio-dots></div>
+      </div>
+      <div class="portfolio-project-slot">
+        <a class="mono portfolio-project" data-portfolio-project>
+          View project →
+        </a>
+        <div class="portfolio-details">
+          <p class="small" data-portfolio-feedback role="status" aria-live="polite"></p>
+          <button class="control" type="button" data-portfolio-retry hidden>
+            Retry Photograph
+          </button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  import { setupPortfolio } from '../scripts/photography-portfolio';
+  document.querySelectorAll<HTMLElement>('[data-portfolio]').forEach(setupPortfolio);
+</script>
+
+<style>
+  .portfolio {
+    --photo-gap: 6px;
+    --target-row-height: 280px;
+    --last-row-spacer-grow: 1000;
+  }
+  @media (min-width: 900px) and (max-width: 1599px) {
+    .portfolio {
+      --target-row-height: 260px;
+    }
+  }
+  @media (max-width: 899px) {
+    .portfolio {
+      --target-row-height: 180px;
+    }
+  }
+  .portfolio-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--photo-gap);
+  }
+  .portfolio-photo {
+    flex: var(--ar) 1 calc(var(--ar) * var(--target-row-height));
+    min-width: 0;
+    align-self: start;
+    display: block;
+    aspect-ratio: var(--ar);
+  }
+  .portfolio-photo :global(picture),
+  .portfolio-photo :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .portfolio-photo:hover {
+    opacity: 0.9;
+  }
+  /* Set the spacer grow value to 0 to stretch the last row fully. */
+  .portfolio-grid::after {
+    content: '';
+    flex: var(--last-row-spacer-grow) 1 0;
+    margin-inline-start: calc(var(--photo-gap) * -1);
+  }
+  .portfolio-grid[data-has-more='true']::after {
+    content: none;
+  }
+  .portfolio-grid[data-has-more='false'] > .portfolio-photo[data-short-final-row] {
+    flex-grow: 0;
+  }
+  @media (min-width: 1400px) {
+    .portfolio-grid:not(:has(> .portfolio-photo:nth-child(5))) {
+      --last-row-spacer-grow: 0;
+    }
+  }
+  .portfolio[data-enhanced] .portfolio-photo:nth-child(n + 25):not([data-revealed]),
+  .portfolio-photo[hidden] {
+    display: none;
+  }
+  .portfolio-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .portfolio-more [data-portfolio-status]:not(:empty) {
+    margin-top: 12px;
+  }
+  .portfolio-more:has(button:not([hidden])) {
+    margin-top: 20px;
+  }
+  .portfolio-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    height: var(--lightbox-h, 100dvh);
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+  .portfolio-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .portfolio-dialog::backdrop {
+    background: rgb(0 0 0 / 58%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .portfolio-dialog .lightbox-toolbar {
+    position: relative;
+    flex: 0 0 calc(56px + env(safe-area-inset-top));
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    padding: calc(env(safe-area-inset-top) + 4px) calc(12px + env(safe-area-inset-right)) 0
+      calc(12px + env(safe-area-inset-left));
+  }
+  .portfolio-dialog [data-portfolio-close][data-pointer-open]:focus-visible {
+    outline: none;
+  }
+  .portfolio-stage {
+    position: relative;
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    min-height: 0;
+    margin: 0;
+    padding-inline: calc(12px + env(safe-area-inset-left)) calc(12px + env(safe-area-inset-right));
+    box-sizing: border-box;
+    touch-action: pan-y;
+  }
+  .portfolio-media {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+  .portfolio-image-stage {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  .portfolio-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    will-change: transform;
+    transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity: 1;
+    transition-property: transform, opacity;
+  }
+  :global(.portfolio-slide) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    place-items: center;
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-inline: 8px;
+    overflow: hidden;
+  }
+  :global(.portfolio-slide img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .portfolio-controls {
+    display: grid;
+    flex: 0 0 calc(112px + env(safe-area-inset-bottom));
+    grid-template-rows: 44px 44px;
+    justify-items: center;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    padding: 0 calc(8px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom))
+      calc(8px + env(safe-area-inset-left));
+  }
+  .portfolio-controls[data-has-project-links='false'] {
+    flex: 0 0 auto;
+    grid-template-rows: 44px auto;
+    gap: 0;
+  }
+  .portfolio-controls[data-has-project-links='false'] .portfolio-project-slot,
+  .portfolio-controls[data-has-project-links='false'] .portfolio-details {
+    height: auto;
+    min-height: 0;
+  }
+  .portfolio-project-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 44px;
+    min-width: 0;
+  }
+  .portfolio-project {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .portfolio-project[hidden] {
+    display: none;
+  }
+  .portfolio-stage .control {
+    position: static;
+    transform: none;
+  }
+  .portfolio-stage [data-portfolio-prev] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .portfolio-stage [data-portfolio-next] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .portfolio-pagination {
+    position: relative;
+    flex: 0 0 44px;
+    width: 96px;
+    height: 44px;
+    min-height: 44px;
+    overflow: hidden;
+    border-radius: 999px;
+    background-color: transparent;
+    transition: background-color 150ms ease-out;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .portfolio-pagination[hidden] {
+    display: none;
+  }
+  .portfolio-pagination-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  :global(.portfolio-dot) {
+    position: absolute;
+    top: calc(50% - 5px);
+    left: 50%;
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    opacity: 0.55;
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.2s ease-out,
+      background-color 0.2s ease-out,
+      scale 0.15s ease-out;
+    pointer-events: none;
+    transform-origin: center;
+  }
+  :global(.portfolio-dot[aria-current='true']) {
+    background: var(--text);
+    opacity: 1;
+    z-index: 1;
+  }
+  .portfolio-pagination.is-scrubbing {
+    height: 56px;
+    min-height: 56px;
+    background-color: rgb(255 255 255 / 12%);
+  }
+  .portfolio-pagination.is-scrubbing :global(.portfolio-dot) {
+    scale: 1.2;
+  }
+  .portfolio-pagination-count {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .portfolio-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    height: 44px;
+    min-width: 0;
+    text-align: center;
+  }
+  .portfolio-details p:empty {
+    display: none;
+  }
+  .portfolio-details p {
+    flex: 0 1 220px;
+    min-width: 0;
+    margin: 0;
+  }
+  @media (max-width: 540px) {
+    .portfolio-stage {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-track,
+    .portfolio-dot,
+    .portfolio-pagination {
+      transition: none !important;
+    }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .portfolio-stage {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    }
+    .portfolio-media {
+      grid-column: 1;
+    }
+    .portfolio-stage [data-portfolio-prev],
+    .portfolio-stage [data-portfolio-next] {
+      display: none;
+    }
+  }
+</style>

@@ -50,11 +50,11 @@ export function setupPhotographyViewer(root: HTMLElement) {
   // The window frame where the photo sits
   const viewport = find<HTMLElement>('[data-photo-viewport]');
   // The full-screen pop-up modal
-  const dialog = find<HTMLDialogElement>('[data-photo-dialog]');
+  const dialog = videoViewer ? null : root.querySelector<HTMLDialogElement>('[data-photo-dialog]');
   // "Go Fullscreen" button
-  const expand = find<HTMLButtonElement>('[data-photo-expand]');
+  const expand = videoViewer ? null : root.querySelector<HTMLButtonElement>('[data-photo-expand]');
   // "Exit Fullscreen" button
-  const close = find<HTMLButtonElement>('[data-photo-close]');
+  const close = videoViewer ? null : root.querySelector<HTMLButtonElement>('[data-photo-close]');
   // "Previous Slide" arrow
   const previous = find<HTMLButtonElement>('[data-slide-prev]');
   // "Next Slide" arrow
@@ -73,6 +73,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   const thumbnails = [...root.querySelectorAll<HTMLButtonElement>('[data-photo-index]')];
   // Does the user get motion sickness?
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const mobileStrip = matchMedia('(max-width: 640px)');
 
   // The current visible picture
   let image = find<HTMLImageElement>('[data-slide-image]');
@@ -98,10 +99,6 @@ export function setupPhotographyViewer(root: HTMLElement) {
   let adjacent: { index: number; image: HTMLImageElement } | undefined;
   // If an image failed, remember which one broke
   let failedIndex = 0;
-  // Remember what button was focused before opening fullscreen
-  let opener: HTMLElement | null = null;
-  // Remember how far down the page the visitor had scrolled
-  let savedScroll = 0;
   // Where user's finger first touched the screen
   let swipeStart: { x: number; y: number } | null = null;
   // Prevents an accidental click when finishing a swipe gesture
@@ -111,11 +108,10 @@ export function setupPhotographyViewer(root: HTMLElement) {
   // If there's only 1 photo, hide next/previous arrows and the bottom filmstrip
   previous.hidden = next.hidden = photos.length < 2;
   strip.hidden = photos.length < 2;
-  // If the browser doesn't support dialog modals, hide the fullscreen button
-  expand.hidden = typeof dialog.showModal !== 'function';
+  if (expand) expand.hidden = !dialog || typeof dialog.showModal !== 'function';
 
   // Make the main photo clickable like a button to open fullscreen theater mode
-  if (!expand.hidden && !videoViewer) {
+  if (expand && !expand.hidden) {
     viewport.tabIndex = 0;
     viewport.setAttribute('role', 'button');
     viewport.setAttribute('aria-label', 'Expand photograph');
@@ -144,6 +140,20 @@ export function setupPhotographyViewer(root: HTMLElement) {
     const thumb = thumbnails[selected];
     const item = thumb.getBoundingClientRect();
     const area = strip.getBoundingClientRect();
+    if (videoViewer && mobileStrip.matches) {
+      const behavior: ScrollBehavior = reduced.matches ? 'auto' : 'smooth';
+      const stripIsVerticallyVisible = area.top >= 0 && area.bottom <= window.innerHeight;
+      if (stripIsVerticallyVisible) {
+        thumb.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior });
+      } else if (item.left < area.left + 8 || item.right > area.right - 8) {
+        const left =
+          item.left < area.left + 8
+            ? strip.scrollLeft + item.left - area.left - 8
+            : strip.scrollLeft + item.right - area.right + 8;
+        strip.scrollTo({ left, behavior });
+      }
+      return;
+    }
     if (item.left < area.left + 8) strip.scrollLeft += item.left - area.left - 8;
     else if (item.right > area.right - 8) strip.scrollLeft += item.right - area.right + 8;
   }
@@ -171,7 +181,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   function makeImage(index: number) {
     const photo = photos[index];
     const candidate = new Image();
-    candidate.sizes = dialog.open ? '100vw' : '(max-width: 1440px) 90vw, 1248px';
+    candidate.sizes = dialog?.open ? '100vw' : '(max-width: 1440px) 90vw, 1248px';
     candidate.srcset = photo.srcset || '';
     candidate.src = photo.src;
     candidate.alt = photo.alt;
@@ -227,6 +237,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
     // Reparent to current viewport
     viewport.appendChild(errorEl);
     errorEl.hidden = false;
+    if (videoViewer) root.dispatchEvent(new CustomEvent<number>('photo-error', { detail: current }));
   }
 
   // 🧹 HELPER: Hides the error message when everything is fine
@@ -335,6 +346,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
     // Wrap around like a carousel: if you go past the end, loop back to the beginning!
     const nextIndex = (index + photos.length) % photos.length;
     if (nextIndex === selected && !pending && !viewport.hasAttribute('data-error')) return;
+    if (videoViewer) root.dispatchEvent(new CustomEvent<number>('photo-select', { detail: nextIndex }));
     preview?.remove();
     selected = nextIndex;
     revision++;
@@ -387,83 +399,85 @@ export function setupPhotographyViewer(root: HTMLElement) {
       select(index, direction);
       if (thumb) thumbnails[selected].focus({ preventScroll: true });
     }
-    if (event.target === viewport && !dialog.open && ['Enter', ' '].includes(event.key)) {
+  });
+
+  if (dialog && expand && close && typeof dialog.showModal === 'function') {
+    const activeDialog = dialog;
+    const activeExpand = expand;
+    const activeClose = close;
+    let opener: HTMLElement | null = null;
+    let savedScroll = 0;
+
+    function openViewer(source: HTMLElement = viewport) {
+      if (activeDialog.open || activeExpand.hidden) return;
+      settle();
+      opener = source;
+      savedScroll = window.scrollY;
+      root.style.height = `${root.getBoundingClientRect().height}px`;
+      activeDialog.append(panel);
+      activeDialog.showModal();
+      document.documentElement.classList.add('modal-open');
+      viewport.removeAttribute('role');
+      viewport.removeAttribute('tabIndex');
+      viewport.removeAttribute('aria-label');
+      viewport.removeAttribute('aria-haspopup');
+      image.sizes = '100vw';
+      activeClose.focus({ preventScroll: true });
+      requestAnimationFrame(keepThumbnailVisible);
+    }
+
+    panel.addEventListener('keydown', (event) => {
+      if (
+        event.target !== viewport ||
+        activeDialog.open ||
+        !['Enter', ' '].includes(event.key)
+      )
+        return;
       event.preventDefault();
       openViewer();
-    }
-  });
+    });
 
-  // 🎭 FULLSCREEN THEATER MODE: Opens the photo large in a dark modal dialog
-  function openViewer(source: HTMLElement = viewport) {
-    if (dialog.open || expand.hidden) return;
-    settle();
-    opener = source;
-    // Remember visitor's scroll position
-    savedScroll = window.scrollY;
-    // Freeze height so page doesn't jump
-    root.style.height = `${root.getBoundingClientRect().height}px`;
-    dialog.append(panel);
-    dialog.showModal();
-    document.documentElement.classList.add('modal-open');
-    viewport.removeAttribute('role');
-    viewport.removeAttribute('tabIndex');
-    viewport.removeAttribute('aria-label');
-    viewport.removeAttribute('aria-haspopup');
-    // Request full-width high-definition image
-    image.sizes = '100vw';
-    close.focus({ preventScroll: true });
-    requestAnimationFrame(keepThumbnailVisible);
-  }
+    activeExpand.addEventListener('click', () => openViewer(activeExpand));
+    activeClose.addEventListener('click', () => activeDialog.close());
+    viewport.addEventListener('click', () => {
+      if (suppressClick) {
+        suppressClick = false;
+        return;
+      }
+      openViewer();
+    });
 
-  // Wire up fullscreen triggers
-  expand.addEventListener('click', () => openViewer(expand));
-  close.addEventListener('click', () => dialog.close());
-  viewport.addEventListener('click', () => {
-    if (videoViewer) return;
-    if (suppressClick) {
-      suppressClick = false;
-      return;
-    }
-    openViewer();
-  });
-
-  // 🚪 EXIT THEATER MODE: Restores everything back to normal on the page
-  dialog.addEventListener('close', () => {
-    settle();
-    root.prepend(panel);
-    root.style.height = '';
-    document.documentElement.classList.remove('modal-open');
-    if (!videoViewer) {
+    activeDialog.addEventListener('close', () => {
+      settle();
+      root.prepend(panel);
+      root.style.height = '';
+      document.documentElement.classList.remove('modal-open');
       viewport.tabIndex = 0;
       viewport.setAttribute('role', 'button');
       viewport.setAttribute('aria-label', 'Expand photograph');
       viewport.setAttribute('aria-haspopup', 'dialog');
-    }
-    image.sizes = '(max-width: 1440px) 90vw, 1248px';
-    // Snap back to where visitor was
-    window.scrollTo({ top: savedScroll, behavior: 'instant' });
-    opener?.focus({ preventScroll: true });
-    keepThumbnailVisible();
-  });
+      image.sizes = '(max-width: 1440px) 90vw, 1248px';
+      window.scrollTo({ top: savedScroll, behavior: 'instant' });
+      opener?.focus({ preventScroll: true });
+      keepThumbnailVisible();
+    });
 
-  // 🔒 ACCESSIBILITY FOCUS TRAP:
-  // When theater modal is open, pressing Tab wraps focus around inside the modal
-  // so keyboard navigation doesn't accidentally wander off behind the dark screen!
-  dialog.addEventListener('keydown', (event) => {
-    if (event.key !== 'Tab') return;
-    const controls = [...panel.querySelectorAll<HTMLElement>('button, a[href]')].filter(
-      (control) => control.tabIndex >= 0 && control.getClientRects().length > 0,
-    );
-    const first = controls[0],
-      last = controls.at(-1)!;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  });
+    activeDialog.addEventListener('keydown', (event) => {
+      if (event.key !== 'Tab') return;
+      const controls = [...panel.querySelectorAll<HTMLElement>('button, a[href]')].filter(
+        (control) => control.tabIndex >= 0 && control.getClientRects().length > 0,
+      );
+      const first = controls[0],
+        last = controls.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+  }
 
   // 📱 MOBILE TOUCH SWIPES:
   // Detects swiping left or right with your finger on a smartphone

@@ -26,27 +26,17 @@ const links = site.links.filter((link) => link.url);
   title="Contact"
   description="Get in touch with Neil Tayler about photography, film, post-production or a blog post."
 >
-  {/* 🏷️ Page Header */}
-  <div class="page-intro">
-    <p class="eyebrow">Keep in touch</p>
+  <div class="page-intro contact-page-intro">
     <h1>
       Contact<span class="accent">.</span>
     </h1>
   </div>
 
-  <div class="contact-layout">
-    {/* 💬 Friendly introduction note */}
-    <div class="contact-intro">
-      <h2>Say hello.</h2>
-      <p>For a conversation about images, an idea, or something you’ve read here.</p>
-    </div>
-
-    {/* 📇 List of Contact Channels */}
-    <div class="contact-list">
+  <div class="contact-list">
       {/* ✉️ Email Row with "Copy email" and "Email me" buttons */}
       {/* Question: Is an email address configured in site.email? If yes, show this contact row. */}
       {site.email && (
-        <div class="contact-row">
+        <div class="contact-row contact-email-row">
           <strong>
             <ContactIcon name="Email" />
             Email
@@ -55,7 +45,7 @@ const links = site.links.filter((link) => link.url);
             {/* 📋 1-Click Copy Email Button */}
             {/* When clicked, the little script below slips the email onto the visitor's clipboard. */}
             <button
-              class="control contact-copy-email"
+              class="contact-email-action contact-copy-email"
               type="button"
               data-copy-email
               data-email={site.email}
@@ -69,7 +59,7 @@ const links = site.links.filter((link) => link.url);
             </button>
             {/* ↗️ Standard mailto link */}
             {/* Clicking this opens the user's default email client (Apple Mail, Outlook, etc.). */}
-            <a class="control contact-email" href={`mailto:${site.email}`}>
+            <a class="contact-email-action contact-email" href={`mailto:${site.email}`}>
               Email me <span aria-hidden="true">↗</span>
             </a>
           </div>
@@ -98,7 +88,6 @@ const links = site.links.filter((link) => link.url);
       {!site.email && !links.length && (
         <p class="contact-row muted">Contact details will be added soon.</p>
       )}
-    </div>
   </div>
 </BaseLayout>
 
@@ -132,4 +121,16 @@ const links = site.links.filter((link) => link.url);
     });
   }
 </script>
+
+<style>
+  .contact-page-intro {
+    padding-bottom: 36px;
+  }
+
+  @media (max-width: 767px) {
+    .contact-page-intro {
+      padding-bottom: 24px;
+    }
+  }
+</style>
 

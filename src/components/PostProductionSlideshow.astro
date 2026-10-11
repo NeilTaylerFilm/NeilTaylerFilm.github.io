@@ -18,7 +18,8 @@ import { getCollection } from 'astro:content';
 import { videoEmbedUrl, linkedBlogUrl } from '../lib/post-production';
 // imageInfo: Helper finding image dimensions and WebP responsive formats.
 import { imageInfo } from '../lib/images';
-// photography-viewer.css: Stylesheet for slide projector animations, buttons, and theater dialog.
+import PlayIcon from './PlayIcon.astro';
+// photography-viewer.css: Shared slideshow controls, transitions, and thumbnail styles.
 import '../styles/photography-viewer.css';
 
 // 📚 Find all blog posts that are live and published (not drafts)
@@ -50,39 +51,8 @@ const first = featured[0];
     data-project-base="/post-production/"
     data-slides={JSON.stringify(featured)}
   >
-    <div class="photo-panel" data-photo-panel>
-      {/* 🛠️ Top Bar: Film title caption and Expand / Close buttons */}
-      <div class="photo-toolbar">
-        <p class="work-title" data-slide-caption>
-          {first.caption}
-        </p>
-        <button class="control" type="button" data-photo-expand aria-haspopup="dialog" hidden>
-          <svg
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            aria-hidden="true"
-          >
-            <path d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" />
-          </svg>
-          Expand
-        </button>
-        <button
-          class="control photo-close"
-          type="button"
-          data-photo-close
-          aria-label="Close expanded work"
-        >
-          <span aria-hidden="true">×</span> Close
-        </button>
-      </div>
-
-      {/* 📺 The TV Screen (Viewport) */}
-      <div class="photo-viewport" data-photo-viewport>
-        {/* 🖼️ The movie poster / thumbnail image */}
+    <div class="photo-panel video-panel" data-photo-panel>
+      <div class="photo-viewport" data-photo-viewport data-playing="false">
         <img
           data-slide-image
           src={first.src}
@@ -95,7 +65,38 @@ const first = featured[0];
           decoding="async"
         />
 
-        {/* ▶️ Big round Play button over the video poster */}
+        <div class="photo-toolbar">
+          <a
+            class="control square watch-link"
+            data-watch-link
+            href="#"
+            aria-label="Watch on YouTube"
+            title="Watch on YouTube"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M14 3h7v7m0-7-9 9" />
+              <path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
+            </svg>
+            <span class="visually-hidden">
+              Watch on <span data-platform-name>YouTube</span>
+            </span>
+          </a>
+        </div>
+
+        <button
+          class="control square video-back"
+          data-video-back
+          type="button"
+          aria-label="Back to posters"
+          title="Back to posters"
+          hidden
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+
         <button
           class="video-play"
           data-video-play
@@ -103,66 +104,12 @@ const first = featured[0];
           type="button"
           hidden={!first.embedUrl}
         >
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" aria-hidden="true">
-            <path d="M8 5v14l11-7z" />
-          </svg>
+          <PlayIcon className="stage-play-icon" size={72} />
         </button>
 
-        {/* ⏳ Player status feedback (e.g. "Loading player…") */}
         <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
-      </div>
 
-      {/* 🎬 Details Bar: Links to blog post, direct YouTube link, and arrows */}
-      <div class="photo-details">
-        <div class="work-actions">
-          {/* Link to project page */}
-          <a
-            class="mono"
-            data-photo-project
-            href={first.project ? `/post-production/${first.project}/` : undefined}
-            hidden={!first.project}
-          >
-            View project →
-          </a>
-
-          {featuredIsDemo && <span class="mono muted">Sample work</span>}
-
-          {/* 📖 "Learn more…" button linking to a behind-the-scenes blog post */}
-          <a
-            class="control work-learn-more"
-            data-work-learn-more
-            href={first.blogUrl}
-            role={first.blogUrl ? undefined : 'link'}
-            aria-disabled={first.blogUrl ? undefined : 'true'}
-            tabindex={first.blogUrl ? undefined : -1}
-          >
-            Learn more…
-          </a>
-
-          {/* ↗️ External link to watch directly on YouTube or Vimeo */}
-          <a
-            class="watch-link"
-            data-watch-link
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            hidden
-          >
-            Watch on <span data-platform-name>YouTube</span>
-          </a>
-        </div>
-
-        {/* ⬅️ / ➡️ Slide navigation arrows and counter */}
-        <div class="slide-navigation">
-          <span
-            class="mono small"
-            data-slide-count
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            01 / {String(featured.length).padStart(2, '0')}
-          </span>
+        <div class="slide-navigation" role="group" aria-label="Work navigation">
           <button
             class="control square"
             type="button"
@@ -182,14 +129,59 @@ const first = featured[0];
             →
           </button>
         </div>
+
+        <span
+          class="mono small photo-counter"
+          data-slide-count
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          01 / {String(featured.length).padStart(2, '0')}
+        </span>
+
+        <div class="photo-details">
+          <div class="work-actions">
+            {first.type?.trim() && <span class="type-pill" data-slide-type>{first.type.trim()}</span>}
+            <p class="work-title" data-slide-caption>
+              {first.caption}
+            </p>
+            {first.subtitle?.trim() && (
+              <p class="work-subtitle" data-slide-subtitle>
+                {first.subtitle.trim()}
+              </p>
+            )}
+            <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
+              <a
+                class="mono project-link"
+                data-photo-project
+                href={first.project ? `/post-production/${first.project}/` : undefined}
+                hidden={!first.project}
+              >
+                View project →
+              </a>
+
+              {featuredIsDemo && <span class="mono muted">Sample work</span>}
+
+              <a
+                class="mono work-learn-more"
+                data-work-learn-more
+                href={first.blogUrl}
+                hidden={!first.blogUrl}
+              >
+                Learn more…
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 🎞️ Bottom Filmstrip of video cards with play badges */}
       <div
         class="photo-filmstrip"
         data-photo-filmstrip
         role="group"
         aria-label="Choose a work"
+        style={`--project-count: ${featured.length}`}
         hidden
       >
         {featured.map((work, index) => (
@@ -198,6 +190,7 @@ const first = featured[0];
             type="button"
             data-photo-index={index}
             aria-label={`Work ${index + 1} of ${featured.length}: ${work.caption || 'Untitled work'}`}
+            title={work.caption || 'Untitled work'}
             aria-current={index === 0 ? 'true' : undefined}
             tabindex={index === 0 ? 0 : -1}
           >
@@ -211,9 +204,7 @@ const first = featured[0];
                   loading="lazy"
                   decoding="async"
                 />
-                <span class="video-play-icon" aria-hidden="true">
-                  ▶
-                </span>
+                <PlayIcon className="video-play-icon" size={48} />
               </div>
             ) : (
               <img
@@ -225,15 +216,11 @@ const first = featured[0];
                 decoding="async"
               />
             )}
-            <span class="photo-thumb-label">{work.caption || 'Untitled work'}</span>
           </button>
         ))}
       </div>
       <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
-
-    {/* 🎭 Dark theater modal for expanded fullscreen */}
-    <dialog class="photo-dialog" data-photo-dialog aria-label="Expanded work"></dialog>
   </section>
 )}
 
@@ -245,45 +232,108 @@ const first = featured[0];
   // 🎬 EXTRA VIDEO CONTROLLER: Handles clicking the Play button and embedding video iframes
   document.querySelectorAll<HTMLElement>('[data-video-viewer]').forEach((root) => {
     // Unpack the film metadata list stored right inside the HTML element's data pocket
-    const slides: Array<{ embedUrl?: string; blogUrl?: string; caption?: string; video?: string }> =
-      JSON.parse(root.dataset.slides || '[]');
+    const slides: Array<{
+      embedUrl?: string;
+      blogUrl?: string;
+      caption?: string;
+      type?: string;
+      subtitle?: string;
+      video?: string;
+    }> = JSON.parse(root.dataset.slides || '[]');
     // Grab the screen box where posters and video players appear
     const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
+    const strip = root.querySelector<HTMLElement>('[data-photo-filmstrip]')!;
+    let stripScrollFrame = 0;
+    function updateStripEdges() {
+      const maxScrollLeft = strip.scrollWidth - strip.clientWidth;
+      const hasOverflow = maxScrollLeft > 1;
+      strip.toggleAttribute('data-scrolled-start', hasOverflow && strip.scrollLeft > 1);
+      strip.toggleAttribute('data-scrolled-end', hasOverflow && strip.scrollLeft < maxScrollLeft - 1);
+      stripScrollFrame = 0;
+    }
+    function scheduleStripEdgeUpdate() {
+      if (stripScrollFrame) return;
+      stripScrollFrame = window.requestAnimationFrame(updateStripEdges);
+    }
+    strip.addEventListener('scroll', scheduleStripEdgeUpdate, { passive: true });
+    window.addEventListener('resize', scheduleStripEdgeUpdate, { passive: true });
+    updateStripEdges();
     // The big round play button hovering over the poster
     const play = root.querySelector<HTMLButtonElement>('[data-video-play]')!;
+    const back = root.querySelector<HTMLButtonElement>('[data-video-back]')!;
     // Status text element to inform visitors if video is taking long to load
     const playerStatus = root.querySelector<HTMLElement>('[data-video-status]')!;
     // The "Learn more..." link button leading to behind-the-scenes stories
     const more = root.querySelector<HTMLAnchorElement>('[data-work-learn-more]')!;
-    // External link button allowing direct playback on YouTube or Vimeo
+    const workLinks = root.querySelector<HTMLElement>('.work-links')!;
+    const sampleWork = root.querySelector<HTMLElement>('.work-links .muted');
+    const projectLink = root.querySelector<HTMLAnchorElement>('[data-photo-project]')!;
+    // External icon link to the work on YouTube or Vimeo
     const watchLink = root.querySelector<HTMLAnchorElement>('[data-watch-link]')!;
     // The label text saying "YouTube" or "Vimeo"
     const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
+    const title = root.querySelector<HTMLElement>('[data-slide-caption]')!;
+    let typeLabel = root.querySelector<HTMLElement>('[data-slide-type]');
+    let subtitle = root.querySelector<HTMLElement>('[data-slide-subtitle]');
     // A stopwatch timer ID so we can alert the visitor if video loading stalls
     let playerTimer = 0;
 
-    // 🔄 When user flips to another slide, remove old video player and refresh links
-    function update() {
-      // Stop an old loading message from appearing over the newly selected film.
-      viewport.querySelector('iframe')?.remove();
+    function resetPlayback(index?: number) {
+      viewport.querySelector('iframe.video-iframe')?.remove();
       window.clearTimeout(playerTimer);
       playerStatus.textContent = '';
-      const work = slides[Number(root.dataset.index || 0)];
-      play.hidden = !work.embedUrl;
+      viewport.dataset.playing = 'false';
+      back.hidden = true;
+      if (index !== undefined) play.hidden = !slides[index]?.embedUrl;
+    }
+
+    // 🔄 When user flips to another slide, remove old video player and refresh links
+    function update() {
+      const index = Number(root.dataset.index || 0);
+      resetPlayback(index);
+      const work = slides[index];
       play.setAttribute('aria-label', `Watch ${work.caption || 'film'}`);
+      const typeText = work.type?.trim();
+      if (typeText) {
+        if (!typeLabel) {
+          typeLabel = document.createElement('span');
+          typeLabel.className = 'type-pill';
+          typeLabel.dataset.slideType = '';
+          title.before(typeLabel);
+        }
+        typeLabel.textContent = typeText;
+      } else {
+        typeLabel?.remove();
+        typeLabel = null;
+      }
+      const subtitleText = work.subtitle?.trim();
+      if (subtitleText) {
+        if (!subtitle) {
+          subtitle = document.createElement('p');
+          subtitle.className = 'work-subtitle';
+          subtitle.dataset.slideSubtitle = '';
+          title.after(subtitle);
+        }
+        subtitle.textContent = subtitleText;
+      } else {
+        subtitle?.remove();
+        subtitle = null;
+      }
       if (work.blogUrl) {
         more.href = work.blogUrl;
-        more.removeAttribute('aria-disabled');
-        more.removeAttribute('tabindex');
+        more.hidden = false;
       } else {
         more.removeAttribute('href');
-        more.setAttribute('aria-disabled', 'true');
-        more.tabIndex = -1;
+        more.hidden = true;
       }
+      workLinks.hidden = projectLink.hidden && more.hidden && !sampleWork;
       if (work.embedUrl && work.video) {
         const host = new URL(work.video).hostname.replace(/^www\./, '');
         const platform = host.includes('vimeo') ? 'Vimeo' : 'YouTube';
+        const label = `Watch on ${platform}`;
         platformName.textContent = platform;
+        watchLink.setAttribute('aria-label', label);
+        watchLink.title = label;
         watchLink.href = work.video;
         watchLink.hidden = false;
       } else {
@@ -293,8 +343,22 @@ const first = featured[0];
 
     // Listen for slide change events fired by the photography-viewer engine
     root.addEventListener('photo-change', update);
+    root.addEventListener('photo-select', (event) => {
+      resetPlayback();
+      const index = (event as CustomEvent<number>).detail;
+      play.hidden = index !== Number(root.dataset.index || 0) || !slides[index]?.embedUrl;
+    });
+    root.addEventListener('photo-error', (event) => {
+      const index = (event as CustomEvent<number>).detail;
+      play.hidden = !slides[index]?.embedUrl;
+    });
+    back.addEventListener('click', () => {
+      const index = Number(root.dataset.index || 0);
+      resetPlayback(index);
+      if (!play.hidden) play.focus({ preventScroll: true });
+    });
 
-    // ▶️ When visitor clicks the big Play button:
+    // When visitor clicks the big Play button:
     play?.addEventListener('click', (event) => {
       event.stopPropagation();
       const work = slides[Number(root.dataset.index || 0)];
@@ -304,6 +368,7 @@ const first = featured[0];
       const iframe = document.createElement('iframe');
       iframe.src = work.embedUrl;
       iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      iframe.setAttribute('allowfullscreen', '');
       iframe.allowFullscreen = true;
       iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       iframe.className = 'video-iframe';
@@ -324,6 +389,8 @@ const first = featured[0];
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');
         playerStatus.textContent = '';
+        viewport.dataset.playing = 'true';
+        back.hidden = false;
       }, { once: true });
 
       // If video failed to load (e.g. offline):
@@ -332,10 +399,13 @@ const first = featured[0];
         if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
         window.clearTimeout(playerTimer);
         iframe.removeAttribute('aria-busy');
-        playerStatus.textContent = 'Player could not load. Use the Watch on link below to open it directly.';
+        playerStatus.textContent =
+          'Player could not load. Use the Watch on link to open it directly.';
       }, { once: true });
 
       viewport.append(iframe);
+      viewport.dataset.playing = 'true';
+      back.hidden = false;
       // Hide the play button since video is playing
       play.hidden = true;
       iframe.focus();
@@ -346,175 +416,456 @@ const first = featured[0];
 
 
 <style>
-  .video-poster {
+  .photo-showcase {
+    border: 0;
+    background: transparent;
+  }
+  .video-panel {
+    background: transparent;
+  }
+  .video-panel .photo-viewport {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    cursor: default;
+    --stage-fg: #fff;
+    --stage-muted: rgba(255, 255, 255, 0.7);
+    --stage-bg: rgba(0, 0, 0, 0.45);
+    --stage-bg-hover: rgba(0, 0, 0, 0.65);
+    --stage-border: rgba(255, 255, 255, 0.25);
+  }
+  :global(.video-panel .photo-viewport > img) {
+    object-fit: cover;
+  }
+  :global(.video-panel .photo-viewport iframe.video-iframe) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
     width: 100%;
     height: 100%;
+    border: 0;
     object-fit: cover;
-    display: block;
+  }
+  .photo-toolbar {
+    position: absolute;
+    z-index: 6;
+    top: var(--space-2);
+    right: var(--space-2);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: 0;
+    border: 0;
+    pointer-events: none;
+  }
+  .photo-toolbar .control {
+    min-height: 44px;
+    padding: 8px 12px;
+    color: var(--stage-fg);
+    pointer-events: auto;
+  }
+  .photo-toolbar .watch-link {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+  .photo-toolbar svg {
+    flex-shrink: 0;
+  }
+  .photo-toolbar .control,
+  .slide-navigation .control,
+  .photo-counter,
+  .video-back {
+    color: var(--stage-fg);
+    background: var(--stage-bg);
+    border: 1px solid var(--stage-border);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+  .video-back {
+    position: absolute;
+    z-index: 7;
+    top: var(--space-2);
+    left: var(--space-2);
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    opacity: 0.45;
+    pointer-events: auto;
+    transition: opacity 150ms ease, visibility 150ms ease;
+  }
+  .video-back[hidden] {
+    display: none;
+  }
+  .photo-toolbar,
+  .photo-toolbar .watch-link,
+  .slide-navigation,
+  .photo-counter,
+  .photo-details,
+  .video-player-status {
+    transition: opacity 150ms ease, visibility 150ms ease;
+  }
+  .video-back:hover,
+  .video-back:focus-visible {
+    opacity: 1;
   }
   .video-play {
-    z-index: 1;
+    z-index: 4;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 72px;
     height: 72px;
+    border: 0;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.7);
-    border: 2px solid white;
-    color: white;
+    background: rgb(0 0 0 / 72%);
+    color: var(--stage-fg);
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
     cursor: pointer;
     transition: background 0.2s;
   }
+  .photo-toolbar .control:hover,
+  .photo-toolbar .control:focus-visible,
+  .slide-navigation .control:hover,
+  .slide-navigation .control:focus-visible,
+  .video-back:hover,
+  .video-back:focus-visible,
   .video-play:hover,
   .video-play:focus-visible {
-    background: var(--accent);
-    border-color: var(--accent);
+    color: var(--stage-fg);
+    background: var(--stage-bg-hover);
+    border-color: var(--stage-border);
   }
-  :global([data-video-viewer] .video-iframe) {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    border: none;
+  .video-panel .photo-viewport :is(a, button):focus-visible {
+    outline: 2px solid var(--stage-fg);
+    outline-offset: 2px;
   }
   .video-player-status:not(:empty) {
     position: absolute;
-    z-index: 3;
-    inset-inline: 12px;
-    bottom: 12px;
-    width: fit-content;
-    max-width: calc(100% - 24px);
-    margin: auto;
-    padding: 7px 10px;
-    background: var(--surface);
-    color: var(--text);
-    font: 11px var(--mono);
-    pointer-events: none;
-  }
-  .video-thumbnail-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .video-thumbnail-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0.48;
-  }
-  .video-play-icon {
-    position: absolute;
+    z-index: 6;
     top: 50%;
     left: 50%;
+    width: max-content;
+    max-width: calc(100% - 32px);
     transform: translate(-50%, -50%);
-    color: white;
-    font-size: 14px;
-    opacity: 0.9;
+    margin: 0;
+    padding: 7px 10px;
+    background: var(--stage-bg);
+    color: var(--stage-fg);
+    font: 11px var(--mono);
+    text-align: center;
+    border: 1px solid var(--stage-border);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    pointer-events: none;
   }
-  .watch-link {
-    font-size: 11px;
-    color: var(--muted);
+  .slide-navigation {
+    position: absolute;
+    z-index: 5;
+    inset: 50% 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-inline: var(--space-2);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .slide-navigation .control {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    color: var(--stage-fg);
+    pointer-events: auto;
+  }
+  @media (hover: hover) {
+    .photo-toolbar .watch-link,
+    .slide-navigation {
+      opacity: 0;
+      transition: opacity 150ms ease, visibility 150ms ease;
+    }
+    .photo-toolbar .watch-link,
+    .slide-navigation .control {
+      pointer-events: none;
+    }
+    .photo-viewport:hover .photo-toolbar .watch-link,
+    .photo-viewport:focus-within .photo-toolbar .watch-link,
+    .photo-viewport:hover .slide-navigation,
+    .photo-viewport:focus-within .slide-navigation {
+      opacity: 1;
+    }
+    .photo-viewport:hover .photo-toolbar .watch-link,
+    .photo-viewport:focus-within .photo-toolbar .watch-link,
+    .photo-viewport:hover .slide-navigation .control,
+    .photo-viewport:focus-within .slide-navigation .control {
+      pointer-events: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .photo-toolbar,
+    .photo-toolbar .watch-link,
+    .slide-navigation,
+    .photo-counter,
+    .photo-details,
+    .video-player-status,
+    .video-back {
+      transition: none;
+    }
+  }
+  .photo-counter {
+    position: absolute;
+    z-index: 5;
+    top: var(--space-2);
+    left: var(--space-2);
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: var(--radius);
+    color: var(--stage-fg);
+    line-height: 1.2;
+    pointer-events: none;
+  }
+  .photo-details {
+    position: absolute;
+    z-index: 3;
+    inset-inline: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-2);
+    min-height: 0;
+    padding: var(--space-4) var(--space-3) var(--space-2);
+    background: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 58%) 45%, rgb(0 0 0 / 88%) 100%);
+    color: var(--stage-fg);
+    pointer-events: none;
+  }
+  .photo-viewport[data-playing="true"] .photo-toolbar,
+  .photo-viewport[data-playing="true"] .photo-toolbar .watch-link,
+  .photo-viewport[data-playing="true"] .slide-navigation,
+  .photo-viewport[data-playing="true"] .slide-navigation .control,
+  .photo-viewport[data-playing="true"] .photo-counter,
+  .photo-viewport[data-playing="true"] .photo-details,
+  .photo-viewport[data-playing="true"] .video-player-status,
+  .photo-viewport[data-playing="true"] .photo-details :is(a, button) {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .work-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+    max-width: min(70ch, calc(100% - 56px));
+    min-width: 0;
+  }
+  :global(.work-actions [data-slide-type]) {
+    align-self: flex-start;
+  }
+  :global(.work-actions .type-pill) {
+    border-color: var(--stage-border);
+    color: var(--stage-muted);
+    font: 400 11px / 1.4 var(--sans);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .work-title {
+    max-width: 70ch;
+    margin: 0;
+    color: var(--stage-fg);
+    font: 600 clamp(14px, 1.8vw, 19px) / 1.25 var(--sans);
+    overflow-wrap: anywhere;
+    text-shadow: 0 1px 10px rgb(0 0 0 / 85%);
+  }
+  :global(.video-panel .work-subtitle) {
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    color: var(--stage-muted);
+    font: 400 clamp(11px, 1.3vw, 13px) / 1.35 var(--sans);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .work-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    pointer-events: auto;
+  }
+  .project-link,
+  .work-learn-more {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--stage-fg);
+    font: 11px var(--mono);
     text-decoration: underline;
     text-underline-offset: 3px;
     white-space: nowrap;
   }
+  .project-link:hover,
+  .work-learn-more:hover,
+  .project-link:focus-visible,
+  .work-learn-more:focus-visible {
+    color: var(--stage-fg);
+  }
+  .work-links .muted {
+    color: #ddd;
+  }
+  .watch-link {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .watch-link svg {
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.6;
+  }
   .watch-link:hover,
   .watch-link:focus-visible {
-    color: var(--accent);
-  }
-  @media (max-width: 540px) {
-    .watch-link {
-      font-size: 10px;
-    }
-  }
-</style>
-
-<style>
-  .work-title {
-    margin: 0;
-    font-size: 16px;
-    text-align: left;
-    overflow-wrap: anywhere;
-    min-width: 0;
-  }
-  .photo-toolbar .control {
-    flex-shrink: 0;
-  }
-  .photo-details {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .work-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-    min-width: 0;
-  }
-  .slide-navigation {
-    justify-self: end;
-    margin-left: auto;
-  }
-  .work-learn-more {
-    white-space: nowrap;
+    color: var(--stage-fg);
   }
   .photo-filmstrip {
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(var(--project-count), minmax(0, 1fr));
+    width: 100%;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    padding: 0;
+    border: 0;
+    overflow: visible;
   }
   .photo-filmstrip .photo-thumbnail {
-    flex: 0 0 112px;
-    width: 112px;
-    min-width: 0;
+    flex: initial;
+    width: 100%;
     height: auto;
-    padding: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    white-space: normal;
+    aspect-ratio: 16 / 9;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0.6;
+    border: 1px solid transparent;
+    background: transparent;
+  }
+  .photo-thumbnail .video-thumbnail-wrapper {
+    position: relative;
   }
   .photo-thumbnail .video-thumbnail-wrapper,
   .photo-thumbnail > img {
     width: 100%;
-    height: 64px;
-    flex-shrink: 0;
+    height: 100%;
   }
-  .photo-thumbnail .photo-thumb-label {
-    display: block;
-    width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    line-height: 1.4;
-    font-size: 11px;
-    padding: 0;
+  .photo-filmstrip .photo-thumbnail img {
+    object-fit: cover;
+    opacity: 1;
   }
-  @media (max-width: 540px) {
-    .work-actions {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .photo-details {
-      gap: 8px;
-    }
+  .photo-filmstrip .photo-thumbnail:hover,
+  .photo-filmstrip .photo-thumbnail:focus-visible,
+  .photo-filmstrip .photo-thumbnail[aria-current="true"] {
+    opacity: 1;
   }
-  .work-learn-more[aria-disabled='true'] {
-    color: var(--muted);
-    border-color: var(--border);
-    opacity: 0.55;
-    cursor: default;
+  .photo-filmstrip .photo-thumbnail[aria-current="true"] {
+    border-color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+  }
+  :global(.photo-thumbnail .video-play-icon) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(24px, 30%, 40px);
+    height: auto;
+    color: #fff;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
     pointer-events: none;
   }
-  .photo-dialog .photo-viewport {
-    aspect-ratio: auto;
+  @media (max-width: 640px) {
+    .photo-filmstrip {
+      --fade: 32px;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-padding-left: var(--gutter);
+      scroll-padding-right: var(--gutter);
+      width: calc(100% + var(--gutter) + var(--gutter));
+      margin-left: calc(0px - var(--gutter));
+      margin-right: calc(0px - var(--gutter));
+      padding-left: var(--gutter);
+      padding-right: var(--gutter);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+    .photo-filmstrip::-webkit-scrollbar {
+      display: none;
+    }
+    .photo-filmstrip .photo-thumbnail {
+      flex: 0 0 calc((100% - var(--space-1) - var(--space-1)) / 2.6);
+      width: auto;
+      scroll-snap-align: start;
+    }
+    .photo-filmstrip[data-scrolled-end]:not([data-scrolled-start]) {
+      -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+      mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+    }
+    .photo-filmstrip[data-scrolled-start][data-scrolled-end] {
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+    }
+    .photo-filmstrip[data-scrolled-start]:not([data-scrolled-end]) {
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 100%);
+      mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 100%);
+    }
   }
-  .photo-viewport {
-    aspect-ratio: 16 / 9;
-    cursor: default;
+  @media (max-width: 540px) {
+    .video-play {
+      top: 42%;
+      width: 56px;
+      height: 56px;
+    }
+    :global(.video-play .stage-play-icon) {
+      width: 56px;
+      height: 56px;
+    }
+    .photo-toolbar {
+      top: var(--space-1);
+      right: var(--space-1);
+    }
+    .video-back {
+      top: var(--space-1);
+      left: var(--space-1);
+    }
+    .photo-counter {
+      top: var(--space-1);
+      left: var(--space-1);
+    }
+    .slide-navigation {
+      padding-inline: var(--space-1);
+    }
+    .photo-details {
+      gap: var(--space-1);
+      padding: var(--space-3) var(--space-1) var(--space-1);
+    }
+    .work-title {
+      font-size: 14px;
+    }
+    .work-links {
+      gap: 2px 10px;
+    }
+  }
+  :global([data-video-viewer] + .project-section) {
+    margin-top: 48px;
   }
 </style>

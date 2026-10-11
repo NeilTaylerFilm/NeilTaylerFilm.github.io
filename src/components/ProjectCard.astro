@@ -51,11 +51,11 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
         width={data.images.find((image) => image.src === cover)?.width}
         height={data.images.find((image) => image.src === cover)?.height}
         alt=""
-        sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1440px) 45vw, 650px"
+        sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1050px) 45vw, 420px"
       />
       {/* ➡️ Sleek hover arrow indicator */}
       <span class="project-open" aria-hidden="true">
-        →
+        <span>→</span>
       </span>
     </a>
   )}
@@ -69,7 +69,7 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
   </h2>
 
   {/* 📝 Optional album subtitle */}
-  {data.subtitle && <p class="muted">{data.subtitle}</p>}
+  {(data.description || data.subtitle) && <p class="muted">{data.description || data.subtitle}</p>}
 
   {/* 🔢 Count of photographs inside this album */}
   {data.images.length > 0 && (
