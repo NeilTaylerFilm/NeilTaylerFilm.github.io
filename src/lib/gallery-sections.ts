@@ -13,7 +13,7 @@
 export function gallerySections<T extends { section?: string }>(images: T[]) {
   // 🗂️ This will hold all of our finished photo binders (chapters)
   const groups: { heading?: string; start: number; images: T[] }[] = [];
-  
+
   // 🚶 Walk through every photograph one by one
   images.forEach((image, index) => {
     // If this photo has a new chapter title, or if we haven't started a binder yet:
@@ -24,8 +24,7 @@ export function gallerySections<T extends { section?: string }>(images: T[]) {
     // Slip this photograph into the current binder
     groups[groups.length - 1].images.push(image);
   });
-  
+
   // 🎁 Hand back the finished list of binders
   return groups;
 }
-

@@ -41,4 +41,3 @@ export function imageInfo(src: string) {
   // 📖 Look up the cleaned name in our giant book and return the info!
   return (manifest as Record<string, ImageInfo>)[normalized];
 }
-

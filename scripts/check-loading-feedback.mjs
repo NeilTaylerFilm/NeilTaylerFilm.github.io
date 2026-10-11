@@ -63,7 +63,10 @@ try {
     await page.waitForTimeout(60);
 
     // 🔍 CHECK 1: The screen must say "Loading photograph 2 of..." so the user knows it worked!
-    assert.match(await viewer.locator('[data-photo-status]').textContent(), /^Loading photograph 2 of /);
+    assert.match(
+      await viewer.locator('[data-photo-status]').textContent(),
+      /^Loading photograph 2 of /,
+    );
     // 🔍 CHECK 2: aria-busy must be true so blind visitors' screen readers announce the loading state
     assert.equal(await viewer.locator('[data-photo-viewport]').getAttribute('aria-busy'), 'true');
     // 🔍 CHECK 3: The old picture remains visible until the new one is ready (no blank white flashes!)
@@ -71,7 +74,9 @@ try {
 
     // 👉 Click "Next Slide" again to reach slide 3
     await viewer.locator('[data-slide-next]').click();
-    await page.waitForFunction(() => document.querySelector('[data-slide-count]')?.textContent?.startsWith('03 /'));
+    await page.waitForFunction(() =>
+      document.querySelector('[data-slide-count]')?.textContent?.startsWith('03 /'),
+    );
     assert.equal(await viewer.locator('[data-slide-image]').getAttribute('alt'), slides[2].alt);
 
     // 👉 Click the video "Play" button
@@ -141,10 +146,17 @@ try {
   const lightbox = page.locator('[data-lightbox]');
 
   // 🔍 Step 1: Confirms initial loading announcement
-  assert.match(await lightbox.locator('[data-lightbox-feedback]').textContent(), /^Loading photograph 1 of /);
+  assert.match(
+    await lightbox.locator('[data-lightbox-feedback]').textContent(),
+    /^Loading photograph 1 of /,
+  );
 
   // 🔍 Step 2: Confirms graceful error message when download fails
-  await page.waitForFunction(() => document.querySelector('[data-lightbox-feedback]')?.textContent === 'Photograph could not load.');
+  await page.waitForFunction(
+    () =>
+      document.querySelector('[data-lightbox-feedback]')?.textContent ===
+      'Photograph could not load.',
+  );
   assert.equal(await lightbox.locator('[data-lightbox-open]').getAttribute('href'), imageUrl);
 
   // ⌨️ Step 3: KEYBOARD ACCESSIBILITY DRILL (Tab navigation)
@@ -152,16 +164,28 @@ try {
   // We test that pressing Tab lands smoothly on "Retry", then "Open original"!
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
-  assert.equal(await lightbox.locator('[data-lightbox-retry]').evaluate((button) => document.activeElement === button), true);
+  assert.equal(
+    await lightbox
+      .locator('[data-lightbox-retry]')
+      .evaluate((button) => document.activeElement === button),
+    true,
+  );
   await page.keyboard.press('Tab');
-  assert.equal(await lightbox.locator('[data-lightbox-open]').evaluate((link) => document.activeElement === link), true);
+  assert.equal(
+    await lightbox
+      .locator('[data-lightbox-open]')
+      .evaluate((link) => document.activeElement === link),
+    true,
+  );
 
   // 👉 Step 4: Click the "Retry" button now that signal is restored
   await lightbox.locator('[data-lightbox-retry]').click();
   await page.waitForFunction(() => {
     const dialog = document.querySelector('[data-lightbox]');
-    return dialog?.querySelector('[data-lightbox-feedback]')?.textContent === '' &&
-      dialog.querySelector('[data-lightbox-actions]')?.hasAttribute('hidden');
+    return (
+      dialog?.querySelector('[data-lightbox-feedback]')?.textContent === '' &&
+      dialog.querySelector('[data-lightbox-actions]')?.hasAttribute('hidden')
+    );
   });
 
   // 👉 Step 5: Advance slide, then press Escape to close full-screen viewer

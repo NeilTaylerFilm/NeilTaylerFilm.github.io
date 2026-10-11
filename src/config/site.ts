@@ -46,4 +46,3 @@ export const site: SiteConfig = {
     { label: 'TikTok', url: 'https://www.tiktok.com/@neiltaylerfilm', username: '@neiltaylerfilm' },
   ],
 };
-

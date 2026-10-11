@@ -55,6 +55,7 @@ const fullTitle = `${title} — ${site.name}`;
 // Converts relative file paths into absolute URLs so external chat apps can download the thumbnail.
 const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
 ---
+
 {/* SECURITY: JSON.stringify sanitizes '<' to '\u003c' to prevent HTML injection in structured data. */}
 
 {/* 🏷️ Tab Title & Meta Description for Google */}
@@ -106,4 +107,3 @@ const socialImage = new URL(imageInfo(image)?.src || image, Astro.site);
     ],
   }).replace(/</g, '\\u003c')}
 ></script>
-

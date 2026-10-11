@@ -30,4 +30,3 @@ export const about = {
   // Rendered as styled pill badges at the bottom of the bio!
   areas: ['Photography', 'Film', 'Post-production'],
 };
-

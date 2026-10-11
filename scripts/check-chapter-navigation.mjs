@@ -42,13 +42,23 @@ try {
       mobileOpen: document.querySelector('.chapter-nav-mobile').open,
       tldrClosed: !document.querySelector('#check-tldr').closest('details').open,
       ordinarySectionOpen: document.querySelector('#finding-the-story').closest('details').open,
-      nestedSection: document.querySelector('#check-tldr-nested').closest('details').parentElement
-        .closest('details')?.querySelector('summary')?.textContent.includes('TL;DR'),
-      chapterLevels: [...document.querySelectorAll('.chapter-nav')].map((nav) => [...nav.querySelectorAll('a[href="#preparing-a-sequence"], a[href="#checking-the-cut"]')].map((link) => ({
-        href: link.getAttribute('href'),
-        indent: parseFloat(getComputedStyle(link.closest('li')).paddingLeft),
-      }))),
-      followingSectionOutside: !document.querySelector('#choosing-a-rhythm').closest('details')
+      nestedSection: document
+        .querySelector('#check-tldr-nested')
+        .closest('details')
+        .parentElement.closest('details')
+        ?.querySelector('summary')
+        ?.textContent.includes('TL;DR'),
+      chapterLevels: [...document.querySelectorAll('.chapter-nav')].map((nav) =>
+        [
+          ...nav.querySelectorAll('a[href="#preparing-a-sequence"], a[href="#checking-the-cut"]'),
+        ].map((link) => ({
+          href: link.getAttribute('href'),
+          indent: parseFloat(getComputedStyle(link.closest('li')).paddingLeft),
+        })),
+      ),
+      followingSectionOutside: !document
+        .querySelector('#choosing-a-rhythm')
+        .closest('details')
         .parentElement.closest('details'),
       labelLeft: document.querySelector('.chapter-label').getBoundingClientRect().left,
       articleLeft: document.querySelector('[data-article-body]').getBoundingClientRect().left,
@@ -62,11 +72,19 @@ try {
     assert.equal(initial.tldrClosed, true, 'TL;DR should start collapsed');
     assert.equal(initial.ordinarySectionOpen, true, 'ordinary sections should start expanded');
     assert.equal(initial.nestedSection, true, 'deeper headings should nest under their section');
-    assert.deepEqual(initial.chapterLevels, Array.from({ length: 2 }, () => [
-      { href: '#preparing-a-sequence', indent: 12 },
-      { href: '#checking-the-cut', indent: 24 },
-    ]), 'both menus should render actual h3 and h4 sections with increasing indentation');
-    assert.equal(initial.followingSectionOutside, true, 'same-level headings should remain siblings');
+    assert.deepEqual(
+      initial.chapterLevels,
+      Array.from({ length: 2 }, () => [
+        { href: '#preparing-a-sequence', indent: 12 },
+        { href: '#checking-the-cut', indent: 24 },
+      ]),
+      'both menus should render actual h3 and h4 sections with increasing indentation',
+    );
+    assert.equal(
+      initial.followingSectionOutside,
+      true,
+      'same-level headings should remain siblings',
+    );
     assert.equal(initial.progress, 'matrix(0, 0, 0, 1, 0, 0)', 'progress should start empty');
     assert.equal(initial.desktop === 'block', width >= 1200);
     assert.equal(initial.mobile === 'block', width < 1200);
@@ -99,7 +117,8 @@ try {
     }));
     assert.equal(nestedJump.parentOpen, true, 'deep chapter links should open collapsed ancestors');
     assert.equal(nestedJump.childOpen, true, 'deep chapter links should open nested ancestors');
-    if (width < 1200) assert.ok(nestedJump.targetTop > 72, 'mobile menu should not cover the target');
+    if (width < 1200)
+      assert.ok(nestedJump.targetTop > 72, 'mobile menu should not cover the target');
     await page.evaluate(() => {
       document.querySelector('#preparing-a-sequence').closest('details').open = false;
       document.querySelector('#choosing-a-rhythm').closest('details').open = false;
@@ -107,16 +126,26 @@ try {
       window.scrollBy(0, heading.getBoundingClientRect().top - 150);
     });
     await page.waitForTimeout(500);
-    const activeAfterCollapse = await page.locator(`${nav} a[aria-current="location"]`).getAttribute('href');
-    const collapsedState = await page.evaluate(() => ['choosing-a-rhythm', 'preparing-a-sequence', 'checking-the-cut'].map((id) => ({
-      id,
-      rects: document.querySelector(`#${id}`).getClientRects().length,
-      top: document.querySelector(`#${id}`).getBoundingClientRect().top,
-      open: document.querySelector(`#${id}`).closest('details').open,
-    })));
-    assert.equal(activeAfterCollapse, '#choosing-a-rhythm', `visible parent should stay active after collapse (got ${activeAfterCollapse}; ${JSON.stringify(collapsedState)})`);
+    const activeAfterCollapse = await page
+      .locator(`${nav} a[aria-current="location"]`)
+      .getAttribute('href');
+    const collapsedState = await page.evaluate(() =>
+      ['choosing-a-rhythm', 'preparing-a-sequence', 'checking-the-cut'].map((id) => ({
+        id,
+        rects: document.querySelector(`#${id}`).getClientRects().length,
+        top: document.querySelector(`#${id}`).getBoundingClientRect().top,
+        open: document.querySelector(`#${id}`).closest('details').open,
+      })),
+    );
     assert.equal(
-      await page.locator(`${nav} a[href="#preparing-a-sequence"]`).evaluate((link) => link.hasAttribute('aria-current')),
+      activeAfterCollapse,
+      '#choosing-a-rhythm',
+      `visible parent should stay active after collapse (got ${activeAfterCollapse}; ${JSON.stringify(collapsedState)})`,
+    );
+    assert.equal(
+      await page
+        .locator(`${nav} a[href="#preparing-a-sequence"]`)
+        .evaluate((link) => link.hasAttribute('aria-current')),
       false,
       'hidden child headings should not remain active when their parent is collapsed',
     );

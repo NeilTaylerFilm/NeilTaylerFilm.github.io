@@ -101,13 +101,20 @@ for (const [url, locations] of references) {
     continue;
   }
   referencedIds.add(photoId(url));
-  if (!registeredUrls.has(url)) errors.push(`Photo is missing from the registry at ${locations[0]}: ${url}`);
+  if (!registeredUrls.has(url))
+    errors.push(`Photo is missing from the registry at ${locations[0]}: ${url}`);
 }
 
 const unusedCount = Object.keys(registry).filter((url) => !referencedIds.has(photoId(url))).length;
-console.log(`Scanned ${scannedFiles} content and data files; found ${references.size} distinct photo addresses.`);
-console.log(`Checked ${Object.keys(registry).length} registry entries; ${referencedIds.size} photos are referenced.`);
-console.log(`${unusedCount} registry entries are not referenced by current content. They were not changed.`);
+console.log(
+  `Scanned ${scannedFiles} content and data files; found ${references.size} distinct photo addresses.`,
+);
+console.log(
+  `Checked ${Object.keys(registry).length} registry entries; ${referencedIds.size} photos are referenced.`,
+);
+console.log(
+  `${unusedCount} registry entries are not referenced by current content. They were not changed.`,
+);
 
 if (errors.length) {
   console.error(`\nPhoto library audit found ${errors.length} problem(s):`);

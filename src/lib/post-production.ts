@@ -39,7 +39,7 @@ export function videoEmbedUrl(input?: string): string | undefined {
     const url = new URL(input);
     // Make sure it's a real web link starting with http/https
     if (!['https:', 'http:'].includes(url.protocol)) return undefined;
-    
+
     // Strip "www." so "www.youtube.com" becomes just "youtube.com"
     const host = url.hostname.replace(/^www\./, '');
 
@@ -68,4 +68,3 @@ export function videoEmbedUrl(input?: string): string | undefined {
   // If it's not a supported video link, return nothing
   return undefined;
 }
-

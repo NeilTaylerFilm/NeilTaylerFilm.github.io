@@ -59,8 +59,12 @@ const { title } = Astro.props;
     {/* ⚠️ Error actions: Retry button or open in a new tab if loading fails */}
     {/* Fallback buttons shown if the image fails to download on a spotty mobile connection */}
     <div class="lightbox-actions" data-lightbox-actions hidden>
-      <button class="control" type="button" data-lightbox-retry>Retry</button>
-      <a class="control" data-lightbox-open target="_blank" rel="noopener noreferrer">Open photograph</a>
+      <button class="control" type="button" data-lightbox-retry>
+        Retry
+      </button>
+      <a class="control" data-lightbox-open target="_blank" rel="noopener noreferrer">
+        Open photograph
+      </a>
     </div>
 
     {/* ➡️ Next photo button */}
@@ -257,4 +261,3 @@ const { title } = Astro.props;
     min-width: 1px;
   }
 </style>
-

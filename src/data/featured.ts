@@ -62,4 +62,3 @@ export const featured: FeaturedPhoto[] = [
 
 // 🚩 Flag that tells the site: "These are your real photos, not test/demo placeholders!"
 export const featuredIsDemo = false;
-

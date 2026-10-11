@@ -1,9 +1,7 @@
 export function bindArticleCitations(body: HTMLElement) {
   // Cleans up broken citation icons: if an external website's favicon fails to load, hide it neatly.
   const bindCitationIcons = (root: ParentNode) => {
-    for (const icon of root.querySelectorAll<HTMLImageElement>(
-      'img[data-citation-icon]',
-    )) {
+    for (const icon of root.querySelectorAll<HTMLImageElement>('img[data-citation-icon]')) {
       const hideBrokenIcon = () => (icon.hidden = true);
       if (icon.complete && !icon.naturalWidth) hideBrokenIcon();
       icon.addEventListener('error', hideBrokenIcon, { once: true });
@@ -20,7 +18,7 @@ export function bindArticleCitations(body: HTMLElement) {
   // Read the original paragraph nodes first; only adjacent citation links belong in one group.
   for (const paragraph of body.querySelectorAll('p')) {
     const nodes = [...paragraph.childNodes];
-    for (let index = 0; index < nodes.length; ) {
+    for (let index = 0; index < nodes.length;) {
       if (!isCitation(nodes[index])) {
         index++;
         continue;
@@ -31,7 +29,8 @@ export function bindArticleCitations(body: HTMLElement) {
         links.push(nodes[end + 1] as HTMLAnchorElement);
         end += 2;
       }
-      if (links.length >= 3) citationRuns.push({ parent: paragraph, nodes: nodes.slice(index, end), links });
+      if (links.length >= 3)
+        citationRuns.push({ parent: paragraph, nodes: nodes.slice(index, end), links });
       index = end;
     }
   }

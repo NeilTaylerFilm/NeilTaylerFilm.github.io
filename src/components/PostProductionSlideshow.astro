@@ -142,7 +142,11 @@ const first = featured[0];
 
         <div class="photo-details">
           <div class="work-actions">
-            {first.type?.trim() && <span class="type-pill" data-slide-type>{first.type.trim()}</span>}
+            {first.type?.trim() && (
+              <span class="type-pill" data-slide-type>
+                {first.type.trim()}
+              </span>
+            )}
             <p class="work-title" data-slide-caption>
               {first.caption}
             </p>
@@ -248,7 +252,10 @@ const first = featured[0];
       const maxScrollLeft = strip.scrollWidth - strip.clientWidth;
       const hasOverflow = maxScrollLeft > 1;
       strip.toggleAttribute('data-scrolled-start', hasOverflow && strip.scrollLeft > 1);
-      strip.toggleAttribute('data-scrolled-end', hasOverflow && strip.scrollLeft < maxScrollLeft - 1);
+      strip.toggleAttribute(
+        'data-scrolled-end',
+        hasOverflow && strip.scrollLeft < maxScrollLeft - 1,
+      );
       stripScrollFrame = 0;
     }
     function scheduleStripEdgeUpdate() {
@@ -383,25 +390,33 @@ const first = featured[0];
       }, 8000);
 
       // When the video finishes loading:
-      iframe.addEventListener('load', () => {
-        // A different slide may have replaced this player while it was loading.
-        if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
-        window.clearTimeout(playerTimer);
-        iframe.removeAttribute('aria-busy');
-        playerStatus.textContent = '';
-        viewport.dataset.playing = 'true';
-        back.hidden = false;
-      }, { once: true });
+      iframe.addEventListener(
+        'load',
+        () => {
+          // A different slide may have replaced this player while it was loading.
+          if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
+          window.clearTimeout(playerTimer);
+          iframe.removeAttribute('aria-busy');
+          playerStatus.textContent = '';
+          viewport.dataset.playing = 'true';
+          back.hidden = false;
+        },
+        { once: true },
+      );
 
       // If video failed to load (e.g. offline):
-      iframe.addEventListener('error', () => {
-        // Ignore errors from a player that is no longer on screen.
-        if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
-        window.clearTimeout(playerTimer);
-        iframe.removeAttribute('aria-busy');
-        playerStatus.textContent =
-          'Player could not load. Use the Watch on link to open it directly.';
-      }, { once: true });
+      iframe.addEventListener(
+        'error',
+        () => {
+          // Ignore errors from a player that is no longer on screen.
+          if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
+          window.clearTimeout(playerTimer);
+          iframe.removeAttribute('aria-busy');
+          playerStatus.textContent =
+            'Player could not load. Use the Watch on link to open it directly.';
+        },
+        { once: true },
+      );
 
       viewport.append(iframe);
       viewport.dataset.playing = 'true';
@@ -413,7 +428,6 @@ const first = featured[0];
     update();
   });
 </script>
-
 
 <style>
   .photo-showcase {
@@ -495,7 +509,9 @@ const first = featured[0];
     padding: 0;
     opacity: 0.45;
     pointer-events: auto;
-    transition: opacity 150ms ease, visibility 150ms ease;
+    transition:
+      opacity 150ms ease,
+      visibility 150ms ease;
   }
   .video-back[hidden] {
     display: none;
@@ -506,7 +522,9 @@ const first = featured[0];
   .photo-counter,
   .photo-details,
   .video-player-status {
-    transition: opacity 150ms ease, visibility 150ms ease;
+    transition:
+      opacity 150ms ease,
+      visibility 150ms ease;
   }
   .video-back:hover,
   .video-back:focus-visible {
@@ -588,7 +606,9 @@ const first = featured[0];
     .photo-toolbar .watch-link,
     .slide-navigation {
       opacity: 0;
-      transition: opacity 150ms ease, visibility 150ms ease;
+      transition:
+        opacity 150ms ease,
+        visibility 150ms ease;
     }
     .photo-toolbar .watch-link,
     .slide-navigation .control {
@@ -641,18 +661,23 @@ const first = featured[0];
     gap: var(--space-2);
     min-height: 0;
     padding: var(--space-4) var(--space-3) var(--space-2);
-    background: linear-gradient(180deg, transparent 0%, rgb(0 0 0 / 58%) 45%, rgb(0 0 0 / 88%) 100%);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgb(0 0 0 / 58%) 45%,
+      rgb(0 0 0 / 88%) 100%
+    );
     color: var(--stage-fg);
     pointer-events: none;
   }
-  .photo-viewport[data-playing="true"] .photo-toolbar,
-  .photo-viewport[data-playing="true"] .photo-toolbar .watch-link,
-  .photo-viewport[data-playing="true"] .slide-navigation,
-  .photo-viewport[data-playing="true"] .slide-navigation .control,
-  .photo-viewport[data-playing="true"] .photo-counter,
-  .photo-viewport[data-playing="true"] .photo-details,
-  .photo-viewport[data-playing="true"] .video-player-status,
-  .photo-viewport[data-playing="true"] .photo-details :is(a, button) {
+  .photo-viewport[data-playing='true'] .photo-toolbar,
+  .photo-viewport[data-playing='true'] .photo-toolbar .watch-link,
+  .photo-viewport[data-playing='true'] .slide-navigation,
+  .photo-viewport[data-playing='true'] .slide-navigation .control,
+  .photo-viewport[data-playing='true'] .photo-counter,
+  .photo-viewport[data-playing='true'] .photo-details,
+  .photo-viewport[data-playing='true'] .video-player-status,
+  .photo-viewport[data-playing='true'] .photo-details :is(a, button) {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -772,10 +797,10 @@ const first = featured[0];
   }
   .photo-filmstrip .photo-thumbnail:hover,
   .photo-filmstrip .photo-thumbnail:focus-visible,
-  .photo-filmstrip .photo-thumbnail[aria-current="true"] {
+  .photo-filmstrip .photo-thumbnail[aria-current='true'] {
     opacity: 1;
   }
-  .photo-filmstrip .photo-thumbnail[aria-current="true"] {
+  .photo-filmstrip .photo-thumbnail[aria-current='true'] {
     border-color: rgba(255, 255, 255, 0.8);
     background: transparent;
   }
@@ -817,12 +842,34 @@ const first = featured[0];
       scroll-snap-align: start;
     }
     .photo-filmstrip[data-scrolled-end]:not([data-scrolled-start]) {
-      -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
-      mask-image: linear-gradient(to right, #000 0, #000 calc(100% - var(--fade)), transparent 100%);
+      -webkit-mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        #000 0,
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
     }
     .photo-filmstrip[data-scrolled-start][data-scrolled-end] {
-      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
-      mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 calc(100% - var(--fade)), transparent 100%);
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--fade),
+        #000 calc(100% - var(--fade)),
+        transparent 100%
+      );
     }
     .photo-filmstrip[data-scrolled-start]:not([data-scrolled-end]) {
       -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fade), #000 100%);

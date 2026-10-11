@@ -63,11 +63,10 @@ const blog = defineCollection({
       // Single category (e.g. 'Writing')
       category: optionalText,
       // Or list of categories
-      categories: z
-        .preprocess(
-          (val) => (val === null || val === '' ? undefined : val),
-          z.array(z.string().trim().min(1)).min(1).optional(),
-        ),
+      categories: z.preprocess(
+        (val) => (val === null || val === '' ? undefined : val),
+        z.array(z.string().trim().min(1)).min(1).optional(),
+      ),
       // Format type (e.g. 'essay')
       format: optionalText,
       // Keyword tags
@@ -84,7 +83,10 @@ const blog = defineCollection({
       // Cover photo path
       image: optionalText,
       // Accessibility alt text for cover
-      imageAlt: z.string().nullish().transform((v) => v?.trim() || ''),
+      imageAlt: z
+        .string()
+        .nullish()
+        .transform((v) => v?.trim() || ''),
       // Custom summary teaser
       excerpt: optionalText,
     })
@@ -128,7 +130,10 @@ const photography = defineCollection({
       // Alternative cover image property
       coverImage: optionalText,
       // Alt description for cover
-      coverAlt: z.string().nullish().transform((v) => v?.trim() || ''),
+      coverAlt: z
+        .string()
+        .nullish()
+        .transform((v) => v?.trim() || ''),
       // Put this album on the homepage?
       featured: z.boolean().default(false),
       images: z
@@ -141,7 +146,10 @@ const photography = defineCollection({
             // Chapter heading
             section: optionalText,
             // Accessibility alt text
-            alt: z.string().nullish().transform((v) => v?.trim() || ''),
+            alt: z
+              .string()
+              .nullish()
+              .transform((v) => v?.trim() || ''),
             // Caption text
             caption: optionalText,
             // Pixel width
@@ -172,11 +180,10 @@ const postProduction = defineCollection({
       // Discipline (e.g. 'Editing', 'VFX')
       category: optionalText,
       // Multiple categories support
-      categories: z
-        .preprocess(
-          (val) => (val === null || val === '' ? undefined : val),
-          z.array(z.string().trim().min(1)).min(1).optional(),
-        ),
+      categories: z.preprocess(
+        (val) => (val === null || val === '' ? undefined : val),
+        z.array(z.string().trim().min(1)).min(1).optional(),
+      ),
       // Cover image
       cover: optionalText,
       // Cover image alternate
@@ -196,7 +203,10 @@ const postProduction = defineCollection({
         .array(
           z.object({
             src: z.string(),
-            alt: z.string().nullish().transform((v) => v?.trim() || ''),
+            alt: z
+              .string()
+              .nullish()
+              .transform((v) => v?.trim() || ''),
             caption: optionalText,
             width: z.number().positive().optional(),
             height: z.number().positive().optional(),
@@ -216,4 +226,3 @@ const postProduction = defineCollection({
 
 // 📦 Export all collections so Astro knows about them
 export const collections = { blog, photography, postProduction };
-

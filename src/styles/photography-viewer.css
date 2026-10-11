@@ -66,7 +66,9 @@
   pointer-events: none;
 }
 @keyframes photo-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .photo-viewport[data-loading]::after {

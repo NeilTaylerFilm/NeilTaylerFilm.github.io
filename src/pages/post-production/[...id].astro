@@ -51,7 +51,9 @@ const socialImage =
   data.images[0]?.src ||
   site.defaultImage;
 const description =
-  data.description || data.subtitle || `${data.title}: a post-production project by ${site.author}.`;
+  data.description ||
+  data.subtitle ||
+  `${data.title}: a post-production project by ${site.author}.`;
 const poster = data.poster || data.coverImage || data.cover;
 const posterInfo = poster ? imageInfo(poster) : undefined;
 const structuredData = {
@@ -123,7 +125,9 @@ const structuredData = {
             target="_blank"
             rel="noopener noreferrer"
             hidden
-          >Open video directly</a>
+          >
+            Open video directly
+          </a>
         </div>
       </div>
     )}
@@ -141,7 +145,9 @@ const structuredData = {
   {relatedPosts.length > 0 && (
     <section class="related" aria-labelledby="related-heading">
       <div class="section-heading">
-        <h2 id="related-heading" class="eyebrow">Related posts</h2>
+        <h2 id="related-heading" class="eyebrow">
+          Related posts
+        </h2>
         <span class="line-decoration" aria-hidden="true"></span>
       </div>
       <div class="related-grid">
@@ -152,7 +158,10 @@ const structuredData = {
             </time>
             <h3>
               <a href={`/blog/${post.id}/`}>
-                {post.data.title} <span class="accent" aria-hidden="true">→</span>
+                {post.data.title}{' '}
+                <span class="accent" aria-hidden="true">
+                  →
+                </span>
               </a>
             </h3>
           </article>
@@ -199,7 +208,8 @@ const structuredData = {
       activeIframe?.remove();
       activeIframe = iframe;
       iframe.src = embedUrl;
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       iframe.allowFullscreen = true;
       iframe.className = 'video-embed';
       iframe.title = 'Film player';
@@ -215,24 +225,32 @@ const structuredData = {
           directLink.hidden = false;
         }
       }, 8000);
-      iframe.addEventListener('load', () => {
-        if (!iframe.isConnected || activeIframe !== iframe) return;
-        window.clearTimeout(timer);
-        container.removeAttribute('aria-busy');
-        container.querySelector('[data-video-poster]')?.remove();
-        playBtn.remove();
-        playerStatus.textContent = '';
-        directLink.hidden = true;
-      }, { once: true });
-      iframe.addEventListener('error', () => {
-        if (activeIframe !== iframe) return;
-        window.clearTimeout(timer);
-        container.removeAttribute('aria-busy');
-        playerStatus.textContent = 'Player could not load.';
-        playBtn.hidden = false;
-        directLink.hidden = false;
-        iframe.remove();
-      }, { once: true });
+      iframe.addEventListener(
+        'load',
+        () => {
+          if (!iframe.isConnected || activeIframe !== iframe) return;
+          window.clearTimeout(timer);
+          container.removeAttribute('aria-busy');
+          container.querySelector('[data-video-poster]')?.remove();
+          playBtn.remove();
+          playerStatus.textContent = '';
+          directLink.hidden = true;
+        },
+        { once: true },
+      );
+      iframe.addEventListener(
+        'error',
+        () => {
+          if (activeIframe !== iframe) return;
+          window.clearTimeout(timer);
+          container.removeAttribute('aria-busy');
+          playerStatus.textContent = 'Player could not load.';
+          playBtn.hidden = false;
+          directLink.hidden = false;
+          iframe.remove();
+        },
+        { once: true },
+      );
 
       playBtn.hidden = true;
       container.appendChild(iframe);
@@ -245,7 +263,9 @@ const structuredData = {
   function parseVideoUrl(url: string): { id: string | null; provider: 'youtube' | 'vimeo' | null } {
     if (!url) return { id: null, provider: null };
 
-    const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const ytMatch = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    );
     if (ytMatch) return { id: ytMatch[1], provider: 'youtube' };
 
     const vmMatch = url.match(/vimeo\.com\/(\d+)/);
@@ -325,4 +345,3 @@ const structuredData = {
     }
   }
 </style>
-

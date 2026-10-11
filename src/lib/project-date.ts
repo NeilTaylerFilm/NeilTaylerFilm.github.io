@@ -48,4 +48,3 @@ export const projectYear = z.union([
 export function matchingProjectYear(data: { date?: Date; year?: string | number }) {
   return !data.date || data.year === undefined || data.date.getUTCFullYear() === Number(data.year);
 }
-

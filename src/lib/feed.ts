@@ -86,7 +86,8 @@ export function postCategories(data: { categories?: string[]; category?: string 
 export function displayLabel(data: { type?: string; categories?: string[]; category?: string }) {
   const [first] = postCategories(data);
   // Skip the category if it just repeats the type
-  const category = first && (!data.type || categoryKey(first) !== categoryKey(data.type)) ? first : undefined;
+  const category =
+    first && (!data.type || categoryKey(first) !== categoryKey(data.type)) ? first : undefined;
   return { type: data.type, category };
 }
 
@@ -97,4 +98,3 @@ export function matchesCategory(categories: string[], selected: string) {
     !selected || categories.some((category) => categoryKey(category) === categoryKey(selected))
   );
 }
-

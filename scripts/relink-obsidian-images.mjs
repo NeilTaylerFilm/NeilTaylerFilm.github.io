@@ -6,17 +6,17 @@
  * ==============================================================================
  * Relink Obsidian Images Script
  * ==============================================================================
- * 
+ *
  * WHAT THIS SCRIPT DOES:
  * When you write blog posts in Obsidian, you might insert images that are saved
  * locally on your computer inside the "photo-inbox/" folder.
- * 
+ *
  * Once you run the upload command (`npm run photos:upload`), those images are
  * uploaded to the cloud (Cloudflare R2), giving each image a permanent web address.
- * 
+ *
  * This script scans your draft blog posts and automatically replaces the local
  * "photo-inbox/..." image links with the new public web addresses from Cloudflare R2.
- * 
+ *
  * SAFETY RULES:
  * 1. Only draft posts (`draft: true` in the header) are touched. Published posts are ignored.
  * 2. You can test it safely first by adding `--dry-run` to the command.
@@ -109,12 +109,16 @@ async function main() {
       }
     }
   } else {
-    console.warn('No photo-inbox/UPLOAD-RESULTS.md found. Mapping by filename will be unavailable.');
+    console.warn(
+      'No photo-inbox/UPLOAD-RESULTS.md found. Mapping by filename will be unavailable.',
+    );
   }
 
   // If we could not find any mapped images, there is nothing to relink
   if (!nameToR2.size) {
-    console.error('No image mappings found in UPLOAD-RESULTS.md. Upload photos first with npm run photos:upload.');
+    console.error(
+      'No image mappings found in UPLOAD-RESULTS.md. Upload photos first with npm run photos:upload.',
+    );
     process.exit(1);
   }
 
@@ -236,7 +240,9 @@ async function main() {
   }
 
   if (dryRun) {
-    console.log('\n[dry-run] No files were actually modified. Use without --dry-run to apply changes.');
+    console.log(
+      '\n[dry-run] No files were actually modified. Use without --dry-run to apply changes.',
+    );
   }
 }
 

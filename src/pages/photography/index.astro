@@ -3,10 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PhotographyPortfolio from '../../components/PhotographyPortfolio.astro';
 import FeedControls from '../../components/FeedControls.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
-import {
-  projects,
-  categories as getCategories,
-} from '../../lib/content';
+import { projects, categories as getCategories } from '../../lib/content';
 
 const allProjects = await projects();
 const categories = getCategories(allProjects);
@@ -37,7 +34,9 @@ const categories = getCategories(allProjects);
       <FeedControls categories={categories} count={allProjects.length} noun="projects" />
     )}
     <div class="project-grid" data-feed>
-      {allProjects.map((project) => <ProjectCard project={project} />)}
+      {allProjects.map((project) => (
+        <ProjectCard project={project} />
+      ))}
     </div>
     {!allProjects.length && <p class="empty-state">No projects published yet.</p>}
   </section>

@@ -59,4 +59,3 @@ export function categories(entries: { data: { category?: string; categories?: st
     ).values(),
   ].sort();
 }
-

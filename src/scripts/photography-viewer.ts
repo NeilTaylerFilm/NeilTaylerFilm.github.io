@@ -134,7 +134,6 @@ export function setupPhotographyViewer(root: HTMLElement) {
   // ⚠️ Error state element (created on first error, reused)
   let errorEl: HTMLElement | null = null;
 
-
   // 📜 HELPER: Keeps the active thumbnail centered in the bottom filmstrip
   function keepThumbnailVisible() {
     const thumb = thumbnails[selected];
@@ -237,7 +236,8 @@ export function setupPhotographyViewer(root: HTMLElement) {
     // Reparent to current viewport
     viewport.appendChild(errorEl);
     errorEl.hidden = false;
-    if (videoViewer) root.dispatchEvent(new CustomEvent<number>('photo-error', { detail: current }));
+    if (videoViewer)
+      root.dispatchEvent(new CustomEvent<number>('photo-error', { detail: current }));
   }
 
   // 🧹 HELPER: Hides the error message when everything is fine
@@ -340,13 +340,13 @@ export function setupPhotographyViewer(root: HTMLElement) {
     preload(direction);
   }
 
-
   // 🎯 SELECTOR: Chooses which photo index to switch to (handles looping around!)
   function select(index: number, direction: number) {
     // Wrap around like a carousel: if you go past the end, loop back to the beginning!
     const nextIndex = (index + photos.length) % photos.length;
     if (nextIndex === selected && !pending && !viewport.hasAttribute('data-error')) return;
-    if (videoViewer) root.dispatchEvent(new CustomEvent<number>('photo-select', { detail: nextIndex }));
+    if (videoViewer)
+      root.dispatchEvent(new CustomEvent<number>('photo-select', { detail: nextIndex }));
     preview?.remove();
     selected = nextIndex;
     revision++;
@@ -427,11 +427,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
     }
 
     panel.addEventListener('keydown', (event) => {
-      if (
-        event.target !== viewport ||
-        activeDialog.open ||
-        !['Enter', ' '].includes(event.key)
-      )
+      if (event.target !== viewport || activeDialog.open || !['Enter', ' '].includes(event.key))
         return;
       event.preventDefault();
       openViewer();
@@ -537,4 +533,3 @@ export function setupPhotographyViewer(root: HTMLElement) {
       showError(0);
     });
 }
-
