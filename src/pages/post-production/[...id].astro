@@ -25,6 +25,7 @@ import Gallery from '../../components/Gallery.astro';
 import { site } from '../../config/site';
 // postProjects: Helper to fetch all film projects from disk.
 import { isoDate, postProjects, posts } from '../../lib/content';
+import { imageInfo } from '../../lib/images';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each post-production project
 // Tells Astro: "Look through our film shelf and create a dedicated theater page for each one!"
@@ -51,6 +52,8 @@ const socialImage =
   site.defaultImage;
 const description =
   data.description || data.subtitle || `${data.title}: a post-production project by ${site.author}.`;
+const poster = data.poster || data.coverImage || data.cover;
+const posterInfo = poster ? imageInfo(poster) : undefined;
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -102,8 +105,10 @@ const structuredData = {
       <div class="article-hero project-video">
         <div class="video-container" data-video-container data-video-url={data.video}>
           <img
-            src={data.poster || data.coverImage || data.cover}
+            src={poster}
             alt={data.title}
+            width={posterInfo?.width}
+            height={posterInfo?.height}
             class="video-poster"
             data-video-poster
           />
