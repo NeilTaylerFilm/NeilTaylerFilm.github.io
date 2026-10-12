@@ -1,0 +1,371 @@
+---
+interface Props {
+  label: string;
+  projectLinks?: boolean;
+}
+
+const { label, projectLinks = false } = Astro.props;
+---
+
+<dialog
+  class="lightbox portfolio-dialog"
+  data-portfolio-dialog
+  aria-label={label}
+  aria-modal="true"
+>
+  <div class="lightbox-toolbar">
+    <button class="control" type="button" data-portfolio-close autofocus>
+      Close <span aria-hidden="true">×</span>
+    </button>
+  </div>
+  <div class="portfolio-stage" data-portfolio-stage>
+    <button
+      class="control square"
+      type="button"
+      data-portfolio-prev
+      aria-label="Previous photograph"
+    >
+      ←
+    </button>
+    <div class="portfolio-media">
+      <div class="portfolio-image-stage" data-portfolio-image-stage>
+        <div class="portfolio-track" data-portfolio-track></div>
+      </div>
+    </div>
+    <button class="control square" type="button" data-portfolio-next aria-label="Next photograph">
+      →
+    </button>
+  </div>
+  <p class="portfolio-caption" data-portfolio-caption></p>
+  <div
+    class="portfolio-controls"
+    data-portfolio-controls
+    data-has-project-links={String(projectLinks)}
+  >
+    <div
+      class="portfolio-pagination"
+      data-portfolio-pagination
+      role="group"
+      aria-label="Photo 1 of 1"
+    >
+      <span
+        class="portfolio-pagination-count"
+        data-portfolio-count
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></span>
+      <div class="portfolio-pagination-dots" data-portfolio-dots></div>
+    </div>
+    <div class="portfolio-project-slot">
+      <a class="mono portfolio-project" data-portfolio-project>
+        View project →
+      </a>
+      <div class="portfolio-details">
+        <p class="small" data-portfolio-feedback role="status" aria-live="polite"></p>
+        <button class="control" type="button" data-portfolio-retry hidden>
+          Retry Photograph
+        </button>
+        <a class="control" data-portfolio-open target="_blank" rel="noopener noreferrer" hidden>
+          Open photograph
+        </a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .portfolio-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    height: var(--lightbox-h, 100dvh);
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+  .portfolio-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .portfolio-dialog::backdrop {
+    background: rgb(0 0 0 / 58%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .portfolio-dialog .lightbox-toolbar {
+    position: relative;
+    flex: 0 0 calc(56px + env(safe-area-inset-top));
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    padding: calc(env(safe-area-inset-top) + 4px) calc(12px + env(safe-area-inset-right)) 0
+      calc(12px + env(safe-area-inset-left));
+  }
+  .portfolio-dialog [data-portfolio-close][data-pointer-open]:focus-visible {
+    outline: none;
+  }
+  .portfolio-stage {
+    position: relative;
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    min-height: 0;
+    margin: 0;
+    padding-inline: calc(12px + env(safe-area-inset-left)) calc(12px + env(safe-area-inset-right));
+    box-sizing: border-box;
+    touch-action: pan-y;
+  }
+  .portfolio-media {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+  }
+  .portfolio-image-stage {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  .portfolio-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    will-change: transform;
+    transition: transform 280ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    opacity: 1;
+    transition-property: transform, opacity;
+  }
+  :global(.portfolio-slide) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    place-items: center;
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    box-sizing: border-box;
+    padding-inline: 8px;
+    overflow: hidden;
+  }
+  :global(.portfolio-slide img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .portfolio-controls {
+    display: grid;
+    flex: 0 0 calc(112px + env(safe-area-inset-bottom));
+    grid-template-rows: 44px 44px;
+    justify-items: center;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    padding: 0 calc(8px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom))
+      calc(8px + env(safe-area-inset-left));
+  }
+  .portfolio-controls[data-has-project-links='false'] {
+    flex: 0 0 auto;
+    grid-template-rows: 44px auto;
+    gap: 0;
+  }
+  .portfolio-controls[data-has-project-links='false'] .portfolio-project-slot,
+  .portfolio-controls[data-has-project-links='false'] .portfolio-details {
+    height: auto;
+    min-height: 0;
+  }
+  .portfolio-project-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 44px;
+    min-width: 0;
+  }
+  .portfolio-project {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+  .portfolio-project[hidden] {
+    display: none;
+  }
+  .portfolio-stage .control {
+    position: static;
+    transform: none;
+  }
+  .portfolio-stage [data-portfolio-prev] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .portfolio-stage [data-portfolio-next] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .portfolio-pagination {
+    position: relative;
+    flex: 0 0 44px;
+    width: 96px;
+    height: 44px;
+    min-height: 44px;
+    overflow: hidden;
+    border-radius: 999px;
+    background-color: transparent;
+    transition: background-color 150ms ease-out;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .portfolio-pagination[hidden] {
+    display: none;
+  }
+  .portfolio-pagination-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  :global(.portfolio-dot) {
+    position: absolute;
+    top: calc(50% - 5px);
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    appearance: none;
+    transition: transform 0.2s ease-out;
+  }
+  :global(.portfolio-dot::before) {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    opacity: var(--dot-opacity, 0.55);
+    transform: scale(var(--dot-scale, 1));
+    transition:
+      transform 0.2s ease-out,
+      opacity 0.2s ease-out,
+      background-color 0.2s ease-out,
+      scale 0.15s ease-out;
+  }
+  :global(.portfolio-dot[aria-current='true']::before) {
+    background: var(--text);
+    opacity: var(--dot-opacity, 1);
+  }
+  :global(.portfolio-dot:focus-visible) {
+    outline: 1px solid var(--text);
+    outline-offset: -1px;
+    z-index: 1;
+  }
+  .portfolio-pagination.is-scrubbing {
+    height: 56px;
+    min-height: 56px;
+    background-color: rgb(255 255 255 / 12%);
+  }
+  .portfolio-pagination.is-scrubbing :global(.portfolio-dot::before) {
+    scale: 1.2;
+  }
+  .portfolio-pagination-count {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .portfolio-details {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    height: 44px;
+    min-width: 0;
+    text-align: center;
+  }
+  .portfolio-details p:empty {
+    display: none;
+  }
+  .portfolio-details p {
+    flex: 0 1 220px;
+    min-width: 0;
+    margin: 0;
+  }
+  .portfolio-caption {
+    flex: 0 0 3em;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    text-align: center;
+    font: 12px/1.5 var(--mono);
+    opacity: 0.8;
+  }
+  .portfolio-dialog:not([data-has-captions]) .portfolio-caption {
+    display: none;
+  }
+  @media (max-width: 540px) {
+    .portfolio-stage {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-track,
+    .portfolio-dot,
+    .portfolio-dot::before,
+    .portfolio-pagination {
+      transition: none !important;
+    }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .portfolio-stage {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    }
+    .portfolio-media {
+      grid-column: 1;
+    }
+    .portfolio-stage [data-portfolio-prev],
+    .portfolio-stage [data-portfolio-next] {
+      display: none;
+    }
+  }
+</style>

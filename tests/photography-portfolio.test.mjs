@@ -322,7 +322,7 @@ test('horizontal touch swipe advances; vertical gesture does not; backdrop close
 });
 
 test('fast short swipes advance and tappable dots stay inside a five-photo window', () => {
-  const component = fs.readFileSync('src/components/PhotographyPortfolio.astro', 'utf8');
+  const component = fs.readFileSync('src/components/PhotoViewer.astro', 'utf8');
   assert.match(component, /class="portfolio-pagination-dots" data-portfolio-dots>/);
 
   const { photos, get, window: taskWindow } = fixture(12);

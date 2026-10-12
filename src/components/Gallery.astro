@@ -78,8 +78,9 @@ const { images, layout = 'editorial' } = Astro.props;
             <a
               href={image.full || info?.full || image.src}
               data-gallery-trigger
-              data-lightbox-srcset={image.full ? undefined : info?.fallbackSrcset}
-              data-caption={image.caption || ''}
+              data-full={image.full || info?.full || image.src}
+              data-srcset={image.full ? undefined : info?.srcset}
+              data-caption={image.caption || undefined}
               aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
             >
               <ResponsiveImage

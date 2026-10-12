@@ -10,22 +10,60 @@ test.beforeEach(({}, testInfo) => {
 });
 
 async function waitForScreenshotReady(page, dialog, imageIndex) {
-  await page.addStyleTag({
-    content:
-      '*,:before,:after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }',
-  });
   await page.evaluate(() => document.fonts.ready);
-  await expect(dialog.locator('[data-portfolio-feedback]')).toHaveText('');
+  await expect(dialog.locator('[data-portfolio-feedback]')).toHaveText('', { timeout: 30_000 });
 
   if (imageIndex !== undefined) {
+    const image = dialog.locator(`.portfolio-slide[data-photo-index="${imageIndex}"] img`);
+    const fullSource = await dialog.evaluate((element, index) => {
+      const photo = element.closest('[data-portfolio]')?.querySelectorAll('[data-portfolio-photo]')[
+        index
+      ];
+      return photo?.getAttribute('data-full') || photo?.getAttribute('href');
+    }, imageIndex);
+    await expect(image).toHaveAttribute('src', fullSource, { timeout: 30_000 });
     await dialog
-      .locator(`.portfolio-slide[data-photo-index="${imageIndex}"] img`)
-      .evaluate((image) => image.decode());
+      .locator('.portfolio-slide img')
+      .evaluateAll((images) => Promise.all(images.map((img) => img.decode())));
   }
+
+  await dialog.evaluate(async (element) => {
+    const track = element.querySelector('.portfolio-track');
+    while (track?.style.transitionProperty === 'opacity') {
+      await new Promise(requestAnimationFrame);
+    }
+    await Promise.all(
+      element
+        .getAnimations({ subtree: true })
+        .map((animation) => animation.finished.catch(() => undefined)),
+    );
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  });
 }
 
-async function capturePortfolioState(page, dialog, name, imageIndex, assertState) {
+async function waitForVisibleProjectCovers(page) {
+  await page.locator('.project-cover img').evaluateAll(async (images) => {
+    await Promise.all(
+      images
+        .filter((image) => {
+          const { top, bottom } = image.getBoundingClientRect();
+          return bottom > 0 && top < innerHeight;
+        })
+        .map((image) => image.decode()),
+    );
+  });
+}
+
+async function capturePortfolioState(
+  page,
+  dialog,
+  name,
+  imageIndex,
+  assertState,
+  keepPointer = false,
+) {
   await waitForScreenshotReady(page, dialog, imageIndex);
+  if (!keepPointer) await page.mouse.move(0, 0);
   await assertState();
   await expect(page).toHaveScreenshot(name, {
     animations: 'disabled',
@@ -121,7 +159,9 @@ test('portfolio viewer baseline: after navigating forward once', async ({ page }
   });
 });
 
-test('portfolio viewer baseline: photograph revealed through Load More', async ({ page }) => {
+test('portfolio viewer baseline: photograph revealed through Load More', async ({
+  page,
+}, testInfo) => {
   await page.goto('/photography/');
   const root = await addFortyPhotoPortfolioFixture(page, 'baseline-forty-photo-fixture');
   const photos = root.locator('[data-portfolio-photo]');
@@ -135,6 +175,8 @@ test('portfolio viewer baseline: photograph revealed through Load More', async (
   const dialog = root.locator('[data-portfolio-dialog]');
   const index = initialCount;
   await expect(dialog).toHaveAttribute('open', '');
+
+  if (testInfo.project.name === 'desktop-chromium') await waitForVisibleProjectCovers(page);
 
   await capturePortfolioState(page, dialog, 'load-more-photo.png', index, async () => {
     await expect(opener).toHaveAttribute('data-revealed', '');
@@ -167,13 +209,20 @@ test('portfolio viewer baseline: active dot scrubbing', async ({ page }) => {
       'data-index',
       '1',
     );
-    await capturePortfolioState(page, dialog, 'active-dot-scrubbing.png', 1, async () => {
-      await expect(pagination).toHaveClass(/is-scrubbing/);
-      await expect(dialog.locator('.portfolio-dot[aria-current="true"]')).toHaveAttribute(
-        'data-index',
-        '1',
-      );
-    });
+    await capturePortfolioState(
+      page,
+      dialog,
+      'active-dot-scrubbing.png',
+      1,
+      async () => {
+        await expect(pagination).toHaveClass(/is-scrubbing/);
+        await expect(dialog.locator('.portfolio-dot[aria-current="true"]')).toHaveAttribute(
+          'data-index',
+          '1',
+        );
+      },
+      true,
+    );
   } finally {
     await page.mouse.up();
   }
