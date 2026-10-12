@@ -317,6 +317,7 @@ test('dots keep their position while swiping between photos', async ({ page }) =
   await page.locator('[data-portfolio-photo]').nth(photoIndices[0]).click();
   const dialog = page.locator('[data-portfolio-dialog]');
   await expect(dialog).toHaveAttribute('open', '');
+  await expect(dialog.locator('[data-portfolio-feedback]')).toHaveText('', { timeout: 30_000 });
   const before = await dialog.locator('[data-portfolio-pagination]').boundingBox();
   await dialog.locator('[data-portfolio-image-stage]').evaluate((stage) => {
     Object.defineProperty(stage, 'setPointerCapture', { value: () => {} });
@@ -344,6 +345,7 @@ test('dots keep their position while swiping between photos', async ({ page }) =
     'data-index',
     String(photoIndices[0] + 1),
   );
+  await expect(dialog.locator('[data-portfolio-feedback]')).toHaveText('', { timeout: 30_000 });
   const after = await dialog.locator('[data-portfolio-pagination]').boundingBox();
   expect(after?.y).toBeCloseTo(before?.y ?? 0, 0);
 });

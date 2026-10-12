@@ -114,11 +114,12 @@ try {
 
   // 🎯 Find the first photo thumbnail in the album gallery
   const trigger = page.locator('[data-gallery-trigger]').first();
-  const imageUrl = `${await trigger.getAttribute('href')}?loading-feedback-check=${Date.now()}`;
+  const imageUrl = `${await trigger.getAttribute('data-full')}?loading-feedback-check=${Date.now()}`;
   await trigger.locator('img').evaluate((image) => image.decode());
   await trigger.evaluate((anchor, href) => {
     anchor.href = href;
-    anchor.removeAttribute('data-lightbox-srcset');
+    anchor.dataset.full = href;
+    anchor.removeAttribute('data-srcset');
   }, imageUrl);
 
   // 💥 SIMULATE NETWORK SIGNAL CUTTING OUT:
@@ -129,69 +130,69 @@ try {
     if (!failed) {
       failed = true;
       // ⚡ Signal drop!
-      await route.fulfill({ status: 404, body: 'missing' });
+      await route.fulfill({
+        status: 404,
+        body: 'missing',
+        headers: { 'cache-control': 'no-store' },
+      });
     } else {
       // ⏳ Signal restored after 500ms
       await new Promise((resolve) => setTimeout(resolve, 500));
       await route.fulfill({
         status: 200,
-        contentType: 'image/gif',
-        body: Buffer.from('R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=', 'base64'),
+        contentType: 'image/png',
+        body: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aTVsAAAAASUVORK5CYII=',
+          'base64',
+        ),
       });
     }
   });
 
   // 👉 Click thumbnail to open the full-screen Lightbox
   await trigger.click();
-  const lightbox = page.locator('[data-lightbox]');
+  const lightbox = page.locator('[data-portfolio-dialog]');
 
   // 🔍 Step 1: Confirms initial loading announcement
   assert.match(
-    await lightbox.locator('[data-lightbox-feedback]').textContent(),
-    /^Loading photograph 1 of /,
+    await lightbox.locator('[data-portfolio-feedback]').textContent(),
+    /^Loading photograph…$/,
   );
 
   // 🔍 Step 2: Confirms graceful error message when download fails
   await page.waitForFunction(
     () =>
-      document.querySelector('[data-lightbox-feedback]')?.textContent ===
-      'Photograph could not load.',
+      document.querySelector('[data-portfolio-feedback]')?.textContent ===
+      'This photograph could not load. Please try again.',
   );
-  assert.equal(await lightbox.locator('[data-lightbox-open]').getAttribute('href'), imageUrl);
+  const openLink = lightbox.locator('[data-portfolio-open]');
+  assert.equal(await openLink.getAttribute('href'), imageUrl);
+  assert.equal(await openLink.getAttribute('target'), '_blank');
+  assert.equal(await openLink.getAttribute('rel'), 'noopener noreferrer');
 
   // ⌨️ Step 3: KEYBOARD ACCESSIBILITY DRILL (Tab navigation)
-  // Visitors using keyboards or screen-readers press Tab to jump between buttons.
-  // We test that pressing Tab lands smoothly on "Retry", then "Open original"!
+  const retry = lightbox.locator('[data-portfolio-retry]');
+  const close = lightbox.locator('[data-portfolio-close]');
+  await retry.focus();
   await page.keyboard.press('Tab');
+  assert.equal(await openLink.evaluate((link) => document.activeElement === link), true);
   await page.keyboard.press('Tab');
-  assert.equal(
-    await lightbox
-      .locator('[data-lightbox-retry]')
-      .evaluate((button) => document.activeElement === button),
-    true,
-  );
-  await page.keyboard.press('Tab');
-  assert.equal(
-    await lightbox
-      .locator('[data-lightbox-open]')
-      .evaluate((link) => document.activeElement === link),
-    true,
-  );
+  assert.equal(await close.evaluate((button) => document.activeElement === button), true);
 
   // 👉 Step 4: Click the "Retry" button now that signal is restored
-  await lightbox.locator('[data-lightbox-retry]').click();
+  await retry.click();
   await page.waitForFunction(() => {
-    const dialog = document.querySelector('[data-lightbox]');
+    const dialog = document.querySelector('[data-portfolio-dialog]');
     return (
-      dialog?.querySelector('[data-lightbox-feedback]')?.textContent === '' &&
-      dialog.querySelector('[data-lightbox-actions]')?.hasAttribute('hidden')
+      dialog?.querySelector('[data-portfolio-feedback]')?.textContent === '' &&
+      dialog.querySelector('[data-portfolio-retry]')?.hasAttribute('hidden')
     );
   });
 
   // 👉 Step 5: Advance slide, then press Escape to close full-screen viewer
-  await lightbox.locator('[data-lightbox-next]').click();
+  await page.keyboard.press('ArrowRight');
   await page.keyboard.press('Escape');
-  await page.waitForFunction(() => !document.querySelector('[data-lightbox]')?.open);
+  await page.waitForFunction(() => !document.querySelector('[data-portfolio-dialog]')?.open);
   await page.waitForTimeout(600);
 
   // 🔍 Step 6: FOCUS RESTORATION
