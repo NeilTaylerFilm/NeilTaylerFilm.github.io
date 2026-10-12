@@ -739,31 +739,6 @@ h1 {
   align-items: center;
   flex-shrink: 0;
 }
-.lightbox-stage {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  justify-content: space-between;
-  flex: 1;
-  min-height: 0;
-  margin-top: 20px;
-}
-.lightbox-stage img {
-  width: calc(100% - 128px);
-  height: 100%;
-  max-height: calc(100dvh - 160px);
-  object-fit: contain;
-  min-height: 0;
-}
-.lightbox-stage .square {
-  flex-shrink: 0;
-}
-.lightbox-caption {
-  text-align: center;
-  margin-top: 14px;
-  font-size: 13px;
-  flex-shrink: 0;
-}
 .modal-open {
   overflow: hidden;
 }
@@ -1760,28 +1735,6 @@ a.contact-email-action {
   .lightbox {
     padding: 16px;
   }
-  .lightbox-stage {
-    position: relative;
-    margin-top: 16px;
-    gap: 8px;
-  }
-  .lightbox-stage img {
-    width: 100%;
-    max-height: calc(100dvh - 210px);
-  }
-  .lightbox-stage .square {
-    position: absolute;
-    bottom: 0;
-    z-index: 1;
-  }
-  .lightbox-stage .square:last-child {
-    right: 0;
-  }
-  .lightbox-caption {
-    padding: 0 45px;
-    font-size: 12px;
-    min-height: 45px;
-  }
   .not-found h1 {
     font-size: 70px;
   }
@@ -2069,10 +2022,6 @@ picture {
   height: 100vh;
   height: 100dvh;
 }
-.lightbox-stage img {
-  max-height: calc(100vh - 160px);
-  max-height: calc(100dvh - 160px);
-}
 .slide-image {
   aspect-ratio: 3 / 2;
 }
@@ -2103,10 +2052,6 @@ picture {
   .site-header nav a {
     font-size: 11px;
     letter-spacing: 0.5px;
-  }
-  .lightbox-stage img {
-    max-height: calc(100vh - 210px);
-    max-height: calc(100dvh - 210px);
   }
 }
 @media (max-width: 359px) {
