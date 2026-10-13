@@ -2,6 +2,7 @@
 title: "Ha Giang Loop"
 date: "2026-05-26"
 type: "Travel"
+subtitle: "Four days and three nights on the back of motorbikes through northern Vietnam's Ha Giang Loop, with unforgettable scenery and wonderful people along the way."
 draft: false
 galleryLayout: "justified"
 coverImage: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/b8ceef74b3fa983ec620fc40a1f6a5e0-1707.jpeg"
