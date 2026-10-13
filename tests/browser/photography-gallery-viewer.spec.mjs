@@ -499,7 +499,7 @@ test('overflowing caption is tabbable, stays inside the focus trap, and releases
   const caption = dialog.locator('[data-portfolio-caption]');
   const close = dialog.locator('[data-portfolio-close]');
   await expect(caption).toHaveAttribute('tabindex', '0');
-  const tabsToCaption = testInfo.project.name === 'desktop-chromium' ? 2 : 1;
+  const tabsToCaption = testInfo.project.name === 'desktop-chromium' ? 3 : 2;
   for (let index = 0; index < tabsToCaption; index++) await page.keyboard.press('Tab');
   await expect(caption).toBeFocused();
   await page.keyboard.press('ArrowRight');
@@ -547,7 +547,7 @@ test('caption overflow adds and removes a tab stop as the viewport changes', asy
   await expect(caption).toHaveAttribute('tabindex', '0');
   await expect(caption).toHaveAttribute('role', 'region');
   await expect(caption).toHaveAttribute('aria-label', 'Photo caption');
-  const tabsToCaption = testInfo.project.name === 'desktop-chromium' ? 2 : 1;
+  const tabsToCaption = testInfo.project.name === 'desktop-chromium' ? 3 : 2;
   for (let index = 0; index < tabsToCaption; index++) await page.keyboard.press('Tab');
   await expect(caption).toBeFocused();
 
