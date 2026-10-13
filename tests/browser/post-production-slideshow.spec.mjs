@@ -291,3 +291,52 @@ test('article roles are absent without metadata and preview cards never render r
   await page.goto('/post-production/');
   await expect(page.locator('.project-card .post-production-roles')).toHaveCount(0);
 });
+
+test('mobile configured project links stay in the metadata area', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('https://i.ytimg.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="3"></svg>',
+    }),
+  );
+  await page.route('**/post-production/', async (route) => {
+    const response = await route.fetch();
+    let html = await response.text();
+    const attribute = html.match(/data-slides="([^"]*)"/);
+    expect(attribute).not.toBeNull();
+    const slides = JSON.parse(
+      attribute[1]
+        .replaceAll('&quot;', '"')
+        .replaceAll('&amp;', '&')
+        .replace(/&#(?:39|x27);/g, "'"),
+    );
+    slides[1].project = '20261009-astbmb-scenebreakdown';
+    slides[1].projectLabel = 'Open project article';
+    const encodedSlides = JSON.stringify(slides).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+    html = html.replace(attribute[0], `data-slides="${encodedSlides}"`);
+    await route.fulfill({ response, body: html });
+  });
+
+  await page.goto('/post-production/');
+  const slideshow = page.locator('[data-video-viewer]');
+  const projectLink = slideshow.locator('[data-photo-project]');
+  await expect
+    .poll(() => slideshow.evaluate((root) => JSON.parse(root.dataset.slides || '[]')[1].project))
+    .toBe('20261009-astbmb-scenebreakdown');
+  await slideshow.locator('[data-photo-index="1"]').click();
+  await expect(slideshow.locator('[data-slide-caption]')).toHaveText('Body Language — Fun Sponge');
+  await expect(projectLink).toBeVisible();
+  await expect(projectLink).toHaveText('Open project article');
+  await expect(projectLink).toHaveAttribute(
+    'href',
+    '/post-production/20261009-astbmb-scenebreakdown/',
+  );
+  const linkBelowVideo = await slideshow.evaluate((root) => {
+    const viewport = root.querySelector('[data-photo-viewport]').getBoundingClientRect();
+    const link = root.querySelector('[data-photo-project]').getBoundingClientRect();
+    return link.top >= viewport.bottom;
+  });
+  expect(linkBelowVideo).toBe(true);
+});
