@@ -3,7 +3,7 @@ title: "Khao Sok National Park"
 date: "2026-02-08"
 draft: false
 galleryLayout: "justified"
-description: "An overnight stay in Khao Sok National Park, a beautiful, untouched place in southern Thailand."
+subtitle: "An overnight stay in Khao Sok National Park, a beautiful, untouched place in southern Thailand."
 coverImage: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/34416656c97659425ca469194e50babe-2560.jpeg"
 images:
   - src: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/96ca55395e1703e44e13817fb79fbf14-1707.jpeg"
