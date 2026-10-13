@@ -54,6 +54,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Music Video',
+    role: ['Editor', 'Colourist'],
   },
   {
     src: 'https://i.ytimg.com/vi/WHF_J4mL3oc/hqdefault.jpg',
@@ -63,6 +64,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Music Video',
+    role: ['Editor', 'Colourist'],
   },
   {
     src: 'https://i.ytimg.com/vi/3GgTC-an6Mw/hqdefault.jpg',
@@ -72,6 +74,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Visual Poem',
+    role: ['Editor', 'Colourist', 'Camera Operator'],
   },
   {
     src: 'https://i.ytimg.com/vi/6RO60JMBuQc/hqdefault.jpg',
@@ -81,6 +84,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Short Film',
+    role: ['Editor', 'Colourist'],
   },
   {
     src: 'https://i.ytimg.com/vi/v0dJIPj3vX0/hqdefault.jpg',
@@ -90,6 +94,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Documentary',
+    role: ['Editor', 'Colourist'],
   },
   {
     src: 'https://i.ytimg.com/vi/H2tpEutlqVo/hqdefault.jpg',

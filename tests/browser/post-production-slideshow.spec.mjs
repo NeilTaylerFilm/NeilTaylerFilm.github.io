@@ -34,10 +34,29 @@ test('post-production slideshow shows featured roles without an unconfigured pro
   await expect(slideshow.locator('.work-links')).toBeHidden();
   const slides = await slideshow.evaluate((root) => JSON.parse(root.dataset.slides || '[]'));
   expect(slides).toHaveLength(7);
-  expect(slides[0].role).toEqual(['Editor', 'Colourist', 'BTS Photographer']);
+  expect(slides.map((slide) => slide.caption)).toEqual([
+    'A Song To Be Murdered By',
+    'Body Language — Fun Sponge',
+    "I'm Gonna F*** You All Night — Nick Helm",
+    'On Dover Beach',
+    'On In Five',
+    'Two Pints Deep',
+    'VFX Reel',
+  ]);
+  expect(slides.map((slide) => slide.role ?? null)).toEqual([
+    ['Editor', 'Colourist', 'BTS Photographer'],
+    ['Editor', 'Colourist'],
+    ['Editor', 'Colourist'],
+    ['Editor', 'Colourist', 'Camera Operator'],
+    ['Editor', 'Colourist'],
+    ['Editor', 'Colourist'],
+    null,
+  ]);
+  for (const slide of slides) {
+    expect(new Set(slide.role || []).size).toBe((slide.role || []).length);
+  }
   expect(slides[0]).not.toHaveProperty('project');
   expect(slides[0]).not.toHaveProperty('projectLabel');
-  expect(slides.slice(1).every((slide) => slide.role === undefined)).toBe(true);
 
   // Desktop controls become pointer-active when the image viewport is hovered.
   await slideshow.locator('[data-photo-viewport]').hover();
@@ -46,33 +65,26 @@ test('post-production slideshow shows featured roles without an unconfigured pro
     .poll(() => page.evaluate(() => window.slideAnnouncements))
     .toContain('Loading project 2 of 7.');
   await expect(slideshow).toHaveAttribute('data-index', '1');
+  await expect(slideshow.locator('[data-slide-caption]')).toHaveText('Body Language — Fun Sponge');
+  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText('Editor · Colourist');
   await expect(projectLink).toBeHidden();
   await expect(projectLink).toHaveText('View project →');
 
-  await slideshow.locator('[data-slide-prev]').click();
-  await expect(slideshow).toHaveAttribute('data-index', '0');
-  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText(
-    'Editor · Colourist · BTS Photographer',
-  );
-  await expect(projectLink).toBeHidden();
-  await expect(slideshow.locator('.work-links')).toBeHidden();
+  for (let index = 1; index < slides.length; index++) {
+    const expectedRole = slides[index].role?.join(' · ');
+    await expect(slideshow).toHaveAttribute('data-index', String(index));
+    await expect(slideshow.locator('[data-slide-caption]')).toHaveText(slides[index].caption);
+    if (expectedRole) {
+      await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText(expectedRole);
+    } else {
+      await expect(slideshow.locator('[data-slide-subtitle]')).toHaveCount(0);
+    }
+    if (index < slides.length - 1) await slideshow.locator('[data-slide-next]').click();
+  }
 
-  await page.evaluate(() => {
-    const next = document.querySelector('[data-video-viewer] [data-slide-next]');
-    next.click();
-    next.click();
-    next.click();
-  });
-  await expect(slideshow).toHaveAttribute('data-index', '3');
-  await expect(slideshow.locator('[data-slide-caption]')).toHaveText('On Dover Beach');
-  await expect(projectLink).toBeHidden();
-
-  await page.evaluate(() => {
-    const previous = document.querySelector('[data-video-viewer] [data-slide-prev]');
-    previous.click();
-    previous.click();
-    previous.click();
-  });
+  for (let index = 1; index < slides.length; index++) {
+    await slideshow.locator('[data-slide-prev]').click();
+  }
   await expect(slideshow).toHaveAttribute('data-index', '0');
   await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText(
     'Editor · Colourist · BTS Photographer',
