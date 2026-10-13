@@ -82,7 +82,9 @@ test('post-production slideshow shows featured roles without an unconfigured pro
   await expect(slideshow.locator('.work-links')).toBeHidden();
 });
 
-test('mobile metadata follows the video and stays visible during playback', async ({ page }) => {
+test('mobile filmstrip stays between the video and metadata during navigation and playback', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route('https://i.ytimg.com/**', (route) =>
     route.fulfill({
@@ -91,13 +93,18 @@ test('mobile metadata follows the video and stays visible during playback', asyn
       body: '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="3"></svg>',
     }),
   );
-  await page.route('https://www.youtube-nocookie.com/embed/**', (route) =>
-    route.fulfill({
+  let releasePlayerResponse;
+  const playerResponse = new Promise((resolve) => {
+    releasePlayerResponse = resolve;
+  });
+  await page.route('https://www.youtube-nocookie.com/embed/**', async (route) => {
+    await playerResponse;
+    await route.fulfill({
       status: 200,
       contentType: 'text/html',
       body: '<!doctype html><title>Player</title>',
-    }),
-  );
+    });
+  });
 
   await page.goto('/post-production/');
   const slideshow = page.locator('[data-video-viewer]');
@@ -112,18 +119,49 @@ test('mobile metadata follows the video and stays visible during playback', asyn
     };
     return {
       count: root.querySelectorAll('.photo-details').length,
+      frameCount: root.querySelectorAll('.video-frame').length,
+      contentOrder: Array.from(root.querySelector('[data-photo-panel]').children)
+        .filter((element) =>
+          element.matches('[data-photo-viewport], [data-photo-filmstrip], .photo-details'),
+        )
+        .map((element) =>
+          element.matches('[data-photo-viewport]')
+            ? 'viewport'
+            : element.matches('[data-photo-filmstrip]')
+              ? 'filmstrip'
+              : 'details',
+        ),
       viewport: bounds('[data-photo-viewport]'),
       details: bounds('.photo-details'),
       filmstrip: bounds('[data-photo-filmstrip]'),
     };
   });
   expect(layout.count).toBe(1);
+  expect(layout.frameCount).toBe(0);
+  expect(layout.contentOrder).toEqual(['viewport', 'filmstrip', 'details']);
   expect(layout.details.x).toBeCloseTo(layout.viewport.x, 1);
   expect(layout.details.width).toBeCloseTo(layout.viewport.width, 1);
-  expect(layout.details.y).toBeGreaterThanOrEqual(layout.viewport.bottom);
-  expect(layout.filmstrip.y).toBeGreaterThanOrEqual(layout.details.bottom);
+  expect(layout.filmstrip.y).toBeGreaterThanOrEqual(layout.viewport.bottom);
+  expect(layout.details.y).toBeGreaterThanOrEqual(layout.filmstrip.bottom);
   expect(layout.viewport.width / layout.viewport.height).toBeCloseTo(16 / 9, 1);
   await expect(filmstrip).toBeVisible();
+
+  const slides = await slideshow.evaluate((root) => JSON.parse(root.dataset.slides || '[]'));
+  const initialDocumentY = await filmstrip.evaluate(
+    (strip) => strip.getBoundingClientRect().top + window.scrollY,
+  );
+  const navigationOrder = [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0];
+  for (const index of navigationOrder) {
+    await slideshow.locator(`[data-photo-index="${index}"]`).click();
+    await expect(slideshow).toHaveAttribute('data-index', String(index));
+    await expect(slideshow.locator('[data-slide-caption]')).toHaveText(slides[index].caption);
+    const stripPosition = await filmstrip.evaluate((strip) => {
+      const top = strip.getBoundingClientRect().top;
+      return { viewportY: top, documentY: top + window.scrollY };
+    });
+    expect(Math.abs(stripPosition.viewportY - layout.filmstrip.y)).toBeLessThan(1);
+    expect(Math.abs(stripPosition.documentY - initialDocumentY)).toBeLessThan(1);
+  }
 
   await slideshow.locator('[data-photo-index="1"]').click();
   await expect(slideshow).toHaveAttribute('data-index', '1');
@@ -136,27 +174,89 @@ test('mobile metadata follows the video and stays visible during playback', asyn
   );
 
   await slideshow.locator('[data-photo-index="2"]').click();
-  await expect(slideshow.locator('[data-slide-caption]')).toHaveText(
-    "I'm Gonna F*** You All Night — Nick Helm",
-  );
+  const longTitle = slideshow.locator('[data-slide-caption]');
+  await expect(longTitle).toHaveText("I'm Gonna F*** You All Night — Nick Helm");
+  await expect(longTitle).toHaveCSS('white-space', 'normal');
   await expect(slideshow.locator('[data-slide-subtitle]')).toHaveCount(0);
-  expect(
-    await slideshow
-      .locator('[data-slide-caption]')
-      .evaluate((title) => title.scrollWidth <= title.clientWidth),
-  ).toBe(true);
+  expect(await longTitle.evaluate((title) => title.scrollWidth <= title.clientWidth)).toBe(true);
 
   await slideshow.locator('[data-photo-index="0"]').click();
   await expect(slideshow.locator('[data-photo-index="0"]')).toHaveAttribute('aria-current', 'true');
   await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText(
     'Editor · Colourist · BTS Photographer',
   );
-  await slideshow.locator('[data-video-play]').click();
-  await expect(viewport.locator('iframe.video-iframe')).toHaveCount(1);
+  const videoPlay = slideshow.locator('[data-video-play]');
+  const playerStatus = slideshow.locator('[data-video-status]');
+  await videoPlay.click();
+  await expect(playerStatus).toHaveText('Loading player…');
+  await expect(playerStatus).toBeVisible();
   await expect(details).toBeVisible();
+  releasePlayerResponse();
+  await expect(viewport.locator('iframe.video-iframe')).toHaveCount(1);
+  await expect(playerStatus).toHaveText('');
+
+  await viewport
+    .locator('iframe.video-iframe')
+    .evaluate((frame) => frame.dispatchEvent(new Event('error')));
+  await expect(playerStatus).toHaveText(
+    'Player could not load. Use the Watch on link to open it directly.',
+  );
+  await expect(playerStatus).toBeVisible();
+  await expect(viewport.locator('iframe.video-iframe')).toHaveCount(0);
+  await expect(videoPlay).toBeVisible();
+  await expect(slideshow.locator('[data-watch-link]')).toBeVisible();
+
+  await videoPlay.click();
+  await expect(viewport.locator('iframe.video-iframe')).toHaveCount(1);
+  await expect(playerStatus).toHaveText('');
 
   await page.setViewportSize({ width: 1280, height: 900 });
   await expect(details).toBeHidden();
+  await slideshow.locator('[data-video-back]').click();
+  await expect(viewport.locator('iframe.video-iframe')).toHaveCount(0);
+  await expect(details).toBeVisible();
+});
+
+test('slideshow layout holds its order and video ratio at responsive breakpoints', async ({
+  page,
+}) => {
+  await page.goto('/post-production/');
+  const slideshow = page.locator('[data-video-viewer]');
+  const widths = [320, 360, 375, 390, 430, 640, 767, 768, 1280, 1440];
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await slideshow.evaluate((root) => {
+      const bounds = (selector) => {
+        const { x, y, width, height } = root.querySelector(selector).getBoundingClientRect();
+        return { x, y, width, height, bottom: y + height };
+      };
+      const viewport = bounds('[data-photo-viewport]');
+      const filmstrip = bounds('[data-photo-filmstrip]');
+      const details = bounds('.photo-details');
+      return {
+        documentWidth: document.documentElement.scrollWidth,
+        viewport,
+        filmstrip,
+        details,
+        detailsPosition: getComputedStyle(root.querySelector('.photo-details')).position,
+      };
+    });
+
+    expect(layout.documentWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(width);
+    expect(layout.viewport.width / layout.viewport.height).toBeCloseTo(16 / 9, 1);
+    expect(layout.filmstrip.y).toBeGreaterThanOrEqual(layout.viewport.bottom - 0.5);
+
+    if (width < 768) {
+      expect(layout.detailsPosition, `metadata flow at ${width}px`).toBe('static');
+      expect(layout.details.y).toBeGreaterThanOrEqual(layout.filmstrip.bottom - 0.5);
+    } else {
+      expect(layout.detailsPosition, `desktop overlay at ${width}px`).toBe('absolute');
+      expect(layout.details.x).toBeCloseTo(layout.viewport.x, 1);
+      expect(layout.details.width).toBeCloseTo(layout.viewport.width, 1);
+      expect(layout.details.bottom).toBeCloseTo(layout.viewport.bottom, 1);
+    }
+  }
 });
 
 test('mobile keyboard and touch gestures still navigate the slideshow', async ({
@@ -292,7 +392,9 @@ test('article roles are absent without metadata and preview cards never render r
   await expect(page.locator('.project-card .post-production-roles')).toHaveCount(0);
 });
 
-test('mobile configured project links stay in the metadata area', async ({ page }) => {
+test('mobile configured project links stay below the filmstrip in the metadata area', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.route('https://i.ytimg.com/**', (route) =>
     route.fulfill({
@@ -334,9 +436,9 @@ test('mobile configured project links stay in the metadata area', async ({ page 
     '/post-production/20261009-astbmb-scenebreakdown/',
   );
   const linkBelowVideo = await slideshow.evaluate((root) => {
-    const viewport = root.querySelector('[data-photo-viewport]').getBoundingClientRect();
+    const filmstrip = root.querySelector('[data-photo-filmstrip]').getBoundingClientRect();
     const link = root.querySelector('[data-photo-project]').getBoundingClientRect();
-    return link.top >= viewport.bottom;
+    return link.top >= filmstrip.bottom;
   });
   expect(linkBelowVideo).toBe(true);
 });

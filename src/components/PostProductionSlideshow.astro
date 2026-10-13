@@ -69,134 +69,93 @@ const firstProjectLink = first
     data-slides={JSON.stringify(featured)}
   >
     <div class="photo-panel video-panel" data-photo-panel>
-      <div class="video-frame">
-        <div class="photo-viewport" data-photo-viewport data-playing="false">
-          <img
-            data-slide-image
-            src={first.src}
-            srcset={first.srcset}
-            sizes="(max-width: 1440px) 90vw, 1248px"
-            width={first.width}
-            height={first.height}
-            alt={first.alt}
-            fetchpriority="high"
-            decoding="async"
-          />
+      <div class="photo-viewport" data-photo-viewport data-playing="false">
+        <img
+          data-slide-image
+          src={first.src}
+          srcset={first.srcset}
+          sizes="(max-width: 1440px) 90vw, 1248px"
+          width={first.width}
+          height={first.height}
+          alt={first.alt}
+          fetchpriority="high"
+          decoding="async"
+        />
 
-          <div class="photo-toolbar">
-            <a
-              class="control square watch-link"
-              data-watch-link
-              href="#"
-              aria-label="Watch on YouTube"
-              title="Watch on YouTube"
-              target="_blank"
-              rel="noopener noreferrer"
-              hidden
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-                <path d="M14 3h7v7m0-7-9 9" />
-                <path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
-              </svg>
-              <span class="visually-hidden">
-                Watch on <span data-platform-name>YouTube</span>
-              </span>
-            </a>
-          </div>
-
-          <button
-            class="control square video-back"
-            data-video-back
-            type="button"
-            aria-label="Back to posters"
-            title="Back to posters"
+        <div class="photo-toolbar">
+          <a
+            class="control square watch-link"
+            data-watch-link
+            href="#"
+            aria-label="Watch on YouTube"
+            title="Watch on YouTube"
+            target="_blank"
+            rel="noopener noreferrer"
             hidden
           >
-            <span aria-hidden="true">×</span>
-          </button>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+              <path d="M14 3h7v7m0-7-9 9" />
+              <path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
+            </svg>
+            <span class="visually-hidden">
+              Watch on <span data-platform-name>YouTube</span>
+            </span>
+          </a>
+        </div>
 
+        <button
+          class="control square video-back"
+          data-video-back
+          type="button"
+          aria-label="Back to posters"
+          title="Back to posters"
+          hidden
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+
+        <button
+          class="video-play"
+          data-video-play
+          aria-label={`Watch ${first.caption || 'film'}`}
+          type="button"
+          hidden={!first.embedUrl}
+        >
+          <PlayIcon className="stage-play-icon" size={72} />
+        </button>
+
+        <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
+
+        <div class="slide-navigation" role="group" aria-label="Work navigation">
           <button
-            class="video-play"
-            data-video-play
-            aria-label={`Watch ${first.caption || 'film'}`}
+            class="control square"
             type="button"
-            hidden={!first.embedUrl}
+            data-slide-prev
+            aria-label="Previous work"
+            hidden
           >
-            <PlayIcon className="stage-play-icon" size={72} />
+            ←
           </button>
-
-          <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
-
-          <div class="slide-navigation" role="group" aria-label="Work navigation">
-            <button
-              class="control square"
-              type="button"
-              data-slide-prev
-              aria-label="Previous work"
-              hidden
-            >
-              ←
-            </button>
-            <button
-              class="control square"
-              type="button"
-              data-slide-next
-              aria-label="Next work"
-              hidden
-            >
-              →
-            </button>
-          </div>
-
-          <span
-            class="mono small photo-counter"
-            data-slide-count
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
+          <button
+            class="control square"
+            type="button"
+            data-slide-next
+            aria-label="Next work"
+            hidden
           >
-            01 / {String(featured.length).padStart(2, '0')}
-          </span>
+            →
+          </button>
         </div>
 
-        <div class="photo-details">
-          <div class="work-actions">
-            {first.type?.trim() && (
-              <span class="type-pill" data-slide-type>
-                {first.type.trim()}
-              </span>
-            )}
-            <p class="work-title" data-slide-caption>
-              {first.caption}
-            </p>
-            {firstRoleLine && (
-              <p class="work-subtitle" data-slide-subtitle>
-                {firstRoleLine}
-              </p>
-            )}
-            <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
-              <a
-                class="mono project-link"
-                data-photo-project
-                href={firstProjectLink.href}
-                hidden={firstProjectLink.hidden}
-              >
-                {firstProjectLink.label}
-              </a>
-
-              {featuredIsDemo && <span class="mono muted">Sample work</span>}
-
-              <a
-                class="mono work-learn-more"
-                data-work-learn-more
-                href={first.blogUrl}
-                hidden={!first.blogUrl}
-              >
-                Learn more…
-              </a>
-            </div>
-          </div>
-        </div>
+        <span
+          class="mono small photo-counter"
+          data-slide-count
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          01 / {String(featured.length).padStart(2, '0')}
+        </span>
       </div>
 
       <div
@@ -241,6 +200,44 @@ const firstProjectLink = first
             )}
           </button>
         ))}
+      </div>
+      <div class="photo-details">
+        <div class="work-actions">
+          {first.type?.trim() && (
+            <span class="type-pill" data-slide-type>
+              {first.type.trim()}
+            </span>
+          )}
+          <p class="work-title" data-slide-caption>
+            {first.caption}
+          </p>
+          {firstRoleLine && (
+            <p class="work-subtitle" data-slide-subtitle>
+              {firstRoleLine}
+            </p>
+          )}
+          <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
+            <a
+              class="mono project-link"
+              data-photo-project
+              href={firstProjectLink.href}
+              hidden={firstProjectLink.hidden}
+            >
+              {firstProjectLink.label}
+            </a>
+
+            {featuredIsDemo && <span class="mono muted">Sample work</span>}
+
+            <a
+              class="mono work-learn-more"
+              data-work-learn-more
+              href={first.blogUrl}
+              hidden={!first.blogUrl}
+            >
+              Learn more…
+            </a>
+          </div>
+        </div>
       </div>
       <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
@@ -433,6 +430,10 @@ const firstProjectLink = first
           if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
           window.clearTimeout(playerTimer);
           iframe.removeAttribute('aria-busy');
+          iframe.remove();
+          viewport.dataset.playing = 'false';
+          back.hidden = true;
+          play.hidden = false;
           playerStatus.textContent =
             'Player could not load. Use the Watch on link to open it directly.';
         },
@@ -457,11 +458,6 @@ const firstProjectLink = first
   }
   .video-panel {
     background: transparent;
-  }
-  .video-panel .video-frame {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
     --stage-fg: #fff;
     --stage-muted: rgba(255, 255, 255, 0.7);
     --stage-bg: rgba(0, 0, 0, 0.45);
@@ -469,10 +465,7 @@ const firstProjectLink = first
     --stage-border: rgba(255, 255, 255, 0.25);
   }
   .video-panel .photo-viewport {
-    position: absolute;
-    inset: 0;
     width: 100%;
-    height: 100%;
     aspect-ratio: 16 / 9;
     cursor: default;
   }
@@ -703,8 +696,7 @@ const firstProjectLink = first
   .photo-viewport[data-playing='true'] .photo-toolbar .watch-link,
   .photo-viewport[data-playing='true'] .slide-navigation,
   .photo-viewport[data-playing='true'] .slide-navigation .control,
-  .photo-viewport[data-playing='true'] .photo-counter,
-  .photo-viewport[data-playing='true'] .video-player-status {
+  .photo-viewport[data-playing='true'] .photo-counter {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -940,13 +932,8 @@ const firstProjectLink = first
     }
   }
   @media (max-width: 767px) {
-    .video-panel .video-frame {
-      aspect-ratio: auto;
-    }
-    .video-panel .photo-viewport {
-      position: relative;
-      inset: auto;
-      height: auto;
+    .video-panel {
+      display: block;
     }
     .video-panel .photo-details {
       position: static;
@@ -975,8 +962,25 @@ const firstProjectLink = first
     }
   }
   @media (min-width: 768px) {
-    .photo-viewport[data-playing='true'] + .photo-details,
-    .photo-viewport[data-playing='true'] + .photo-details :is(a, button) {
+    .video-panel {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto auto;
+    }
+    .video-panel .photo-viewport {
+      grid-area: 1 / 1 / 2 / 2;
+      position: relative;
+      height: auto;
+    }
+    .video-panel .photo-filmstrip {
+      grid-area: 2 / 1 / 3 / 2;
+    }
+    .video-panel .photo-details {
+      grid-area: 1 / 1 / 2 / 2;
+    }
+    .photo-viewport[data-playing='true'] ~ .photo-details,
+    .photo-viewport[data-playing='true'] ~ .photo-details :is(a, button) {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
