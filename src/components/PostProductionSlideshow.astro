@@ -265,6 +265,16 @@ const firstProjectLink = first
     // Grab the screen box where posters and video players appear
     const viewport = root.querySelector<HTMLElement>('[data-photo-viewport]')!;
     const strip = root.querySelector<HTMLElement>('[data-photo-filmstrip]')!;
+    const details = root.querySelector<HTMLElement>('.photo-details')!;
+    const desktopLayout = window.matchMedia('(min-width: 768px)');
+    function placeDetails() {
+      const focused = details.contains(document.activeElement) ? document.activeElement : null;
+      if (desktopLayout.matches) viewport.append(details);
+      else strip.after(details);
+      if (focused instanceof HTMLElement) focused.focus({ preventScroll: true });
+    }
+    placeDetails();
+    desktopLayout.addEventListener('change', placeDetails);
     let stripScrollFrame = 0;
     function updateStripEdges() {
       const maxScrollLeft = strip.scrollWidth - strip.clientWidth;
@@ -430,12 +440,13 @@ const firstProjectLink = first
           if (!iframe.isConnected || viewport.querySelector('iframe') !== iframe) return;
           window.clearTimeout(playerTimer);
           iframe.removeAttribute('aria-busy');
+          playerStatus.textContent =
+            'Player could not load. Use the Watch on link to open it directly.';
+          if (desktopLayout.matches) return;
           iframe.remove();
           viewport.dataset.playing = 'false';
           back.hidden = true;
           play.hidden = false;
-          playerStatus.textContent =
-            'Player could not load. Use the Watch on link to open it directly.';
         },
         { once: true },
       );
@@ -696,7 +707,9 @@ const firstProjectLink = first
   .photo-viewport[data-playing='true'] .photo-toolbar .watch-link,
   .photo-viewport[data-playing='true'] .slide-navigation,
   .photo-viewport[data-playing='true'] .slide-navigation .control,
-  .photo-viewport[data-playing='true'] .photo-counter {
+  .photo-viewport[data-playing='true'] .photo-counter,
+  .photo-viewport[data-playing='true'] .photo-details,
+  .photo-viewport[data-playing='true'] .photo-details :is(a, button) {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -834,7 +847,7 @@ const firstProjectLink = first
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
     pointer-events: none;
   }
-  @media (max-width: 640px) {
+  @media (max-width: 767px) {
     .photo-filmstrip {
       --fade: 32px;
       display: flex;
@@ -962,25 +975,7 @@ const firstProjectLink = first
     }
   }
   @media (min-width: 768px) {
-    .video-panel {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto auto;
-    }
-    .video-panel .photo-viewport {
-      grid-area: 1 / 1 / 2 / 2;
-      position: relative;
-      height: auto;
-    }
-    .video-panel .photo-filmstrip {
-      grid-area: 2 / 1 / 3 / 2;
-    }
-    .video-panel .photo-details {
-      grid-area: 1 / 1 / 2 / 2;
-    }
-    .photo-viewport[data-playing='true'] ~ .photo-details,
-    .photo-viewport[data-playing='true'] ~ .photo-details :is(a, button) {
+    .photo-viewport[data-playing='true'] .video-player-status {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;

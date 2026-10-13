@@ -77,7 +77,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   const thumbnails = [...root.querySelectorAll<HTMLButtonElement>('[data-photo-index]')];
   // Does the user get motion sickness?
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const mobileStrip = matchMedia('(max-width: 640px)');
+  const mobileStrip = matchMedia('(max-width: 767px)');
 
   // The current visible picture
   let image = find<HTMLImageElement>('[data-slide-image]');
@@ -138,23 +138,15 @@ export function setupPhotographyViewer(root: HTMLElement) {
   // ⚠️ Error state element (created on first error, reused)
   let errorEl: HTMLElement | null = null;
 
-  // 📜 HELPER: Keeps the active thumbnail centered in the bottom filmstrip
+  // 📜 HELPER: Keeps the active thumbnail visible in the filmstrip
   function keepThumbnailVisible() {
     const thumb = thumbnails[selected];
     const item = thumb.getBoundingClientRect();
     const area = strip.getBoundingClientRect();
     if (videoViewer && mobileStrip.matches) {
       const behavior: ScrollBehavior = reduced.matches ? 'auto' : 'smooth';
-      const stripIsVerticallyVisible = area.top >= 0 && area.bottom <= window.innerHeight;
-      if (stripIsVerticallyVisible) {
-        thumb.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior });
-      } else if (item.left < area.left + 8 || item.right > area.right - 8) {
-        const left =
-          item.left < area.left + 8
-            ? strip.scrollLeft + item.left - area.left - 8
-            : strip.scrollLeft + item.right - area.right + 8;
-        strip.scrollTo({ left, behavior });
-      }
+      if (item.left < area.left + 8 || item.right > area.right - 8)
+        strip.scrollTo({ left: strip.scrollLeft + item.left - area.left - 8, behavior });
       return;
     }
     if (item.left < area.left + 8) strip.scrollLeft += item.left - area.left - 8;

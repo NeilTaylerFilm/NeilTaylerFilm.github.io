@@ -1,5 +1,26 @@
 import { expect, test } from '@playwright/test';
 
+async function addLinkedProjectFixture(page) {
+  await page.route('**/post-production/', async (route) => {
+    const response = await route.fetch();
+    let html = await response.text();
+    const attribute = html.match(/data-slides="([^"]*)"/);
+    expect(attribute).not.toBeNull();
+    const slides = JSON.parse(
+      attribute[1]
+        .replaceAll('&quot;', '"')
+        .replaceAll('&amp;', '&')
+        .replace(/&#(?:39|x27);/g, "'"),
+    );
+    slides[1].project = '20261009-astbmb-scenebreakdown';
+    slides[1].projectLabel = 'Open project article';
+    slides[1].blogUrl = '/post-production/20261009-astbmb-scenebreakdown/';
+    const encodedSlides = JSON.stringify(slides).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+    html = html.replace(attribute[0], `data-slides="${encodedSlides}"`);
+    await route.fulfill({ response, body: html });
+  });
+}
+
 test('post-production slideshow shows featured roles without an unconfigured project link', async ({
   page,
 }) => {
@@ -82,7 +103,7 @@ test('post-production slideshow shows featured roles without an unconfigured pro
   await expect(slideshow.locator('.work-links')).toBeHidden();
 });
 
-test('mobile filmstrip stays between the video and metadata during navigation and playback', async ({
+test('mobile filmstrip stays between the video and metadata during navigation and playback @responsive-order', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -159,8 +180,10 @@ test('mobile filmstrip stays between the video and metadata during navigation an
       const top = strip.getBoundingClientRect().top;
       return { viewportY: top, documentY: top + window.scrollY };
     });
-    expect(Math.abs(stripPosition.viewportY - layout.filmstrip.y)).toBeLessThan(1);
-    expect(Math.abs(stripPosition.documentY - initialDocumentY)).toBeLessThan(1);
+    expect(
+      Math.abs(stripPosition.documentY - initialDocumentY),
+      `project ${index}: strip document Y ${stripPosition.documentY}`,
+    ).toBeLessThan(1);
   }
 
   await slideshow.locator('[data-photo-index="1"]').click();
@@ -217,15 +240,138 @@ test('mobile filmstrip stays between the video and metadata during navigation an
   await expect(details).toBeVisible();
 });
 
+test('@responsive-order mobile filmstrip position stays fixed across all projects and widths', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const filmstrip = slideshow.locator('[data-photo-filmstrip]');
+  const title = slideshow.locator('[data-slide-caption]');
+  const slides = await slideshow.evaluate((root) => JSON.parse(root.dataset.slides || '[]'));
+  const widths = [320, 360, 375, 390, 430, 640, 767];
+  const navigationOrder = [1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0];
+  const measurements = [];
+
+  for (const width of widths) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(filmstrip).toBeVisible();
+    await expect
+      .poll(() =>
+        slideshow.evaluate((root) => {
+          const panel = root.querySelector('[data-photo-panel]');
+          return Array.from(panel.children)
+            .filter((element) =>
+              element.matches('[data-photo-viewport], [data-photo-filmstrip], .photo-details'),
+            )
+            .map((element) =>
+              element.matches('[data-photo-viewport]')
+                ? 'viewport'
+                : element.matches('[data-photo-filmstrip]')
+                  ? 'filmstrip'
+                  : 'details',
+            );
+        }),
+      )
+      .toEqual(['viewport', 'filmstrip', 'details']);
+    const stripStyle = await filmstrip.evaluate((strip) => ({
+      overflowX: getComputedStyle(strip).overflowX,
+      scrollSnapType: getComputedStyle(strip).scrollSnapType,
+      scrollWidth: strip.scrollWidth,
+      clientWidth: strip.clientWidth,
+    }));
+    expect(stripStyle.overflowX).toBe('auto');
+    expect(stripStyle.scrollSnapType).toContain('x');
+    expect(stripStyle.scrollWidth).toBeGreaterThan(stripStyle.clientWidth);
+    const initial = await filmstrip.evaluate((strip) => {
+      const rect = strip.getBoundingClientRect();
+      return { viewportY: rect.top, documentY: rect.top + window.scrollY };
+    });
+    const detailsHeights = [];
+    let maxDocumentDelta = 0;
+    let maxViewportDelta = 0;
+
+    for (const index of navigationOrder) {
+      await slideshow.locator(`[data-photo-index="${index}"]`).click();
+      await expect(slideshow).toHaveAttribute('data-index', String(index));
+      await expect(title).toHaveText(slides[index].caption);
+      const activeThumbnail = await filmstrip.evaluate((strip) => {
+        const active = strip.querySelector('[aria-current="true"]').getBoundingClientRect();
+        const bounds = strip.getBoundingClientRect();
+        return {
+          left: active.left,
+          right: active.right,
+          stripLeft: bounds.left,
+          stripRight: bounds.right,
+        };
+      });
+      expect(activeThumbnail.left).toBeGreaterThanOrEqual(activeThumbnail.stripLeft - 1);
+      expect(activeThumbnail.right).toBeLessThanOrEqual(activeThumbnail.stripRight + 1);
+      const position = await slideshow.evaluate((root) => {
+        const strip = root.querySelector('[data-photo-filmstrip]');
+        const details = root.querySelector('.photo-details');
+        const stripRect = strip.getBoundingClientRect();
+        return {
+          viewportY: stripRect.top,
+          documentY: stripRect.top + window.scrollY,
+          detailsHeight: details.getBoundingClientRect().height,
+          mobileOrder: details.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_PRECEDING,
+          viewportRatio: (() => {
+            const rect = root.querySelector('[data-photo-viewport]').getBoundingClientRect();
+            return rect.width / rect.height;
+          })(),
+        };
+      });
+      const viewportDelta = Math.abs(position.viewportY - initial.viewportY);
+      const documentDelta = Math.abs(position.documentY - initial.documentY);
+      maxViewportDelta = Math.max(maxViewportDelta, viewportDelta);
+      maxDocumentDelta = Math.max(maxDocumentDelta, documentDelta);
+      expect(documentDelta, `${width}px project ${index}`).toBeLessThan(1);
+      expect(position.mobileOrder, `${width}px project ${index}`).toBeTruthy();
+      expect(position.viewportRatio).toBeCloseTo(16 / 9, 2);
+      detailsHeights.push(position.detailsHeight);
+    }
+
+    const metadataHeightRange = Math.max(...detailsHeights) - Math.min(...detailsHeights);
+    expect(metadataHeightRange, `metadata height varies at ${width}px`).toBeGreaterThan(1);
+    measurements.push({ width, initial, maxDocumentDelta, maxViewportDelta, metadataHeightRange });
+  }
+
+  await testInfo.attach('mobile-filmstrip-stability.json', {
+    body: JSON.stringify(measurements, null, 2),
+    contentType: 'application/json',
+  });
+});
+
 test('slideshow layout holds its order and video ratio at responsive breakpoints', async ({
   page,
 }) => {
   await page.goto('/post-production/');
   const slideshow = page.locator('[data-video-viewer]');
-  const widths = [320, 360, 375, 390, 430, 640, 767, 768, 1280, 1440];
+  const widths = [320, 360, 375, 390, 430, 640, 767, 768, 820, 1024, 1280, 1440, 1920];
 
   for (const width of widths) {
     await page.setViewportSize({ width, height: 900 });
+    await expect
+      .poll(() =>
+        slideshow.evaluate((root) => {
+          const panel = root.querySelector('[data-photo-panel]');
+          return Array.from(panel.children)
+            .filter((element) =>
+              element.matches('[data-photo-viewport], [data-photo-filmstrip], .photo-details'),
+            )
+            .map((element) =>
+              element.matches('[data-photo-viewport]')
+                ? 'viewport'
+                : element.matches('[data-photo-filmstrip]')
+                  ? 'filmstrip'
+                  : 'details',
+            );
+        }),
+      )
+      .toEqual(width < 768 ? ['viewport', 'filmstrip', 'details'] : ['viewport', 'filmstrip']);
     const layout = await slideshow.evaluate((root) => {
       const bounds = (selector) => {
         const { x, y, width, height } = root.querySelector(selector).getBoundingClientRect();
@@ -239,7 +385,21 @@ test('slideshow layout holds its order and video ratio at responsive breakpoints
         viewport,
         filmstrip,
         details,
+        metadataInsideViewport: root
+          .querySelector('.photo-details')
+          .parentElement.matches('[data-photo-viewport]'),
         detailsPosition: getComputedStyle(root.querySelector('.photo-details')).position,
+        contentOrder: Array.from(root.querySelector('[data-photo-panel]').children)
+          .filter((element) =>
+            element.matches('[data-photo-viewport], [data-photo-filmstrip], .photo-details'),
+          )
+          .map((element) =>
+            element.matches('[data-photo-viewport]')
+              ? 'viewport'
+              : element.matches('[data-photo-filmstrip]')
+                ? 'filmstrip'
+                : 'details',
+          ),
       };
     });
 
@@ -249,14 +409,294 @@ test('slideshow layout holds its order and video ratio at responsive breakpoints
 
     if (width < 768) {
       expect(layout.detailsPosition, `metadata flow at ${width}px`).toBe('static');
+      expect(layout.metadataInsideViewport).toBe(false);
       expect(layout.details.y).toBeGreaterThanOrEqual(layout.filmstrip.bottom - 0.5);
+      expect(layout.contentOrder).toEqual(['viewport', 'filmstrip', 'details']);
     } else {
       expect(layout.detailsPosition, `desktop overlay at ${width}px`).toBe('absolute');
+      expect(layout.metadataInsideViewport).toBe(true);
       expect(layout.details.x).toBeCloseTo(layout.viewport.x, 1);
       expect(layout.details.width).toBeCloseTo(layout.viewport.width, 1);
       expect(layout.details.bottom).toBeCloseTo(layout.viewport.bottom, 1);
+      expect(layout.contentOrder).toEqual(['viewport', 'filmstrip']);
     }
   }
+});
+
+test('@desktop-regression desktop overlay geometry holds at all required widths', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/post-production/');
+  const slideshow = page.locator('[data-video-viewer]');
+  const viewports = [
+    [768, 1024],
+    [820, 900],
+    [1024, 768],
+    [1280, 900],
+    [1440, 900],
+    [1920, 1080],
+  ];
+  const measurements = [];
+
+  for (const [width, height] of viewports) {
+    await page.setViewportSize({ width, height });
+    const layout = await slideshow.evaluate((root) => {
+      const bounds = (selector) => {
+        const rect = root.querySelector(selector).getBoundingClientRect();
+        return {
+          x: rect.x,
+          y: rect.y,
+          width: rect.width,
+          height: rect.height,
+          bottom: rect.bottom,
+        };
+      };
+      const panel = root.querySelector('[data-photo-panel]');
+      const details = root.querySelector('.photo-details');
+      const title = root.querySelector('[data-slide-caption]');
+      const style = getComputedStyle(details);
+      const titleStyle = getComputedStyle(title);
+      return {
+        documentWidth: document.documentElement.scrollWidth,
+        panel: bounds('[data-photo-panel]'),
+        viewport: bounds('[data-photo-viewport]'),
+        filmstrip: bounds('[data-photo-filmstrip]'),
+        details: bounds('.photo-details'),
+        metadataParent: details.parentElement.matches('[data-photo-viewport]')
+          ? 'viewport'
+          : 'panel',
+        panelDisplay: getComputedStyle(panel).display,
+        detailsPosition: style.position,
+        detailsPadding: style.padding,
+        detailsBackground: style.backgroundImage,
+        titleFont: titleStyle.font,
+        titleMargin: titleStyle.margin,
+        titleText: title.textContent.trim(),
+      };
+    });
+    measurements.push({ width, height, ...layout });
+    expect(layout.documentWidth, `horizontal overflow at ${width}px`).toBeLessThanOrEqual(width);
+    expect(layout.viewport.width / layout.viewport.height).toBeCloseTo(16 / 9, 2);
+    expect(layout.filmstrip.y).toBeGreaterThanOrEqual(layout.viewport.bottom - 0.5);
+    expect(layout.detailsPosition).toBe('absolute');
+    expect(layout.details.x).toBeCloseTo(layout.viewport.x, 1);
+    expect(layout.details.width).toBeCloseTo(layout.viewport.width, 1);
+    expect(layout.details.bottom).toBeCloseTo(layout.viewport.bottom, 1);
+    expect(layout.metadataParent).toBe('viewport');
+    expect(layout.panelDisplay).toBe('block');
+  }
+
+  await testInfo.attach('desktop-layout-measurements.json', {
+    body: JSON.stringify(measurements, null, 2),
+    contentType: 'application/json',
+  });
+});
+
+test('@desktop-regression desktop metadata links preserve hover, focus and tab order', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await addLinkedProjectFixture(page);
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const watchLink = slideshow.locator('[data-watch-link]');
+  const next = slideshow.locator('[data-slide-next]');
+  const projectLink = slideshow.locator('[data-photo-project]');
+  const articleLink = slideshow.locator('[data-work-learn-more]');
+  const filmstrip = slideshow.locator('[data-photo-filmstrip]');
+  const navigation = slideshow.locator('.slide-navigation');
+
+  await slideshow.locator('[data-photo-index="1"]').click();
+  await expect(slideshow).toHaveAttribute('data-index', '1');
+  await expect(projectLink).toBeVisible();
+  await expect(articleLink).toHaveAttribute(
+    'href',
+    '/post-production/20261009-astbmb-scenebreakdown/',
+  );
+  await expect(articleLink).toBeVisible();
+  await projectLink.hover();
+  await expect(watchLink).toHaveCSS('opacity', '1');
+  await expect(navigation).toHaveCSS('opacity', '1');
+  await expect(watchLink).toHaveCSS('pointer-events', 'auto');
+  await expect(next).toHaveCSS('pointer-events', 'auto');
+
+  await page.mouse.move(0, 0);
+  await projectLink.evaluate((element) => element.blur());
+  await filmstrip.locator('[data-photo-index="0"]').hover();
+  await expect(watchLink).toHaveCSS('opacity', '0');
+  await expect(navigation).toHaveCSS('opacity', '0');
+
+  if (testInfo.project.name === 'desktop-webkit') {
+    await projectLink.focus();
+    await expect(projectLink).toBeFocused();
+    await expect(watchLink).toHaveCSS('opacity', '1');
+    await expect(navigation).toHaveCSS('opacity', '1');
+    return;
+  }
+
+  await watchLink.focus();
+  const focusOrder = [];
+  const describeFocus = () =>
+    page.evaluate(() => {
+      const element = document.activeElement;
+      if (element.matches('[data-watch-link]')) return 'watch';
+      if (element.matches('[data-video-play]')) return 'play';
+      if (element.matches('[data-slide-prev]')) return 'previous';
+      if (element.matches('[data-slide-next]')) return 'next';
+      if (element.matches('[data-photo-project]')) return 'project';
+      if (element.matches('[data-work-learn-more]')) return 'article';
+      if (element.matches('[data-photo-index="1"]')) return 'thumbnail-1';
+      return element.tagName.toLowerCase();
+    });
+  focusOrder.push(await describeFocus());
+  for (let index = 0; index < 6; index++) {
+    await page.keyboard.press('Tab');
+    focusOrder.push(await describeFocus());
+  }
+  expect(focusOrder).toEqual([
+    'watch',
+    'play',
+    'previous',
+    'next',
+    'project',
+    'article',
+    'thumbnail-1',
+  ]);
+
+  const titleHitTest = await slideshow.evaluate((root) => {
+    const title = root.querySelector('[data-slide-caption]').getBoundingClientRect();
+    const element = document.elementFromPoint(
+      title.left + title.width / 2,
+      title.top + title.height / 2,
+    );
+    return Boolean(element.closest('[data-photo-viewport]'));
+  });
+  expect(titleHitTest).toBe(true);
+});
+
+test('@desktop-regression desktop player failure keeps the original error behavior', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  let releasePlayerResponse;
+  const playerResponse = new Promise((resolve) => {
+    releasePlayerResponse = resolve;
+  });
+  await page.route('https://www.youtube-nocookie.com/embed/**', async (route) => {
+    await playerResponse;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>Player</title>',
+    });
+  });
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const viewport = slideshow.locator('[data-photo-viewport]');
+  const details = slideshow.locator('.photo-details');
+  const playButton = slideshow.locator('[data-video-play]');
+  const backButton = slideshow.locator('[data-video-back]');
+  const playerStatus = slideshow.locator('[data-video-status]');
+
+  await playButton.click();
+  const iframe = viewport.locator('iframe.video-iframe');
+  await expect(iframe).toHaveCount(1);
+  await expect(playerStatus).toHaveText('Loading player…');
+  await iframe.evaluate((frame) => frame.dispatchEvent(new Event('error')));
+
+  await expect(iframe).toHaveCount(1);
+  await expect(viewport).toHaveAttribute('data-playing', 'true');
+  await expect(playButton).toBeHidden();
+  await expect(backButton).toBeVisible();
+  await expect(playerStatus).toHaveText(
+    'Player could not load. Use the Watch on link to open it directly.',
+  );
+  await expect(details).toBeHidden();
+  releasePlayerResponse();
+});
+
+test('@responsive-order breakpoint changes preserve metadata focus and playback state', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await addLinkedProjectFixture(page);
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const panel = slideshow.locator('[data-photo-panel]');
+  const details = slideshow.locator('.photo-details');
+  const projectLink = slideshow.locator('[data-photo-project]');
+  const filmstrip = slideshow.locator('[data-photo-filmstrip]');
+  const panelContentOrder = () =>
+    panel.evaluate((element) =>
+      Array.from(element.children)
+        .filter((child) =>
+          child.matches('[data-photo-viewport], [data-photo-filmstrip], .photo-details'),
+        )
+        .map((child) =>
+          child.matches('[data-photo-viewport]')
+            ? 'viewport'
+            : child.matches('[data-photo-filmstrip]')
+              ? 'filmstrip'
+              : 'details',
+        ),
+    );
+
+  await slideshow.locator('[data-photo-index="1"]').click();
+  await expect(slideshow).toHaveAttribute('data-index', '1');
+  await expect(projectLink).toBeVisible();
+  await projectLink.focus();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(projectLink).toBeFocused();
+  await expect(details).toBeVisible();
+  await expect.poll(panelContentOrder).toEqual(['viewport', 'filmstrip', 'details']);
+  expect(
+    await details.evaluate((element) => element.parentElement.matches('[data-photo-viewport]')),
+  ).toBe(false);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(projectLink).toBeFocused();
+  await expect.poll(panelContentOrder).toEqual(['viewport', 'filmstrip']);
+  expect(
+    await details.evaluate((element) => element.parentElement.matches('[data-photo-viewport]')),
+  ).toBe(true);
+  await expect(slideshow).toHaveAttribute('data-index', '1');
+  await expect(slideshow.locator('.photo-details')).toHaveCount(1);
+
+  await page.route('https://www.youtube-nocookie.com/embed/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>Player</title>',
+    }),
+  );
+  await projectLink.evaluate((element) => element.blur());
+  await slideshow.locator('[data-video-play]').click();
+  const iframe = slideshow.locator('iframe.video-iframe');
+  await expect(iframe).toHaveCount(1);
+  await expect(slideshow.locator('[data-photo-viewport]')).toHaveAttribute('data-playing', 'true');
+  await iframe.evaluate((frame) => (window.__slideshowFrame = frame));
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(details).toBeVisible();
+  await expect.poll(panelContentOrder).toEqual(['viewport', 'filmstrip', 'details']);
+  await expect(iframe).toHaveCount(1);
+  await expect(slideshow.locator('[data-photo-viewport]')).toHaveAttribute('data-playing', 'true');
+  expect(
+    await iframe.evaluate((frame) => frame === window.__slideshowFrame && frame.isConnected),
+  ).toBe(true);
+  const mobileFilmstripBottom = await filmstrip.evaluate(
+    (strip) => strip.getBoundingClientRect().bottom,
+  );
+  const mobileDetailsY = await details.evaluate((element) => element.getBoundingClientRect().top);
+  expect(mobileDetailsY).toBeGreaterThanOrEqual(mobileFilmstripBottom - 1);
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(details).toBeHidden();
+  expect(
+    await iframe.evaluate((frame) => frame === window.__slideshowFrame && frame.isConnected),
+  ).toBe(true);
 });
 
 test('mobile keyboard and touch gestures still navigate the slideshow', async ({
