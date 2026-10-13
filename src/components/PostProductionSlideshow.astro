@@ -69,93 +69,95 @@ const firstProjectLink = first
     data-slides={JSON.stringify(featured)}
   >
     <div class="photo-panel video-panel" data-photo-panel>
-      <div class="photo-viewport" data-photo-viewport data-playing="false">
-        <img
-          data-slide-image
-          src={first.src}
-          srcset={first.srcset}
-          sizes="(max-width: 1440px) 90vw, 1248px"
-          width={first.width}
-          height={first.height}
-          alt={first.alt}
-          fetchpriority="high"
-          decoding="async"
-        />
+      <div class="video-frame">
+        <div class="photo-viewport" data-photo-viewport data-playing="false">
+          <img
+            data-slide-image
+            src={first.src}
+            srcset={first.srcset}
+            sizes="(max-width: 1440px) 90vw, 1248px"
+            width={first.width}
+            height={first.height}
+            alt={first.alt}
+            fetchpriority="high"
+            decoding="async"
+          />
 
-        <div class="photo-toolbar">
-          <a
-            class="control square watch-link"
-            data-watch-link
-            href="#"
-            aria-label="Watch on YouTube"
-            title="Watch on YouTube"
-            target="_blank"
-            rel="noopener noreferrer"
-            hidden
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
-              <path d="M14 3h7v7m0-7-9 9" />
-              <path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
-            </svg>
-            <span class="visually-hidden">
-              Watch on <span data-platform-name>YouTube</span>
-            </span>
-          </a>
-        </div>
+          <div class="photo-toolbar">
+            <a
+              class="control square watch-link"
+              data-watch-link
+              href="#"
+              aria-label="Watch on YouTube"
+              title="Watch on YouTube"
+              target="_blank"
+              rel="noopener noreferrer"
+              hidden
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+                <path d="M14 3h7v7m0-7-9 9" />
+                <path d="M10 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
+              </svg>
+              <span class="visually-hidden">
+                Watch on <span data-platform-name>YouTube</span>
+              </span>
+            </a>
+          </div>
 
-        <button
-          class="control square video-back"
-          data-video-back
-          type="button"
-          aria-label="Back to posters"
-          title="Back to posters"
-          hidden
-        >
-          <span aria-hidden="true">×</span>
-        </button>
-
-        <button
-          class="video-play"
-          data-video-play
-          aria-label={`Watch ${first.caption || 'film'}`}
-          type="button"
-          hidden={!first.embedUrl}
-        >
-          <PlayIcon className="stage-play-icon" size={72} />
-        </button>
-
-        <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
-
-        <div class="slide-navigation" role="group" aria-label="Work navigation">
           <button
-            class="control square"
+            class="control square video-back"
+            data-video-back
             type="button"
-            data-slide-prev
-            aria-label="Previous work"
+            aria-label="Back to posters"
+            title="Back to posters"
             hidden
           >
-            ←
+            <span aria-hidden="true">×</span>
           </button>
-          <button
-            class="control square"
-            type="button"
-            data-slide-next
-            aria-label="Next work"
-            hidden
-          >
-            →
-          </button>
-        </div>
 
-        <span
-          class="mono small photo-counter"
-          data-slide-count
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          01 / {String(featured.length).padStart(2, '0')}
-        </span>
+          <button
+            class="video-play"
+            data-video-play
+            aria-label={`Watch ${first.caption || 'film'}`}
+            type="button"
+            hidden={!first.embedUrl}
+          >
+            <PlayIcon className="stage-play-icon" size={72} />
+          </button>
+
+          <p class="video-player-status" data-video-status role="status" aria-live="polite"></p>
+
+          <div class="slide-navigation" role="group" aria-label="Work navigation">
+            <button
+              class="control square"
+              type="button"
+              data-slide-prev
+              aria-label="Previous work"
+              hidden
+            >
+              ←
+            </button>
+            <button
+              class="control square"
+              type="button"
+              data-slide-next
+              aria-label="Next work"
+              hidden
+            >
+              →
+            </button>
+          </div>
+
+          <span
+            class="mono small photo-counter"
+            data-slide-count
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            01 / {String(featured.length).padStart(2, '0')}
+          </span>
+        </div>
 
         <div class="photo-details">
           <div class="work-actions">
@@ -456,15 +458,23 @@ const firstProjectLink = first
   .video-panel {
     background: transparent;
   }
-  .video-panel .photo-viewport {
+  .video-panel .video-frame {
+    position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
-    cursor: default;
     --stage-fg: #fff;
     --stage-muted: rgba(255, 255, 255, 0.7);
     --stage-bg: rgba(0, 0, 0, 0.45);
     --stage-bg-hover: rgba(0, 0, 0, 0.65);
     --stage-border: rgba(255, 255, 255, 0.25);
+  }
+  .video-panel .photo-viewport {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    cursor: default;
   }
   :global(.video-panel .photo-viewport > img) {
     object-fit: cover;
@@ -694,9 +704,7 @@ const firstProjectLink = first
   .photo-viewport[data-playing='true'] .slide-navigation,
   .photo-viewport[data-playing='true'] .slide-navigation .control,
   .photo-viewport[data-playing='true'] .photo-counter,
-  .photo-viewport[data-playing='true'] .photo-details,
-  .photo-viewport[data-playing='true'] .video-player-status,
-  .photo-viewport[data-playing='true'] .photo-details :is(a, button) {
+  .photo-viewport[data-playing='true'] .video-player-status {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -929,6 +937,49 @@ const firstProjectLink = first
     }
     .work-links {
       gap: 2px 10px;
+    }
+  }
+  @media (max-width: 767px) {
+    .video-panel .video-frame {
+      aspect-ratio: auto;
+    }
+    .video-panel .photo-viewport {
+      position: relative;
+      inset: auto;
+      height: auto;
+    }
+    .video-panel .photo-details {
+      position: static;
+      padding: var(--space-2) 0 0;
+      background: transparent;
+      color: var(--text);
+      --stage-fg: var(--text);
+      --stage-muted: var(--muted);
+      --stage-border: var(--border);
+    }
+    .video-panel .work-actions {
+      max-width: 100%;
+    }
+    .video-panel .work-title {
+      text-shadow: none;
+    }
+    :global(.video-panel .work-subtitle) {
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .video-panel :is(.project-link, .work-learn-more) {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
+  @media (min-width: 768px) {
+    .photo-viewport[data-playing='true'] + .photo-details,
+    .photo-viewport[data-playing='true'] + .photo-details :is(a, button) {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
   }
   :global([data-video-viewer] + .project-section) {
