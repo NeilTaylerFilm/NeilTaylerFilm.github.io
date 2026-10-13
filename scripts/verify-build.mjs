@@ -65,10 +65,15 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) await resolveURL(match[1], base);
   for (const match of html.matchAll(/\bsrcset="([^"]+)"/g))
     for (const src of match[1].split(',')) await resolveURL(src.trim().split(/\s+/)[0], base);
-  for (const match of html.matchAll(/\bdata-slides="([^"]+)"/g)) {
-    for (const slide of JSON.parse(decode(match[1]))) {
+  for (const match of html.matchAll(/<section\b([^>]*)>/g)) {
+    const attributes = match[1];
+    const slideData = attributes.match(/\bdata-slides="([^"]+)"/);
+    if (!slideData) continue;
+    const projectBase = attributes.match(/\bdata-project-base="([^"]+)"/)?.[1] || '/photography/';
+    const projectPrefix = projectBase.endsWith('/') ? projectBase : `${projectBase}/`;
+    for (const slide of JSON.parse(decode(slideData[1]))) {
       await resolveURL(slide.src, base);
-      if (slide.project) await resolveURL(`/photography/${slide.project}/`, base);
+      if (slide.project) await resolveURL(`${projectPrefix}${slide.project}/`, base);
     }
   }
   if (relative === 'blog/index.html') continue; // Static redirect for the old blog URL.

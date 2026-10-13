@@ -20,8 +20,10 @@ type FeaturedWork = {
   caption?: string;
   type?: string;
   subtitle?: string;
+  role?: string[];
   // Project page link (optional)
   project?: string;
+  projectLabel?: string;
   blogPost?: string; // Published blog filename without .md; omit until ready.
   video?: string; // YouTube/Vimeo URL or ID (optional)
   poster?: string; // Custom poster for video (optional)
@@ -41,6 +43,7 @@ export const featured: FeaturedWork[] = [
     width: 480,
     height: 360,
     type: 'Short Film',
+    role: ['Editor', 'Colourist', 'BTS Photographer'],
     // blogPost: 'your-blog-post-filename',
   },
   {

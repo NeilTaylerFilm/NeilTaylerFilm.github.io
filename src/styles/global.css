@@ -1383,7 +1383,7 @@ h1 {
   text-align: center;
   min-height: 40px;
   padding: 6px 8px;
-  font-size: 11px;
+  font-size: 12px;
   transition:
     background-color 90ms ease,
     border-color 90ms ease,
@@ -1391,16 +1391,18 @@ h1 {
     box-shadow 90ms ease;
 }
 .contact-copy-email {
-  min-width: 112px;
+  min-width: 128px;
 }
 .contact-email {
-  min-width: 88px;
+  min-width: 104px;
 }
 .contact-copy-email > svg {
   position: absolute;
   top: 50%;
-  left: 8px;
+  left: 6px;
   transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
 }
 .contact-email-action [data-copy-label] {
   display: block;

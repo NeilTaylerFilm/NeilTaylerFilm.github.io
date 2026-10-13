@@ -99,6 +99,12 @@ const structuredData = {
         <span class="accent">.</span>
       </h1>
       {data.subtitle && <p class="article-subtitle">{data.subtitle}</p>}
+      {data.role && data.role.length > 0 && (
+        <p class="mono small muted post-production-roles">
+          <span class="visually-hidden">Roles: </span>
+          {data.role.join(' · ')}
+        </p>
+      )}
       <p class="byline mono">By {site.author}</p>
       {data.demo && <p class="demo-notice">Example project · This sample work is not Neil's.</p>}
     </header>

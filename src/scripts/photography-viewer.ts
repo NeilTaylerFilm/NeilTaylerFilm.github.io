@@ -22,11 +22,14 @@ type Photo = {
   caption?: string;
   // Project folder link
   project?: string;
+  projectLabel?: string;
   // Pixel width
   width: number;
   // Pixel height
   height: number;
 };
+
+import { projectLinkForSlide } from '../lib/project-links';
 
 // 🎬 MAIN CONTROLLER: Starts up the slideshow on the webpage
 // What goes in: A slideshow container element (root) from the webpage DOM.
@@ -40,6 +43,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   const photos: Photo[] = JSON.parse(root.dataset.slides || '[]');
   // If there are no photos to show, go to sleep
   if (!photos.length) return;
+  const slideNoun = root.dataset.slideNoun || 'photograph';
 
   // 🔍 Helper shortcut to grab elements inside this gallery widget
   const find = <T extends HTMLElement>(selector: string) => root.querySelector<T>(selector)!;
@@ -210,7 +214,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
   function showError(index: number) {
     const photo = photos[index];
     failedIndex = index;
-    status.textContent = 'This photograph could not load. Please try again.';
+    status.textContent = `This ${slideNoun} could not load. Please try again.`;
     viewport.setAttribute('aria-busy', 'false');
     viewport.setAttribute('data-error', '');
     viewport.removeAttribute('data-loading');
@@ -295,20 +299,20 @@ export function setupPhotographyViewer(root: HTMLElement) {
     outgoing = old;
     current = index;
     root.dataset.index = String(current);
-    root.dispatchEvent(new Event('photo-change'));
-
     // Update caption, project link, and counter (e.g. "02 / 10")
     const photo = photos[current];
     caption.textContent = photo.caption || '';
-    project.hidden = !photo.project;
-    if (photo.project)
-      project.href = `${root.dataset.projectBase || '/photography/'}${photo.project}/`;
+    const projectLink = projectLinkForSlide(photo, root.dataset.projectBase || '/photography/');
+    project.hidden = projectLink.hidden;
+    project.textContent = projectLink.label;
+    if (projectLink.href) project.href = projectLink.href;
     else project.removeAttribute('href');
     count.textContent = `${String(current + 1).padStart(2, '0')} / ${String(photos.length).padStart(2, '0')}`;
     status.textContent = '';
     viewport.removeAttribute('aria-busy');
     viewport.removeAttribute('data-loading');
     clearError();
+    root.dispatchEvent(new Event('photo-change'));
 
     // 🎞️ Animate the transition: glide old photo out and new photo in!
     if (!reduced.matches) {
@@ -361,7 +365,7 @@ export function setupPhotographyViewer(root: HTMLElement) {
     cancelAnimationFrame(frame);
     if (selected !== current) {
       viewport.setAttribute('aria-busy', 'true');
-      status.textContent = `Loading photograph ${selected + 1} of ${photos.length}.`;
+      status.textContent = `Loading ${slideNoun} ${selected + 1} of ${photos.length}.`;
     }
     // Schedule the slide load on the very next screen refresh tick
     // Coalesce input within a frame; never queue a series of animations.

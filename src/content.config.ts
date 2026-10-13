@@ -18,6 +18,7 @@ import { z } from 'astro/zod';
 import { postCategories } from './lib/feed';
 // projectDate, projectYear, matchingProjectYear: Custom date validators ensuring consistent timeline years.
 import { projectDate, projectYear, matchingProjectYear } from './lib/project-date';
+import { roleMetadataSchema } from './lib/role-metadata';
 
 // 🛠️ HELPER: Resilient optional text and date (accepts undefined, null, or empty string from Obsidian)
 const optionalText = z
@@ -188,11 +189,8 @@ const postProduction = defineCollection({
       cover: optionalText,
       // Cover image alternate
       coverImage: optionalText,
-      // Your roles (e.g. ['Director', 'Colorist'])
-      roles: z.preprocess(
-        (val) => (val === null || val === '' ? [] : val),
-        z.array(z.string().trim().min(1)).default([]),
-      ),
+      // Optional ordered project roles (e.g. ['Editor', 'Colourist'])
+      role: roleMetadataSchema,
       // Type of project (e.g. 'Music Video')
       projectType: optionalText,
       video: optionalText, // URL or ID for video (YouTube, Vimeo, etc.)

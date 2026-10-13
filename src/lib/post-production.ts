@@ -17,6 +17,22 @@ export function linkedBlogUrl(slug: string | undefined, published: Set<string>) 
   return slug && published.has(slug) ? `/blog/${slug}/` : undefined;
 }
 
+export function roleLine(role?: string[], subtitle?: string): string | undefined {
+  if (role?.length) return role.join(' · ');
+  return subtitle?.trim() || undefined;
+}
+
+export function validateFeaturedProjectReferences(
+  projects: Array<{ project?: string }>,
+  publishedArticleIds: Set<string>,
+) {
+  for (const { project } of projects) {
+    if (project !== undefined && (!project.trim() || !publishedArticleIds.has(project))) {
+      throw new Error(`Featured Post Production article "${project}" is missing or unpublished.`);
+    }
+  }
+}
+
 // 📺 HELPER 2: Video Player Embed Maker
 // Takes whatever you typed (a full YouTube URL, short link, or raw ID)
 // and turns it into the special embed player URL.

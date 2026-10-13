@@ -15,7 +15,13 @@ import { featured as originalFeatured, featuredIsDemo } from '../data/post-produ
 // getCollection: Astro tool that opens content drawers to read our articles and projects.
 import { getCollection } from 'astro:content';
 // videoEmbedUrl & linkedBlogUrl: Smart converters turning video links into embed players and connecting blog posts.
-import { videoEmbedUrl, linkedBlogUrl } from '../lib/post-production';
+import {
+  videoEmbedUrl,
+  linkedBlogUrl,
+  roleLine,
+  validateFeaturedProjectReferences,
+} from '../lib/post-production';
+import { projectLinkForSlide } from '../lib/project-links';
 // imageInfo: Helper finding image dimensions and WebP responsive formats.
 import { imageInfo } from '../lib/images';
 import PlayIcon from './PlayIcon.astro';
@@ -26,6 +32,12 @@ import '../styles/photography-viewer.css';
 const publishedPosts = new Set(
   (await getCollection('blog')).filter((post) => !post.data.draft).map((post) => post.id),
 );
+const publishedPostProductionArticles = new Set(
+  (await getCollection('postProduction'))
+    .filter((article) => !article.data.draft)
+    .map((article) => article.id),
+);
+validateFeaturedProjectReferences(originalFeatured, publishedPostProductionArticles);
 
 // 🎞️ Assemble the video works with images, video embed links, and blog links
 // Keep the poster usable as a plain image even when it has no generated image variants.
@@ -38,6 +50,10 @@ const featured = originalFeatured.map((photo) => ({
 }));
 // The very first video to show on the screen
 const first = featured[0];
+const firstRoleLine = first ? roleLine(first.role, first.subtitle) : undefined;
+const firstProjectLink = first
+  ? projectLinkForSlide(first, '/post-production/')
+  : { href: undefined, hidden: true, label: 'View project →' };
 ---
 
 {/* Only render if there is at least one video project in the list */}
@@ -48,6 +64,7 @@ const first = featured[0];
     aria-roledescription="carousel"
     data-slideshow
     data-video-viewer
+    data-slide-noun="project"
     data-project-base="/post-production/"
     data-slides={JSON.stringify(featured)}
   >
@@ -150,19 +167,19 @@ const first = featured[0];
             <p class="work-title" data-slide-caption>
               {first.caption}
             </p>
-            {first.subtitle?.trim() && (
+            {firstRoleLine && (
               <p class="work-subtitle" data-slide-subtitle>
-                {first.subtitle.trim()}
+                {firstRoleLine}
               </p>
             )}
             <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
               <a
                 class="mono project-link"
                 data-photo-project
-                href={first.project ? `/post-production/${first.project}/` : undefined}
-                hidden={!first.project}
+                href={firstProjectLink.href}
+                hidden={firstProjectLink.hidden}
               >
-                View project →
+                {firstProjectLink.label}
               </a>
 
               {featuredIsDemo && <span class="mono muted">Sample work</span>}
@@ -231,6 +248,7 @@ const first = featured[0];
 <script>
   // 🚀 Start up the base photo slideshow logic
   import { setupPhotographyViewer } from '../scripts/photography-viewer';
+  import { roleLine } from '../lib/post-production';
   document.querySelectorAll<HTMLElement>('[data-slideshow]').forEach(setupPhotographyViewer);
 
   // 🎬 EXTRA VIDEO CONTROLLER: Handles clicking the Play button and embedding video iframes
@@ -242,6 +260,7 @@ const first = featured[0];
       caption?: string;
       type?: string;
       subtitle?: string;
+      role?: string[];
       video?: string;
     }> = JSON.parse(root.dataset.slides || '[]');
     // Grab the screen box where posters and video players appear
@@ -313,7 +332,7 @@ const first = featured[0];
         typeLabel?.remove();
         typeLabel = null;
       }
-      const subtitleText = work.subtitle?.trim();
+      const subtitleText = roleLine(work.role, work.subtitle);
       if (subtitleText) {
         if (!subtitle) {
           subtitle = document.createElement('p');

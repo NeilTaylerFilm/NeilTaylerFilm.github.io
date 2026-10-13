@@ -5,6 +5,7 @@ import {
   MAX_ROW_HEIGHT_RATIO,
   MIN_ROW_HEIGHT_RATIO,
   partitionRows,
+  targetProjectRowHeightForWidth,
   targetRowHeightForWidth,
 } from '../src/scripts/justified-grid.ts';
 
@@ -77,6 +78,115 @@ function seededRandom(seed) {
     value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
     return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function assertIncompletePlan(ratios, width, gap, target, plan) {
+  let next = 0;
+  for (const row of plan.rows) {
+    assert.equal(row.start, next, 'rows retain the source order without gaps');
+    assert.ok(row.end > row.start);
+    assert.equal(row.widths.length, row.end - row.start);
+    assert.ok(row.widths.every((itemWidth) => Number.isFinite(itemWidth) && itemWidth > 0));
+    assert.ok(row.widths.every((itemWidth) => itemWidth <= width));
+    row.widths.forEach((itemWidth, index) => {
+      assert.ok(Math.abs(itemWidth / row.height - ratios[row.start + index]) < 1e-8);
+    });
+
+    const usedWidth =
+      row.widths.reduce((sum, itemWidth) => sum + itemWidth, 0) + gap * (row.widths.length - 1);
+    if (row.justified === false) {
+      assert.equal(row.end, ratios.length, 'only the final row can be incomplete');
+      assert.equal(row.height, target, 'an incomplete final row keeps the target height');
+      assert.ok(usedWidth <= width + 1e-7);
+    } else {
+      assert.ok(Math.abs(usedWidth - width) <= 1e-7);
+    }
+    if (plan.heightRangeSatisfied) assert.ok(inHeightRange(row.height, target));
+    next = row.end;
+  }
+  assert.equal(next, ratios.length, 'all photos belong to a row');
+}
+
+function incompletePlanCost(plan, width, gap, target) {
+  let outOfRangePhotos = 0;
+  let total = 0;
+  for (const row of plan.rows) {
+    if (row.justified === false) {
+      const usedWidth =
+        row.widths.reduce((sum, itemWidth) => sum + itemWidth, 0) + gap * (row.widths.length - 1);
+      total += 0.25 * (((width - usedWidth) / width) * target) ** 2;
+      continue;
+    }
+    if (!inHeightRange(row.height, target)) outOfRangePhotos += row.end - row.start;
+    total += (row.height - target) ** 2;
+  }
+  return { outOfRangePhotos, total };
+}
+
+function exhaustiveIncompletePlanCost(
+  ratios,
+  width,
+  gap,
+  target,
+  maxFinalRatio = 1.25,
+  slackWeight = 0.25,
+) {
+  let best;
+  for (let mask = 0; mask < 2 ** Math.max(0, ratios.length - 1); mask++) {
+    const ranges = [];
+    let start = 0;
+    let invalid = false;
+    let outOfRangePhotos = 0;
+    let total = 0;
+
+    for (let end = 1; end <= ratios.length; end++) {
+      if (end < ratios.length && !(mask & (1 << (end - 1)))) continue;
+      const availableWidth = width - gap * (end - start - 1);
+      if (availableWidth <= 0) {
+        invalid = true;
+        break;
+      }
+      const height =
+        availableWidth / ratios.slice(start, end).reduce((sum, ratio) => sum + ratio, 0);
+      ranges.push({ start, end, height });
+      start = end;
+    }
+    if (invalid) continue;
+
+    for (let index = 0; index < ranges.length; index++) {
+      const row = ranges[index];
+      const count = row.end - row.start;
+      if (index < ranges.length - 1) {
+        if (!inHeightRange(row.height, target)) outOfRangePhotos += count;
+        total += (row.height - target) ** 2;
+        continue;
+      }
+
+      const finalMax = Math.min(target * MAX_ROW_HEIGHT_RATIO, target * maxFinalRatio);
+      if (row.height >= target * MIN_ROW_HEIGHT_RATIO && row.height <= finalMax) {
+        total += (row.height - target) ** 2;
+        continue;
+      }
+
+      const naturalWidth =
+        ratios.slice(row.start).reduce((sum, ratio) => sum + ratio * target, 0) + gap * (count - 1);
+      if (row.height > finalMax && naturalWidth <= width) {
+        total += slackWeight * (((width - naturalWidth) / width) * target) ** 2;
+      } else {
+        if (!inHeightRange(row.height, target)) outOfRangePhotos += count;
+        total += (row.height - target) ** 2;
+      }
+    }
+
+    const cost = { outOfRangePhotos, total };
+    if (
+      !best ||
+      cost.outOfRangePhotos < best.outOfRangePhotos ||
+      (cost.outOfRangePhotos === best.outOfRangePhotos && cost.total < best.total)
+    )
+      best = cost;
+  }
+  return best;
 }
 
 test('dynamic partition minimizes total squared height deviation', () => {
@@ -164,4 +274,131 @@ test('seeded 40-photo fallback isolates impossible frames instead of collapsing 
     assert.ok(plan.rows.some((row) => inHeightRange(row.height, 260)));
     assertPlan(ratios, width, 260, plan);
   }
+});
+
+test('project gallery targets use container-width tiers', () => {
+  assert.equal(targetProjectRowHeightForWidth(320), 190);
+  assert.equal(targetProjectRowHeightForWidth(539.9), 190);
+  assert.equal(targetProjectRowHeightForWidth(540), 250);
+  assert.equal(targetProjectRowHeightForWidth(899.9), 250);
+  assert.equal(targetProjectRowHeightForWidth(900), 290);
+  assert.throws(() => targetProjectRowHeightForWidth(Number.NaN), RangeError);
+});
+
+test('single portraits, landscapes, and two-photo groups stay at target height when needed', () => {
+  const options = { allowIncompleteFinalRow: true };
+  const cases = [
+    { ratios: [0.5], width: 1248, target: 290, expectedWidths: [145] },
+    { ratios: [3], width: 1248, target: 290, expectedWidths: [870] },
+    { ratios: [1, 1], width: 1248, target: 290, expectedWidths: [290, 290] },
+  ];
+
+  for (const { ratios, width, target, expectedWidths } of cases) {
+    const plan = partitionRows(ratios, width, GAP, target, options);
+    assertIncompletePlan(ratios, width, GAP, target, plan);
+    assert.equal(plan.rows.length, 1);
+    assert.equal(plan.rows[0].justified, false);
+    assert.deepEqual(plan.rows[0].widths, expectedWidths);
+  }
+});
+
+test('three modest photos and four comfortable photos justify to the container edge', () => {
+  for (const ratios of [
+    [1.2, 1.2, 1.2],
+    [1, 1, 1, 1],
+  ]) {
+    const plan = partitionRows(ratios, 1000, GAP, 250, { allowIncompleteFinalRow: true });
+    assertIncompletePlan(ratios, 1000, GAP, 250, plan);
+    assert.equal(plan.rows.length, 1);
+    assert.equal(plan.rows[0].justified, undefined);
+  }
+});
+
+test('final-row justification follows the configurable height threshold', () => {
+  const width = 1000;
+  const target = 200;
+  const justifiable = (width - GAP) / (1.24 * target);
+  const tooTall = (width - GAP) / (1.26 * target);
+  const accepted = partitionRows([justifiable], width, GAP, target, {
+    allowIncompleteFinalRow: true,
+  });
+  const leftAligned = partitionRows([tooTall], width, GAP, target, {
+    allowIncompleteFinalRow: true,
+  });
+  const stricter = partitionRows([justifiable], width, GAP, target, {
+    allowIncompleteFinalRow: true,
+    maxFinalRowHeightRatio: 1.1,
+  });
+
+  assert.equal(accepted.rows[0].justified, undefined);
+  assert.equal(leftAligned.rows[0].justified, false);
+  assert.equal(stricter.rows[0].justified, false);
+  assertIncompletePlan([justifiable], width, GAP, target, accepted);
+  assertIncompletePlan([tooTall], width, GAP, target, leftAligned);
+  assertIncompletePlan([justifiable], width, GAP, target, stricter);
+});
+
+test('dynamic programming compares competing final-row partitions with the slack penalty', () => {
+  const cases = [
+    { ratios: [0.5, 1.9, 0.7, 2.5, 1.2], width: 840, target: 190 },
+    { ratios: [2.2, 0.55, 0.7, 2.6, 1.1, 1.8], width: 1120, target: 250 },
+    { ratios: [0.6, 2.4, 1.6, 0.8, 2.1, 0.5, 2.8], width: 1248, target: 290 },
+  ];
+
+  for (const { ratios, width, target } of cases) {
+    const plan = partitionRows(ratios, width, GAP, target, { allowIncompleteFinalRow: true });
+    assertIncompletePlan(ratios, width, GAP, target, plan);
+    const actual = incompletePlanCost(plan, width, GAP, target);
+    const expected = exhaustiveIncompletePlanCost(ratios, width, GAP, target);
+    assert.equal(actual.outOfRangePhotos, expected.outOfRangePhotos);
+    assert.ok(Math.abs(actual.total - expected.total) < 1e-5);
+  }
+
+  const portrait = partitionRows([0.5], 1248, GAP, 290, { allowIncompleteFinalRow: true });
+  const emptyWidth = 1248 - 145;
+  const expectedSlackPenalty = 0.25 * ((emptyWidth / 1248) * 290) ** 2;
+  assert.ok(
+    Math.abs(incompletePlanCost(portrait, 1248, GAP, 290).total - expectedSlackPenalty) < 1e-7,
+  );
+});
+
+test('extreme aspect ratios and narrow containers never overflow or produce invalid widths', () => {
+  const cases = [
+    { ratios: [8, 0.08, 0.4, 6, 0.5], width: 320, target: 190 },
+    { ratios: [0.5, 0.7, 0.8, 0.65], width: 50, target: 190 },
+    {
+      ratios: Array.from({ length: 18 }, (_, index) => (index % 2 ? 3.5 : 0.25)),
+      width: 1248,
+      target: 290,
+    },
+  ];
+
+  for (const { ratios, width, target } of cases) {
+    const plan = partitionRows(ratios, width, GAP, target, { allowIncompleteFinalRow: true });
+    assertIncompletePlan(ratios, width, GAP, target, plan);
+  }
+});
+
+test('invalid dimensions and final-row options fail with clear errors', () => {
+  const options = { allowIncompleteFinalRow: true };
+  for (const ratio of [0, -1, Number.NaN, Number.POSITIVE_INFINITY])
+    assert.throws(() => partitionRows([ratio], 400, GAP, 190, options), RangeError);
+  assert.throws(() => partitionRows([1], Number.NaN, GAP, 190, options), RangeError);
+  assert.throws(() => partitionRows([1], 400, GAP, 0, options), RangeError);
+  assert.throws(() => partitionRows([1], 400, GAP, 190, { allowIncompleteFinalRow: 1 }), TypeError);
+  assert.throws(
+    () =>
+      partitionRows([1], 400, GAP, 190, {
+        allowIncompleteFinalRow: true,
+        maxFinalRowHeightRatio: Infinity,
+      }),
+    RangeError,
+  );
+});
+
+test('omitting final-row options preserves the existing partition output', () => {
+  const ratios = [0.55, 0.8, 1.2, 1.7, 2.3, 0.6];
+  const baseline = partitionRows(ratios, 900, GAP, 320);
+  const disabled = partitionRows(ratios, 900, GAP, 320, { allowIncompleteFinalRow: false });
+  assert.deepEqual(disabled, baseline);
 });

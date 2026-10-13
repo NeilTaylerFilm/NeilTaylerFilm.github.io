@@ -13,7 +13,13 @@ import test from 'node:test';
 // assert: Node.js strict assertion library.
 import assert from 'node:assert/strict';
 // videoEmbedUrl, linkedBlogUrl: Helpers that build video players and check blog links.
-import { videoEmbedUrl, linkedBlogUrl } from '../src/lib/post-production.ts';
+import {
+  videoEmbedUrl,
+  linkedBlogUrl,
+  roleLine,
+  validateFeaturedProjectReferences,
+} from '../src/lib/post-production.ts';
+import { projectLinkForSlide } from '../src/lib/project-links.ts';
 
 // 🎬 TEST: Embed URLs and blog connections must be safe and valid
 test('film embeds and blog links accept supported sources and published posts only', () => {
@@ -45,4 +51,71 @@ test('film embeds and blog links accept supported sources and published posts on
   );
   assert.equal(linkedBlogUrl(undefined, published), undefined);
   assert.equal(linkedBlogUrl('missing-or-draft', published), undefined);
+});
+
+test('project roles preserve order and use subtitles only as a fallback', () => {
+  assert.equal(
+    roleLine(['Editor', 'Colourist', 'Sound Designer'], 'Legacy subtitle'),
+    'Editor · Colourist · Sound Designer',
+  );
+  assert.equal(roleLine([], '  Freeform subtitle  '), 'Freeform subtitle');
+  assert.equal(roleLine(undefined, undefined), undefined);
+});
+
+test('featured project links resolve labels independently for each slide', () => {
+  const slides = [
+    { project: 'scene-breakdown', projectLabel: 'Read scene breakdown →' },
+    { project: 'linked-article' },
+    {},
+    { project: 'another-article', projectLabel: 'Read film notes →' },
+    { project: 'scene-breakdown', projectLabel: 'Read scene breakdown →' },
+  ];
+  const resolved = slides.map((slide) => projectLinkForSlide(slide, '/post-production/'));
+
+  assert.deepEqual(resolved, [
+    {
+      href: '/post-production/scene-breakdown/',
+      hidden: false,
+      label: 'Read scene breakdown →',
+    },
+    {
+      href: '/post-production/linked-article/',
+      hidden: false,
+      label: 'View project →',
+    },
+    { href: undefined, hidden: true, label: 'View project →' },
+    {
+      href: '/post-production/another-article/',
+      hidden: false,
+      label: 'Read film notes →',
+    },
+    {
+      href: '/post-production/scene-breakdown/',
+      hidden: false,
+      label: 'Read scene breakdown →',
+    },
+  ]);
+});
+
+test('featured project references must point to published Post Production articles', () => {
+  const publishedArticleIds = new Set(['scene-breakdown']);
+
+  assert.doesNotThrow(() =>
+    validateFeaturedProjectReferences(
+      [{ project: 'scene-breakdown' }, {}, { project: 'scene-breakdown' }],
+      publishedArticleIds,
+    ),
+  );
+  assert.throws(
+    () => validateFeaturedProjectReferences([{ project: 'missing-article' }], publishedArticleIds),
+    /Featured Post Production article "missing-article" is missing or unpublished\./,
+  );
+  assert.throws(
+    () => validateFeaturedProjectReferences([{ project: 'draft-article' }], publishedArticleIds),
+    /Featured Post Production article "draft-article" is missing or unpublished\./,
+  );
+  assert.throws(
+    () => validateFeaturedProjectReferences([{ project: '  ' }], publishedArticleIds),
+    /Featured Post Production article "  " is missing or unpublished\./,
+  );
 });
