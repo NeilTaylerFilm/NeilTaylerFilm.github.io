@@ -14,7 +14,7 @@ import { getCollection } from 'astro:content';
 // categoryKey, projectTimestamp, postCategories: Feed helpers for sorting, slugifying, and categorizing.
 import { categoryKey, projectTimestamp, postCategories } from './feed';
 // Re-export helpers so other files can grab them from one convenient place
-export { excerpt, isoDate, categoryKey, comparators, projectTimestamp } from './feed';
+export { excerpt, isoDate, categoryKey, comparators, projectTimestamp, types } from './feed';
 
 // 📝 FETCH BLOG POSTS:
 // Gets all blog articles.

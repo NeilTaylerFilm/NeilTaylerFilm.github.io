@@ -3,10 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PhotographyPortfolio from '../../components/PhotographyPortfolio.astro';
 import FeedControls from '../../components/FeedControls.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
-import { projects, categories as getCategories } from '../../lib/content';
+import { projects, types as getTypes } from '../../lib/content';
 
 const allProjects = await projects();
-const categories = getCategories(allProjects);
+const types = getTypes(allProjects.map(({ data }) => data));
 ---
 
 <BaseLayout
@@ -31,7 +31,7 @@ const categories = getCategories(allProjects);
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
     {allProjects.length > 0 && (
-      <FeedControls categories={categories} count={allProjects.length} noun="projects" />
+      <FeedControls options={types} filterBy="type" count={allProjects.length} noun="projects" />
     )}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (

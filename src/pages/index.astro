@@ -43,7 +43,7 @@ const categories = getCategories(allPosts);
 
     {/* 🎛️ Filter dropdowns (Category and Sort) */}
     {/* Question: Are there any posts to display? If yes (count > 0), show the filter buttons so users can filter by category. */}
-    {allPosts.length > 0 && <FeedControls categories={categories} count={allPosts.length} />}
+    {allPosts.length > 0 && <FeedControls options={categories} count={allPosts.length} />}
 
     {/* 📰 Grid list of blog cards */}
     {/* The magazine rack: a grid container holding all the blog article cards. */}

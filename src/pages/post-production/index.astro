@@ -55,7 +55,7 @@ const categories = getCategories(allProjects);
     {/* 🎛️ Category filter and sorting toolbar */}
     {/* Shows category and sort menus if there is at least one film project. */}
     {allProjects.length > 0 && (
-      <FeedControls categories={categories} count={allProjects.length} noun="projects" />
+      <FeedControls options={categories} count={allProjects.length} noun="projects" />
     )}
 
     {/* 🧱 Grid of film project cards */}

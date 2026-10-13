@@ -4,21 +4,21 @@
 // ==========================================
 // This is the toolbar right above your list of articles or photo projects!
 // It gives visitors two handy dropdown menus:
-// 1. "Category" (e.g., show only 'Film' or 'Street')
+// 1. A content filter, such as a category or type
 // 2. "Sort" (newest first vs oldest first)
 // It also shows a live count badge (like "08 articles").
 
 // 📋 What this toolbar needs to know:
 // Like setting up an exhibition catalog desk with the category labels and total piece count.
 interface Props {
-  // List of all categories available to filter by
-  categories: string[];
+  options: string[];
+  filterBy?: 'category' | 'type';
   // Total number of items
   count: number;
   // Word to show after number (e.g. 'articles' or 'projects')
   noun?: string;
 }
-const { categories, count, noun = 'articles' } = Astro.props;
+const { options, filterBy = 'category', count, noun = 'articles' } = Astro.props;
 // --- BORROWED TOOLS (Imports) ---
 // categoryKey: Converts nice category names like "Post-Production" into clean URL keys like "post-production".
 import { categoryKey } from '../lib/feed';
@@ -27,16 +27,15 @@ import { categoryKey } from '../lib/feed';
 {/* 🛠️ Toolbar wrapper containing dropdowns and item counter */}
 <div class="feed-toolbar">
   {/* The form starts hidden until JavaScript initializes so visitors don't see non-functioning selects */}
-  <form class="feed-controls" data-feed-controls hidden>
-    {/* 🏷️ Dropdown 1: Category Filter */}
+  <form class="feed-controls" data-feed-controls data-filter-by={filterBy} hidden>
+    {/* Dropdown 1: Content filter */}
     <label>
-      <span>Category</span>
+      <span>{filterBy === 'type' ? 'Type' : 'Category'}</span>
       <div class="select-wrap">
-        {/* Generates an option for each unique category found in this section */}
-        <select name="category" aria-label="Filter by category">
-          <option value="">All categories</option>
-          {categories.map((category) => (
-            <option value={categoryKey(category)}>{category}</option>
+        <select name={filterBy} aria-label={`Filter by ${filterBy}`}>
+          <option value="">{filterBy === 'type' ? 'All types' : 'All categories'}</option>
+          {options.map((option) => (
+            <option value={categoryKey(option)}>{option}</option>
           ))}
         </select>
       </div>
@@ -72,14 +71,15 @@ import { categoryKey } from '../lib/feed';
 <script>
   // 🔌 INTERACTIVE FILTER LOGIC:
   // Runs entirely in the visitor's browser for instant, smooth filtering!
-  import { comparators, matchesCategory } from '../lib/feed';
+  import { comparators, matchesFilter } from '../lib/feed';
   const form = document.querySelector<HTMLFormElement>('[data-feed-controls]');
   const feed = document.querySelector<HTMLElement>('[data-feed]');
 
   if (form && feed) {
     // Reveal the toolbar now that JavaScript is ready
     form.hidden = false;
-    const category = form.elements.namedItem('category') as HTMLSelectElement;
+    const filterBy = form.dataset.filterBy === 'type' ? 'type' : 'category';
+    const filter = form.elements.namedItem(filterBy) as HTMLSelectElement;
     const sort = form.elements.namedItem('sort') as HTMLSelectElement;
     const items = Array.from(feed.querySelectorAll<HTMLElement>('[data-feed-item]'));
     const count = document.querySelector<HTMLElement>('[data-feed-count]');
@@ -90,9 +90,8 @@ import { categoryKey } from '../lib/feed';
       const url = new URL(location.href);
       // If loading from URL (like someone opened a shared link), pre-select dropdowns
       if (fromURL) {
-        // Ignore category names that are no longer in the page's current category list.
-        const value = url.searchParams.get('category') || '';
-        category.value = Array.from(category.options).some((o) => o.value === value) ? value : '';
+        const value = url.searchParams.get(filterBy) || '';
+        filter.value = Array.from(filter.options).some((o) => o.value === value) ? value : '';
         sort.value = url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
       }
 
@@ -100,7 +99,7 @@ import { categoryKey } from '../lib/feed';
       const comparator = comparators[sort.value as keyof typeof comparators] || comparators.newest;
       let visible = 0;
 
-      // Sort the cards and show only those matching the selected category
+      // Sort the cards and show only those matching the selected filter
       items
         .sort((a, b) =>
           comparator(
@@ -109,10 +108,13 @@ import { categoryKey } from '../lib/feed';
           ),
         )
         .forEach((item) => {
-          const itemCategories: string[] = item.dataset.categories
-            ? JSON.parse(item.dataset.categories)
-            : [item.dataset.category || ''];
-          item.hidden = !matchesCategory(itemCategories, category.value);
+          const values: string[] =
+            filterBy === 'type'
+              ? [item.dataset.type || '']
+              : item.dataset.categories
+                ? JSON.parse(item.dataset.categories)
+                : [item.dataset.category || ''];
+          item.hidden = !matchesFilter(values, filter.value);
           if (!item.hidden) visible++;
           // Reorder on screen
           feed!.append(item);
@@ -124,9 +126,9 @@ import { categoryKey } from '../lib/feed';
       // Update the browser URL bar so visitor can bookmark or share this exact view
       if (!fromURL) {
         // Empty/default choices are removed so the URL stays short and easy to share.
-        category.value
-          ? url.searchParams.set('category', category.value)
-          : url.searchParams.delete('category');
+        filter.value
+          ? url.searchParams.set(filterBy, filter.value)
+          : url.searchParams.delete(filterBy);
         sort.value === 'oldest'
           ? url.searchParams.set('sort', 'oldest')
           : url.searchParams.delete('sort');

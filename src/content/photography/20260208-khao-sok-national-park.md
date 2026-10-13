@@ -3,6 +3,7 @@ title: "Khao Sok National Park"
 date: "2026-02-08"
 draft: false
 galleryLayout: "justified"
+type: "Travel"
 subtitle: "An overnight stay in Khao Sok National Park, a beautiful, untouched place in southern Thailand."
 coverImage: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/34416656c97659425ca469194e50babe-2560.jpeg"
 images:
@@ -103,6 +104,14 @@ images:
     width: 2560
     height: 1707
   - src: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/6d7fa74b1c911712e45b25a40ab6f9e0-2560.jpeg"
+    width: 2560
+    height: 1440
+  - src: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/e367b1de7494198d63e5546d39385fb6-2560.jpeg"
+    alt: "Giant cliffs in Khao Sok National Park tower over a small long tail boat."
+    width: 2560
+    height: 1707
+  - src: "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/b71b9161beec951eab42872a403db746-2560.jpeg"
+    alt: "A scene taken at dusk in Khao Sok National Park. Mountains are layered."
     width: 2560
     height: 1440
 ---
