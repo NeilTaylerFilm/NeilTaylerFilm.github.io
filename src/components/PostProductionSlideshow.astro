@@ -156,6 +156,45 @@ const firstProjectLink = first
         >
           01 / {String(featured.length).padStart(2, '0')}
         </span>
+
+        <div class="photo-details">
+          <div class="work-actions">
+            {first.type?.trim() && (
+              <span class="type-pill" data-slide-type>
+                {first.type.trim()}
+              </span>
+            )}
+            <p class="work-title" data-slide-caption>
+              {first.caption}
+            </p>
+            {firstRoleLine && (
+              <p class="work-subtitle" data-slide-subtitle>
+                {firstRoleLine}
+              </p>
+            )}
+            <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
+              <a
+                class="mono project-link"
+                data-photo-project
+                href={firstProjectLink.href}
+                hidden={firstProjectLink.hidden}
+              >
+                {firstProjectLink.label}
+              </a>
+
+              {featuredIsDemo && <span class="mono muted">Sample work</span>}
+
+              <a
+                class="mono work-learn-more"
+                data-work-learn-more
+                href={first.blogUrl}
+                hidden={!first.blogUrl}
+              >
+                Learn more…
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -200,44 +239,6 @@ const firstProjectLink = first
             )}
           </button>
         ))}
-      </div>
-      <div class="photo-details">
-        <div class="work-actions">
-          {first.type?.trim() && (
-            <span class="type-pill" data-slide-type>
-              {first.type.trim()}
-            </span>
-          )}
-          <p class="work-title" data-slide-caption>
-            {first.caption}
-          </p>
-          {firstRoleLine && (
-            <p class="work-subtitle" data-slide-subtitle>
-              {firstRoleLine}
-            </p>
-          )}
-          <div class="work-links" hidden={!first.project && !first.blogUrl && !featuredIsDemo}>
-            <a
-              class="mono project-link"
-              data-photo-project
-              href={firstProjectLink.href}
-              hidden={firstProjectLink.hidden}
-            >
-              {firstProjectLink.label}
-            </a>
-
-            {featuredIsDemo && <span class="mono muted">Sample work</span>}
-
-            <a
-              class="mono work-learn-more"
-              data-work-learn-more
-              href={first.blogUrl}
-              hidden={!first.blogUrl}
-            >
-              Learn more…
-            </a>
-          </div>
-        </div>
       </div>
       <p class="visually-hidden" data-photo-status role="status" aria-live="polite"></p>
     </div>
@@ -948,7 +949,7 @@ const firstProjectLink = first
     .video-panel {
       display: block;
     }
-    .video-panel .photo-details {
+    .video-panel > .photo-details {
       position: static;
       padding: var(--space-2) 0 0;
       background: transparent;

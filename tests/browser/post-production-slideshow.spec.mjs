@@ -224,7 +224,7 @@ test('mobile filmstrip stays between the video and metadata during navigation an
   await expect(slideshow).toHaveAttribute('data-index', '1');
   await expect(slideshow.locator('[data-photo-index="1"]')).toHaveAttribute('aria-current', 'true');
   await expect(slideshow.locator('[data-slide-caption]')).toHaveText('Body Language — Fun Sponge');
-  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveCount(0);
+  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText('Editor · Colourist');
   await expect(slideshow.locator('[data-watch-link]')).toHaveAttribute(
     'href',
     'https://youtu.be/dnJWWsIn_nY',
@@ -234,7 +234,7 @@ test('mobile filmstrip stays between the video and metadata during navigation an
   const longTitle = slideshow.locator('[data-slide-caption]');
   await expect(longTitle).toHaveText("I'm Gonna F*** You All Night — Nick Helm");
   await expect(longTitle).toHaveCSS('white-space', 'normal');
-  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveCount(0);
+  await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText('Editor · Colourist');
   expect(await longTitle.evaluate((title) => title.scrollWidth <= title.clientWidth)).toBe(true);
 
   await slideshow.locator('[data-photo-index="0"]').click();
@@ -352,6 +352,7 @@ test('@responsive-order mobile filmstrip position stays fixed across all project
           documentY: stripRect.top + window.scrollY,
           detailsHeight: details.getBoundingClientRect().height,
           mobileOrder: details.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_PRECEDING,
+          documentWidth: document.documentElement.scrollWidth,
           viewportRatio: (() => {
             const rect = root.querySelector('[data-photo-viewport]').getBoundingClientRect();
             return rect.width / rect.height;
@@ -364,6 +365,10 @@ test('@responsive-order mobile filmstrip position stays fixed across all project
       maxDocumentDelta = Math.max(maxDocumentDelta, documentDelta);
       expect(documentDelta, `${width}px project ${index}`).toBeLessThan(1);
       expect(position.mobileOrder, `${width}px project ${index}`).toBeTruthy();
+      expect(
+        position.documentWidth,
+        `horizontal overflow at ${width}px project ${index}`,
+      ).toBeLessThanOrEqual(width);
       expect(position.viewportRatio).toBeCloseTo(16 / 9, 2);
       detailsHeights.push(position.detailsHeight);
     }
@@ -376,6 +381,189 @@ test('@responsive-order mobile filmstrip position stays fixed across all project
   await testInfo.attach('mobile-filmstrip-stability.json', {
     body: JSON.stringify(measurements, null, 2),
     contentType: 'application/json',
+  });
+});
+
+test('mobile keyboard navigation keeps nearby thumbnails visible @responsive-order', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const filmstrip = slideshow.locator('[data-photo-filmstrip]');
+  const waitForScrollToSettle = () =>
+    filmstrip.evaluate(
+      (strip) =>
+        new Promise((resolve) => {
+          let timer = setTimeout(done, 150);
+          function done() {
+            strip.removeEventListener('scroll', onScroll);
+            resolve();
+          }
+          function onScroll() {
+            clearTimeout(timer);
+            timer = setTimeout(done, 150);
+          }
+          strip.addEventListener('scroll', onScroll);
+        }),
+    );
+  const measurements = [];
+
+  for (const width of [320, 390, 640, 767]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(slideshow).toHaveAttribute('data-index', '0');
+    await slideshow.locator('[data-photo-index="0"]').focus();
+    const initialDocumentY = await filmstrip.evaluate(
+      (strip) => strip.getBoundingClientRect().top + window.scrollY,
+    );
+
+    for (const [key, direction, indices] of [
+      ['ArrowRight', 1, [1, 2, 3, 4, 5, 6]],
+      ['ArrowLeft', -1, [5, 4, 3, 2, 1, 0]],
+    ]) {
+      for (const index of indices) {
+        const before = await filmstrip.evaluate((strip) => strip.scrollLeft);
+        await page.keyboard.press(key);
+        await expect(slideshow).toHaveAttribute('data-index', String(index));
+        await waitForScrollToSettle();
+
+        const state = await filmstrip.evaluate((strip) => {
+          const active = strip.querySelector('[aria-current="true"]').getBoundingClientRect();
+          const bounds = strip.getBoundingClientRect();
+          return {
+            scrollLeft: strip.scrollLeft,
+            clientWidth: strip.clientWidth,
+            activeLeft: active.left,
+            activeRight: active.right,
+            stripLeft: bounds.left,
+            stripRight: bounds.right,
+            documentY: bounds.top + window.scrollY,
+          };
+        });
+        const movement = Math.abs(state.scrollLeft - before);
+        expect(state.activeLeft).toBeGreaterThanOrEqual(state.stripLeft - 1);
+        expect(state.activeRight).toBeLessThanOrEqual(state.stripRight + 1);
+        expect(
+          movement,
+          `${width}px project ${index} moved ${movement}px in direction ${direction}`,
+        ).toBeLessThanOrEqual(state.clientWidth / 2 + 8);
+        expect(Math.abs(state.documentY - initialDocumentY)).toBeLessThan(1);
+        measurements.push({ width, index, direction, movement });
+      }
+    }
+  }
+
+  await testInfo.attach('mobile-arrow-thumbnail-scroll.json', {
+    body: JSON.stringify(measurements, null, 2),
+    contentType: 'application/json',
+  });
+});
+
+test('mobile keyboard order places the filmstrip before project links @responsive-order', async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await addLinkedProjectFixture(page);
+  await page.goto('/post-production/');
+
+  const slideshow = page.locator('[data-video-viewer]');
+  const projectLink = slideshow.locator('[data-photo-project]');
+  const articleLink = slideshow.locator('[data-work-learn-more]');
+  await slideshow.locator('[data-photo-index="1"]').click();
+  await expect(projectLink).toBeVisible();
+  await expect(articleLink).toBeVisible();
+  const tabStops = await slideshow.evaluate((root) =>
+    Array.from(root.querySelectorAll('a, button'))
+      .filter((element) => !element.hidden && element.tabIndex >= 0)
+      .map((element) => {
+        if (element.matches('[data-watch-link]')) return 'watch';
+        if (element.matches('[data-video-play]')) return 'play';
+        if (element.matches('[data-slide-prev]')) return 'previous';
+        if (element.matches('[data-slide-next]')) return 'next';
+        if (element.matches('[data-photo-index="1"]')) return 'thumbnail-1';
+        if (element.matches('[data-photo-project]')) return 'project';
+        if (element.matches('[data-work-learn-more]')) return 'article';
+        return element.tagName.toLowerCase();
+      }),
+  );
+  expect(tabStops).toEqual([
+    'watch',
+    'play',
+    'previous',
+    'next',
+    'thumbnail-1',
+    'project',
+    'article',
+  ]);
+
+  if (testInfo.project.name.includes('webkit')) return;
+
+  await slideshow.locator('[data-watch-link]').focus();
+
+  const describeFocus = () =>
+    page.evaluate(() => {
+      const element = document.activeElement;
+      if (element.matches('[data-watch-link]')) return 'watch';
+      if (element.matches('[data-video-play]')) return 'play';
+      if (element.matches('[data-slide-prev]')) return 'previous';
+      if (element.matches('[data-slide-next]')) return 'next';
+      if (element.matches('[data-photo-index="1"]')) return 'thumbnail-1';
+      if (element.matches('[data-photo-project]')) return 'project';
+      if (element.matches('[data-work-learn-more]')) return 'article';
+      return element.tagName.toLowerCase();
+    });
+  const focusOrder = [await describeFocus()];
+  for (let index = 0; index < 6; index++) {
+    await page.keyboard.press('Tab');
+    focusOrder.push(await describeFocus());
+  }
+
+  expect(focusOrder).toEqual([
+    'watch',
+    'play',
+    'previous',
+    'next',
+    'thumbnail-1',
+    'project',
+    'article',
+  ]);
+});
+
+test.describe('mobile metadata fallback without JavaScript', () => {
+  test.use({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+
+  test('keeps project information readable in the video viewport @responsive-order', async ({
+    page,
+  }) => {
+    await page.goto('/post-production/');
+    const viewport = page.locator('[data-photo-viewport]');
+    const details = page.locator('.photo-details');
+    const title = details.locator('[data-slide-caption]');
+
+    await expect(details).toBeVisible();
+    await expect(title).toHaveText('A Song To Be Murdered By');
+    await expect(details.locator('[data-slide-subtitle]')).toHaveText(
+      'Editor · Colourist · BTS Photographer',
+    );
+    await expect(page.locator('[data-photo-filmstrip]')).toBeHidden();
+    expect(await viewport.locator('.photo-details').count()).toBe(1);
+    expect(await title.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+
+    const viewportBox = await viewport.boundingBox();
+    const detailsBox = await details.boundingBox();
+    expect(viewportBox).not.toBeNull();
+    expect(detailsBox).not.toBeNull();
+    expect(detailsBox.x).toBeGreaterThanOrEqual(viewportBox.x);
+    expect(detailsBox.x + detailsBox.width).toBeLessThanOrEqual(
+      viewportBox.x + viewportBox.width + 1,
+    );
+    expect(detailsBox.y + detailsBox.height).toBeLessThanOrEqual(
+      viewportBox.y + viewportBox.height + 1,
+    );
   });
 });
 

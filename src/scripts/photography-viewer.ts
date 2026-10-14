@@ -145,8 +145,14 @@ export function setupPhotographyViewer(root: HTMLElement) {
     const area = strip.getBoundingClientRect();
     if (videoViewer && mobileStrip.matches) {
       const behavior: ScrollBehavior = reduced.matches ? 'auto' : 'smooth';
-      if (item.left < area.left + 8 || item.right > area.right - 8)
+      if (item.left < area.left + 8) {
         strip.scrollTo({ left: strip.scrollLeft + item.left - area.left - 8, behavior });
+      } else if (item.right > area.right - 8) {
+        strip.scrollTo({
+          left: strip.scrollLeft + item.left - area.left + (item.width - area.width) / 2,
+          behavior,
+        });
+      }
       return;
     }
     if (item.left < area.left + 8) strip.scrollLeft += item.left - area.left - 8;
