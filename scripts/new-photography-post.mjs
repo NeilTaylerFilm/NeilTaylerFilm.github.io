@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -59,32 +59,52 @@ export function slugify(title) {
     .replace(/^-|-$/g, '');
 }
 
+export function latestPhotoDate(report, filenames) {
+  const uploaded = new Set([...report.matchAll(/^## (.+)$/gm)].map((match) => match[1]));
+  const names = filenames.filter((filename) => uploaded.has(filename));
+  if (!names.length) {
+    throw new Error('No photos from the latest upload remain in photo-inbox.');
+  }
+
+  const dates = names.map((filename) => {
+    const match = filename.match(/(?:^|[^0-9])((?:19|20)\d{2})(\d{2})(\d{2})(?!\d)/);
+    if (!match) {
+      throw new Error(
+        `Could not find the shoot date in ${filename}. Add it as YYYYMMDD, then run photos:upload again.`,
+      );
+    }
+
+    const date = `${match[1]}-${match[2]}-${match[3]}`;
+    const parsedDate = new Date(`${date}T00:00:00.000Z`);
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.toISOString().slice(0, 10) !== date
+    ) {
+      throw new Error(
+        `The date in ${filename} is not a valid calendar date. Correct it, then run photos:upload again.`,
+      );
+    }
+    return date;
+  });
+
+  return dates.sort().at(-1);
+}
+
 export function photographyPost(title, date, photos) {
   const project = {
     title,
-    subtitle: 'Add a subtitle or role',
-    description: 'Add a short description.',
     date,
     type: 'Behind The Scenes',
     draft: true,
     galleryLayout: 'justified',
     coverImage: photos[0].src,
-    coverAlt: 'Describe the cover photograph',
     images: photos.map(({ src, width, height }) => ({
       src,
-      alt: 'Describe this photograph',
       width,
       height,
     })),
   };
   return `---\n${JSON.stringify(project, null, 2)}\n---\n\nWrite your introduction here.\n`;
-}
-
-function localDate(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 async function main() {
@@ -101,6 +121,11 @@ async function main() {
   );
   const registry = JSON.parse(await readFile(path.join(root, 'src/data/r2-images.json'), 'utf8'));
   const photos = uploadedPhotos(report, registry, uploadLocked);
+  const inbox = await readdir(path.join(root, 'photo-inbox'), { withFileTypes: true });
+  const filenames = inbox
+    .filter((entry) => entry.isFile() && /\.(jpe?g|webp|png|avif|heic|heif)$/i.test(entry.name))
+    .map((entry) => entry.name);
+  const date = latestPhotoDate(report, filenames);
 
   let title = args[0]?.trim();
   if (!title) {
@@ -116,7 +141,6 @@ async function main() {
   const slug = slugify(title);
   if (!slug) throw new Error('The title must include a letter or number.');
 
-  const date = localDate();
   const filename = `${date.replaceAll('-', '')}-${slug}.md`;
   const destination = path.join(root, 'src/content/photography', filename);
   try {
@@ -131,7 +155,7 @@ async function main() {
   }
 
   console.log(`Created draft ${path.relative(root, destination)} with ${photos.length} photos.`);
-  console.log('Edit the subtitle, description, introduction and image alt text before publishing.');
+  console.log('Add your introduction before publishing.');
   console.log(
     'Remove old photos from photo-inbox before a later upload if you want a fresh batch.',
   );
