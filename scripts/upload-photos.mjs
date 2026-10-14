@@ -81,12 +81,17 @@ try {
     // 📖 Load existing image database (src/data/r2-images.json)
     const manifestPath = 'src/data/r2-images.json';
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    const reportPath = 'photo-inbox/UPLOAD-RESULTS.md';
     const report = [
-      '# Uploaded photos',
+      '# Upload in progress',
       '',
       'Copy an image address below into your post, slideshow or project. Replace the suggested description with your own.',
       '',
     ];
+    if (!dry) {
+      await mkdir('photo-inbox', { recursive: true });
+      await writeFile(reportPath, report.join('\n'));
+    }
 
     // 🔄 PROCESS EACH PHOTO IN THE INBOX ONE BY ONE
     for (const entry of entries) {
@@ -178,7 +183,11 @@ try {
         '',
       );
       await mkdir('photo-inbox', { recursive: true });
-      await writeFile('photo-inbox/UPLOAD-RESULTS.md', report.join('\n'));
+      await writeFile(reportPath, report.join('\n'));
+    }
+    if (!dry) {
+      report[0] = '# Uploaded photos';
+      await writeFile(reportPath, report.join('\n'));
     }
     console.log(
       dry

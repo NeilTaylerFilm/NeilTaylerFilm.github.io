@@ -20,6 +20,7 @@
     "dev:status": "astro dev status",
     "dev:logs": "astro dev logs",
     "postbuild": "node scripts/finish-build.mjs",
+    "photos:new": "node scripts/new-photography-post.mjs",
     "photos:upload": "node scripts/upload-photos.mjs",
     "photos:check": "node scripts/upload-photos.mjs --check",
     "photos:audit": "node scripts/audit-photo-library.mjs"
