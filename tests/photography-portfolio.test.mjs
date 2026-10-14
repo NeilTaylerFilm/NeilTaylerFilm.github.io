@@ -230,7 +230,7 @@ test('curated photos are unique, dimensioned images with optional published proj
     if (photo.projectSlug) {
       const project = fs.readFileSync(`src/content/photography/${photo.projectSlug}.md`, 'utf8');
       assert.ok(project.includes(photo.src));
-      assert.match(project, /"draft": false/);
+      assert.match(project, /^draft:\s*false$/m);
     }
   }
 });

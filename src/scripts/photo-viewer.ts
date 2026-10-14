@@ -1,6 +1,11 @@
-export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HTMLAnchorElement[]) {
+export function createPhotoViewer(
+  dialog: HTMLDialogElement,
+  getPhotos: () => HTMLAnchorElement[],
+  options: { hideSinglePagination?: boolean } = {},
+) {
   if (typeof dialog.showModal !== 'function') return null;
 
+  const maxZoom = 2;
   let items: HTMLAnchorElement[] = [];
   let visibleCount = 0;
   const find = <T extends HTMLElement>(name: string) =>
@@ -44,6 +49,31 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
   let opener: HTMLAnchorElement | undefined;
   let savedScroll = 0;
   let bodyStyle = '';
+  let zoomScale = 1;
+  let zoomX = 0;
+  let zoomY = 0;
+  const touchPoints = new Map<number, { x: number; y: number }>();
+  let pinch:
+    | {
+        distance: number;
+        scale: number;
+        x: number;
+        y: number;
+        centerX: number;
+        centerY: number;
+      }
+    | undefined;
+  let pan:
+    | {
+        id: number;
+        x: number;
+        y: number;
+        zoomX: number;
+        zoomY: number;
+        suppressTap: boolean;
+      }
+    | undefined;
+  let lastTap: { time: number; x: number; y: number } | undefined;
   let pointer:
     | {
         id: number;
@@ -79,7 +109,7 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     const photo = items[index];
     const thumbnail = photo.querySelector('img')!;
     const candidate = new Image();
-    candidate.alt = '';
+    candidate.alt = photo.dataset.alt ?? '';
     candidate.width = thumbnail.width;
     candidate.height = thumbnail.height;
     candidate.decoding = 'async';
@@ -102,6 +132,135 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     track.style.transform = 'translate3d(' + -slot * trackWidth() + 'px, 0, 0)';
   }
 
+  function activeImage() {
+    return slidesByPhoto.get(current)?.querySelector<HTMLImageElement>('img');
+  }
+
+  function zoomedImageSizes() {
+    return `${Math.ceil((imageStage.clientWidth || window.innerWidth) * maxZoom)}px`;
+  }
+
+  function applyZoom(animate = false) {
+    const image = activeImage();
+    if (!image) return;
+
+    image.style.transition = animate && !reducedMotion() ? '' : 'none';
+    if (zoomScale <= 1) {
+      zoomScale = 1;
+      zoomX = 0;
+      zoomY = 0;
+      image.style.removeProperty('transform');
+      image.removeAttribute('data-zoomed');
+      return;
+    }
+
+    const bounds = imageStage.getBoundingClientRect();
+    const naturalWidth = image.naturalWidth || image.clientWidth || bounds.width;
+    const naturalHeight = image.naturalHeight || image.clientHeight || bounds.height;
+    const fit = Math.min(image.clientWidth / naturalWidth, image.clientHeight / naturalHeight);
+    const maxX = Math.max(0, (naturalWidth * fit * zoomScale - bounds.width) / 2);
+    const maxY = Math.max(0, (naturalHeight * fit * zoomScale - bounds.height) / 2);
+    zoomX = Math.max(-maxX, Math.min(maxX, zoomX));
+    zoomY = Math.max(-maxY, Math.min(maxY, zoomY));
+
+    image.sizes = zoomedImageSizes();
+    image.dataset.zoomed = '';
+    image.style.transformOrigin = 'center';
+    image.style.transform = `translate3d(${zoomX}px, ${zoomY}px, 0) scale(${zoomScale})`;
+  }
+
+  function resetZoom() {
+    zoomScale = 1;
+    zoomX = 0;
+    zoomY = 0;
+    pinch = undefined;
+    pan = undefined;
+    lastTap = undefined;
+    applyZoom();
+  }
+
+  function setZoom(scale: number, x: number, y: number, animate = true) {
+    const target = Math.max(1, Math.min(maxZoom, scale));
+    if (target === 1) {
+      zoomScale = 1;
+      zoomX = 0;
+      zoomY = 0;
+    } else {
+      const bounds = imageStage.getBoundingClientRect();
+      zoomScale = target;
+      zoomX = (1 - target) * (x - bounds.left - bounds.width / 2);
+      zoomY = (1 - target) * (y - bounds.top - bounds.height / 2);
+    }
+    applyZoom(animate);
+  }
+
+  function toggleZoom(x: number, y: number) {
+    lastTap = undefined;
+    setZoom(zoomScale > 1 ? 1 : maxZoom, x, y);
+  }
+
+  function beginPinch() {
+    const [first, second] = Array.from(touchPoints.values()).slice(0, 2);
+    if (!first || !second) return;
+    const centerX = (first.x + second.x) / 2;
+    const centerY = (first.y + second.y) / 2;
+    pinch = {
+      distance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+      scale: zoomScale,
+      x: zoomX,
+      y: zoomY,
+      centerX,
+      centerY,
+    };
+    pan = undefined;
+    pointer = undefined;
+    lastTap = undefined;
+    swiped = true;
+    track.style.transitionProperty = 'transform';
+    track.style.transitionDuration = '0ms';
+    setTrackPosition(current);
+    for (const id of touchPoints.keys()) imageStage.setPointerCapture(id);
+  }
+
+  function updatePinch() {
+    if (!pinch) return;
+    const [first, second] = Array.from(touchPoints.values()).slice(0, 2);
+    if (!first || !second) return;
+    const centerX = (first.x + second.x) / 2;
+    const centerY = (first.y + second.y) / 2;
+    const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+    const scale = Math.max(1, Math.min(maxZoom, pinch.scale * (distance / pinch.distance)));
+    const ratio = scale / pinch.scale;
+    const bounds = imageStage.getBoundingClientRect();
+
+    zoomScale = scale;
+    zoomX =
+      centerX -
+      bounds.left -
+      bounds.width / 2 -
+      ratio * (pinch.centerX - bounds.left - bounds.width / 2 - pinch.x);
+    zoomY =
+      centerY -
+      bounds.top -
+      bounds.height / 2 -
+      ratio * (pinch.centerY - bounds.top - bounds.height / 2 - pinch.y);
+    applyZoom();
+  }
+
+  function recordTap(event: PointerEvent) {
+    if (
+      lastTap &&
+      event.timeStamp - lastTap.time <= 320 &&
+      Math.hypot(event.clientX - lastTap.x, event.clientY - lastTap.y) <= 32
+    ) {
+      lastTap = undefined;
+      swiped = true;
+      toggleZoom(event.clientX, event.clientY);
+    } else {
+      lastTap = { time: event.timeStamp, x: event.clientX, y: event.clientY };
+    }
+  }
+
   function ensureTrack() {
     if (trackCount === visibleCount) return;
     slidesByPhoto = new Map();
@@ -122,9 +281,16 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     const slide = slidesByPhoto.get(index);
     if (slide) {
       const image = source.cloneNode(true) as HTMLImageElement;
-      image.alt = '';
+      image.alt = items[index].dataset.alt ?? '';
       image.draggable = false;
+      image.tabIndex = index === current ? 0 : -1;
+      image.setAttribute('aria-keyshortcuts', 'Enter Space');
+      image.setAttribute('aria-description', 'Press Enter or Space to zoom in or return to fit.');
+      if (index === current && zoomScale > 1) image.sizes = zoomedImageSizes();
+      const restoreFocus = document.activeElement === slide.querySelector('img');
       slide.replaceChildren(image);
+      if (restoreFocus) image.focus({ preventScroll: true });
+      if (index === current) applyZoom();
     }
   }
 
@@ -133,7 +299,7 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     const preview = thumbnail.cloneNode(true) as HTMLImageElement;
     preview.removeAttribute('srcset');
     preview.removeAttribute('loading');
-    preview.alt = '';
+    preview.alt = items[index].dataset.alt ?? '';
     preview.draggable = false;
     preview.src = thumbnail.currentSrc || thumbnail.src;
     renderImage(index, preview);
@@ -178,7 +344,8 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
 
   function updatePagination() {
     if (!pagination) return;
-    pagination.hidden = visibleCount === 0;
+    pagination.hidden =
+      visibleCount === 0 || (options.hideSinglePagination === true && visibleCount === 1);
     if (pagination.hidden) return;
     if (visibleCount <= 5) dotWindowStart = 0;
     else {
@@ -245,6 +412,12 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
   function show(index: number, duration = 280, mode: 'slide' | 'fade' = 'slide') {
     const target = Math.max(0, Math.min(visibleCount - 1, index));
     const changed = target !== current;
+    const focusImage = changed && document.activeElement === activeImage();
+    if (changed) {
+      resetZoom();
+      touchPoints.clear();
+      pointer = undefined;
+    }
     if (openLink) openLink.hidden = true;
     if (fadeTimer) clearTimeout(fadeTimer);
     const hasMotion = duration > 0 && !reducedMotion();
@@ -298,6 +471,10 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
       ...(current < visibleCount - 1 ? [current + 1] : []),
     ]);
     slidesByPhoto.forEach((slide, photoIndex) => {
+      if (photoIndex === current) slide.removeAttribute('aria-hidden');
+      else slide.setAttribute('aria-hidden', 'true');
+      const image = slide.querySelector<HTMLImageElement>('img');
+      if (image) image.tabIndex = photoIndex === current ? 0 : -1;
       if (!nearby.has(photoIndex)) slide.replaceChildren();
     });
     loadedImages.forEach((_, photoIndex) => {
@@ -321,6 +498,7 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
       retry.hidden = true;
     }
     syncCaptionFocus();
+    if (focusImage) activeImage()?.focus({ preventScroll: true });
   }
 
   function open(trigger: HTMLAnchorElement, viaPointer: boolean) {
@@ -393,6 +571,12 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
   });
   dialog.addEventListener('keydown', (event) => {
     close.removeAttribute('data-pointer-open');
+    if ((event.key === 'Enter' || event.key === ' ') && event.target === activeImage()) {
+      event.preventDefault();
+      const bounds = imageStage.getBoundingClientRect();
+      toggleZoom(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+      return;
+    }
     if (event.key === 'Tab') {
       const controls = Array.from(
         dialog.querySelectorAll<HTMLElement>(
@@ -415,8 +599,11 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     }
   });
   dialog.addEventListener('pointerdown', (event) => {
+    if (event.isPrimary === false) {
+      pointer = undefined;
+      return;
+    }
     swiped = false;
-    if (event.isPrimary === false) pointer = undefined;
   });
   dialog.addEventListener('click', (event) => {
     if (swiped) {
@@ -447,6 +634,7 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     track.style.transitionDuration = '0ms';
     setTrackPosition(current);
     updatePagination();
+    applyZoom();
   };
   window.addEventListener('resize', updateViewport, { passive: true });
   window.visualViewport?.addEventListener('resize', updateViewport, { passive: true });
@@ -497,12 +685,68 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
       scrubPointer = undefined;
     });
   }
+  function beginPan(id: number, point: { x: number; y: number }, suppressTap = false) {
+    pan = { id, x: point.x, y: point.y, zoomX, zoomY, suppressTap };
+    imageStage.setPointerCapture(id);
+  }
+
+  function finishSwipe(event: PointerEvent) {
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const dx = event.clientX - pointer.x;
+    const dy = event.clientY - pointer.y;
+    if (!pointer.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+      pointer.horizontal = true;
+      imageStage.setPointerCapture(event.pointerId);
+    }
+    const elapsed = Math.max(event.timeStamp - pointer.lastTime, 1);
+    const releaseDelta = event.clientX - pointer.lastX;
+    const velocity = releaseDelta ? releaseDelta / elapsed : pointer.velocity;
+    const direction = dx < 0 ? 1 : -1;
+    const shouldAdvance =
+      pointer.horizontal &&
+      Math.abs(dx) > Math.abs(dy) * 1.15 &&
+      (Math.abs(dx) >= trackWidth() * 0.25 || (Math.abs(dx) > 8 && Math.abs(velocity) > 0.55));
+    pointer = undefined;
+    if (shouldAdvance) {
+      swiped = true;
+      show(current + direction);
+    } else {
+      if (event.pointerType === 'touch' && Math.hypot(dx, dy) <= 8) recordTap(event);
+      else if (Math.hypot(dx, dy) > 8) lastTap = undefined;
+      track.style.transitionProperty = 'transform';
+      track.style.transitionDuration = reducedMotion() ? '0ms' : '280ms';
+      setTrackPosition(current);
+    }
+  }
+
   imageStage.addEventListener('pointerdown', (event) => {
+    if (event.pointerType === 'touch') {
+      const point = { x: event.clientX, y: event.clientY };
+      if (touchPoints.size === 0) swiped = false;
+      touchPoints.set(event.pointerId, point);
+      if (touchPoints.size >= 2) {
+        swiped = true;
+        beginPinch();
+      } else if (zoomScale > 1) {
+        pointer = undefined;
+        beginPan(event.pointerId, point);
+      } else {
+        pointer = {
+          id: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          lastX: event.clientX,
+          lastTime: event.timeStamp,
+          velocity: 0,
+          horizontal: false,
+        };
+      }
+      return;
+    }
     if (event.isPrimary === false || event.pointerType === 'mouse' || event.button !== 0) {
       pointer = undefined;
       return;
     }
-    swiped = false;
     pointer = {
       id: event.pointerId,
       x: event.clientX,
@@ -514,6 +758,24 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     };
   });
   imageStage.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch' && touchPoints.has(event.pointerId)) {
+      touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pinch) {
+        updatePinch();
+        event.preventDefault();
+        return;
+      }
+      if (pan?.id === event.pointerId) {
+        const dx = event.clientX - pan.x;
+        const dy = event.clientY - pan.y;
+        if (Math.hypot(dx, dy) > 8) lastTap = undefined;
+        zoomX = pan.zoomX + dx;
+        zoomY = pan.zoomY + dy;
+        applyZoom();
+        event.preventDefault();
+        return;
+      }
+    }
     if (!pointer || pointer.id !== event.pointerId) return;
     const elapsed = Math.max(event.timeStamp - pointer.lastTime, 1);
     pointer.velocity = (event.clientX - pointer.lastX) / elapsed;
@@ -523,6 +785,7 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     const dy = event.clientY - pointer.y;
     if (!pointer.horizontal && Math.abs(dy) > 8 && Math.abs(dy) >= Math.abs(dx)) {
       pointer = undefined;
+      lastTap = undefined;
       return;
     }
     if (!pointer.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.15) {
@@ -540,39 +803,71 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     }
   });
   imageStage.addEventListener('pointerup', (event) => {
-    if (!pointer || pointer.id !== event.pointerId) return;
-    const dx = event.clientX - pointer.x;
-    const dy = event.clientY - pointer.y;
-    if (!pointer.horizontal && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.15) {
-      pointer.horizontal = true;
-      imageStage.setPointerCapture(event.pointerId);
+    if (event.pointerType === 'touch' && touchPoints.has(event.pointerId)) {
+      touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pinch) {
+        touchPoints.delete(event.pointerId);
+        pointer = undefined;
+        swiped = true;
+        if (touchPoints.size >= 2) beginPinch();
+        else {
+          pinch = undefined;
+          const [remaining] = touchPoints.entries();
+          if (remaining) beginPan(remaining[0], remaining[1], true);
+          else pan = undefined;
+        }
+        return;
+      }
+      if (pan?.id === event.pointerId) {
+        const gesture = pan;
+        touchPoints.delete(event.pointerId);
+        pan = undefined;
+        if (
+          !gesture.suppressTap &&
+          Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) <= 8
+        )
+          recordTap(event);
+        else lastTap = undefined;
+        return;
+      }
+      if (pointer?.id === event.pointerId) {
+        touchPoints.delete(event.pointerId);
+        finishSwipe(event);
+        return;
+      }
+      touchPoints.delete(event.pointerId);
+      return;
     }
-    const elapsed = Math.max(event.timeStamp - pointer.lastTime, 1);
-    const releaseDelta = event.clientX - pointer.lastX;
-    const velocity = releaseDelta ? releaseDelta / elapsed : pointer.velocity;
-    const direction = dx < 0 ? 1 : -1;
-    const shouldAdvance =
-      pointer.horizontal &&
-      Math.abs(dx) > Math.abs(dy) * 1.15 &&
-      (Math.abs(dx) >= trackWidth() * 0.25 || (Math.abs(dx) > 8 && Math.abs(velocity) > 0.55));
-    pointer = undefined;
-    if (shouldAdvance) swiped = true;
-    if (shouldAdvance) {
-      show(current + direction);
-    } else {
-      track.style.transitionProperty = 'transform';
-      track.style.transitionDuration = reducedMotion() ? '0ms' : '280ms';
-      setTrackPosition(current);
-    }
+    finishSwipe(event);
   });
   imageStage.addEventListener('pointercancel', (event) => {
+    if (event.pointerType === 'touch' && touchPoints.has(event.pointerId)) {
+      touchPoints.delete(event.pointerId);
+      lastTap = undefined;
+      if (pinch) {
+        if (touchPoints.size >= 2) beginPinch();
+        else {
+          pinch = undefined;
+          const [remaining] = touchPoints.entries();
+          if (remaining) beginPan(remaining[0], remaining[1], true);
+          else pan = undefined;
+        }
+      } else if (pan?.id === event.pointerId) pan = undefined;
+    }
     if (!pointer || pointer.id !== event.pointerId) return;
     pointer = undefined;
     track.style.transitionProperty = 'transform';
     track.style.transitionDuration = reducedMotion() ? '0ms' : '280ms';
     setTrackPosition(current);
   });
+  imageStage.addEventListener('click', (event) => {
+    if (swiped || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (event instanceof PointerEvent && event.pointerType === 'touch') return;
+    if (!(event.target instanceof HTMLImageElement) || event.target !== activeImage()) return;
+    toggleZoom(event.clientX, event.clientY);
+  });
   dialog.addEventListener('close', () => {
+    resetZoom();
     loadSequence++;
     trackCount = 0;
     fadeSequence++;
@@ -594,6 +889,8 @@ export function createPhotoViewer(dialog: HTMLDialogElement, getPhotos: () => HT
     if (scrubPointer) clearTimeout(scrubPointer.timer);
     scrubPointer = undefined;
     pointer = undefined;
+    touchPoints.clear();
+    swiped = false;
     feedback.textContent = '';
     retry.hidden = true;
     if (openLink) openLink.hidden = true;

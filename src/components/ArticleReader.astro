@@ -1,5 +1,6 @@
 ---
 import type { MarkdownHeading } from 'astro';
+import Lightbox from './Lightbox.astro';
 
 interface Props {
   headings: MarkdownHeading[];
@@ -67,6 +68,7 @@ const minChapterDepth = Math.min(...chapters.map((chapter) => chapter.depth));
       {archiveLabel} →
     </a>
   </div>
+  <Lightbox label="Article images" />
 </div>
 
 <script>

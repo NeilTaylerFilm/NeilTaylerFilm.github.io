@@ -1046,6 +1046,16 @@ h1 {
 .prose figure img {
   width: 100%;
 }
+.prose a.article-image-trigger {
+  cursor: zoom-in;
+}
+.prose a.article-image-trigger:hover img {
+  opacity: 0.88;
+}
+.prose a.article-image-trigger:focus-visible img {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
 .prose figcaption {
   font: 11px/1.6 var(--mono);
   color: var(--muted);

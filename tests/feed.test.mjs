@@ -76,7 +76,7 @@ test('photography sorting accepts exact dates, years and undated projects', asyn
 });
 
 test('multiple categories retain legacy support and normalize duplicates', async () => {
-  const { postCategories, matchesCategory } = await import('../src/lib/feed.ts');
+  const { postCategories, matchesFilter } = await import('../src/lib/feed.ts');
   assert.deepEqual(postCategories({ category: ' Film ' }), ['Film']);
   const categories = postCategories({
     categories: ['Photography', ' Technology ', 'photography', 'Film / TV'],
@@ -84,9 +84,17 @@ test('multiple categories retain legacy support and normalize duplicates', async
   });
   assert.deepEqual(categories, ['Photography', 'Technology', 'Film / TV']);
   for (const selected of ['', 'photography', 'technology', 'film / tv'])
-    assert.ok(matchesCategory(categories, selected));
-  assert.equal(matchesCategory(categories, 'Notebook'), false);
+    assert.ok(matchesFilter(categories, selected));
+  assert.equal(matchesFilter(categories, 'Notebook'), false);
   assert.deepEqual(postCategories({}), []);
+});
+
+test('photography type options are trimmed, unique, and sorted from content data', async () => {
+  const { types } = await import('../src/lib/feed.ts');
+  assert.deepEqual(
+    types([{ type: ' Travel ' }, { type: 'travel' }, { type: 'Sports' }, {}, { type: '' }]),
+    ['Sports', 'Travel'],
+  );
 });
 
 test('project calendar dates reject ambiguous and impossible input', async () => {

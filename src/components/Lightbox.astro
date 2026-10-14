@@ -2,13 +2,13 @@
 import PhotoViewer from './PhotoViewer.astro';
 
 interface Props {
-  title: string;
+  label: string;
 }
 
-const { title } = Astro.props;
+const { label } = Astro.props;
 ---
 
-<PhotoViewer label={`${title} — photographs`} projectLinks={false} />
+<PhotoViewer label={label} projectLinks={false} />
 
 <script>
   import { createPhotoViewer } from '../scripts/photo-viewer.ts';
@@ -16,33 +16,54 @@ const { title } = Astro.props;
   const dialog = document.querySelector<HTMLDialogElement>('[data-portfolio-dialog]');
 
   if (dialog) {
-    document.querySelectorAll<HTMLImageElement>('[data-project-prose] img').forEach((img) => {
-      if (img.closest('a')) return;
+    const articleBody = document.querySelector<HTMLElement>('[data-article-body]');
+    const imageSelector = articleBody ? '[data-article-body] img' : '[data-project-prose] img';
+    document.querySelectorAll<HTMLImageElement>(imageSelector).forEach((img) => {
+      if (
+        img.closest('a, button, [role="button"], [tabindex]:not([tabindex="-1"])') ||
+        img.hasAttribute('usemap')
+      )
+        return;
 
       const link = document.createElement('a');
-      const full = img.dataset.fullImage || img.src;
+      const full = img.dataset.fullImage || img.currentSrc || img.src;
 
       link.href = full;
       link.dataset.full = full;
-      link.dataset.galleryTrigger = '';
+      link.dataset.alt = img.alt;
+      link.dataset.srcset = img.srcset;
+      if (articleBody) {
+        link.className = 'article-image-trigger';
+        link.dataset.articleImageTrigger = '';
+      } else {
+        link.dataset.galleryTrigger = '';
+      }
 
       link.dataset.caption = img.closest('figure')?.querySelector('figcaption')?.textContent || '';
 
       link.setAttribute(
         'aria-label',
-        img.alt ? `Enlarge photograph: ${img.alt}` : 'Enlarge photograph',
+        img.alt
+          ? `${articleBody ? 'Enlarge article image' : 'Enlarge photograph'}: ${img.alt}`
+          : articleBody
+            ? 'Enlarge article image'
+            : 'Enlarge photograph',
       );
 
       img.before(link);
       link.append(img);
     });
 
+    const triggerSelector = articleBody ? '[data-article-image-trigger]' : '[data-gallery-trigger]';
     const triggers = () =>
-      Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-gallery-trigger]'));
+      Array.from(document.querySelectorAll<HTMLAnchorElement>(triggerSelector));
+    const initialTriggers = triggers();
 
-    const viewer = createPhotoViewer(dialog, triggers);
+    const viewer = initialTriggers.length
+      ? createPhotoViewer(dialog, triggers, { hideSinglePagination: Boolean(articleBody) })
+      : null;
 
-    triggers().forEach((trigger) => {
+    initialTriggers.forEach((trigger) => {
       viewer?.bind(trigger, { space: true });
     });
   }

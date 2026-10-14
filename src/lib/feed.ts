@@ -79,6 +79,15 @@ export function postCategories(data: { categories?: string[]; category?: string 
   return [...unique.values()];
 }
 
+export function types(entries: { type?: string }[]) {
+  const unique = new Map<string, string>();
+  for (const { type } of entries) {
+    const label = type?.trim();
+    if (label && !unique.has(categoryKey(label))) unique.set(categoryKey(label), label);
+  }
+  return [...unique.values()].sort();
+}
+
 // 🏷️ HELPER 6b: Card Label
 // Returns the `type` (shown as an outlined pill) and only the FIRST category
 // from frontmatter (shown as plain text), e.g. { type: "Explainer", category: "Editing" }.
@@ -91,10 +100,10 @@ export function displayLabel(data: { type?: string; categories?: string[]; categ
   return { type: data.type, category };
 }
 
-// 🎯 HELPER 7: Category Matcher
-// Checks: "Does this article belong to the category button the visitor just clicked?"
-export function matchesCategory(categories: string[], selected: string) {
+// 🎯 HELPER 7: Filter Matcher
+// Checks whether a value matches the visitor's selected filter.
+export function matchesFilter(values: string[], selected: string) {
   return (
-    !selected || categories.some((category) => categoryKey(category) === categoryKey(selected))
+    !selected || values.some((value) => categoryKey(value) === categoryKey(selected))
   );
 }
