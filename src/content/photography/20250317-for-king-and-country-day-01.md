@@ -7,7 +7,6 @@
   "draft": false,
   "coverImage": https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/2ee16ec9e761ba9556d4ca11684f20fd-1708.jpeg,
   "galleryLayout": "justified",
-  "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/9f5388f16ee9d62a7ba2534b94f8f966-2560.jpeg",
   "images": [
     {
       "src": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/9f5388f16ee9d62a7ba2534b94f8f966-2560.jpeg",
