@@ -76,7 +76,11 @@ for (const file of htmlFiles) {
       if (slide.project) await resolveURL(`${projectPrefix}${slide.project}/`, base);
     }
   }
-  if (relative === 'blog/index.html') continue; // Static redirect for the old blog URL.
+  if (
+    relative === 'blog/index.html' ||
+    relative === 'photography/20260809-late-night-drive-bts/index.html'
+  )
+    continue; // Static redirect pages lack the metadata checked below.
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]);
   if (new Set(ids).size !== ids.length) errors.push(`Duplicate IDs: ${relative}`);
   for (const img of html.matchAll(/<img\b[^>]*>/g)) {
