@@ -108,7 +108,7 @@ try {
   // 4. Pressing Escape returns your keyboard cursor to where you started.
 
   const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
-  await page.goto('http://127.0.0.1:4323/photography/20260809-late-night-drive-bts/', {
+  await page.goto('http://127.0.0.1:4323/photography/20260801-late-night-drive-short-film-day-01/', {
     waitUntil: 'domcontentloaded',
   });
 

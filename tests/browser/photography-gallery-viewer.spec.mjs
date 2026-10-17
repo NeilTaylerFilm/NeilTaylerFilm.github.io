@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const haGiang = '/photography/20260526-ha-giang-loop/';
-const lateNight = '/photography/20260809-late-night-drive-bts/';
+const lateNight = '/photography/20260808-late-night-drive-short-film-day-03/';
 
 test.beforeEach(({}, testInfo) => {
   test.skip(
@@ -342,25 +342,25 @@ test('desktop Space opens gallery photos without scrolling or repeating', async 
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(savedScroll);
 });
 
-test('202-photo gallery keeps the complete sequence and measures scrub-to-frame time', async ({
+test('103-photo gallery keeps the complete sequence and measures scrub-to-frame time', async ({
   page,
 }, testInfo) => {
-  const { dialog, opener } = await openGalleryPhoto(page, lateNight, 100, 202);
-  await expect(dialog.locator('.portfolio-dot')).toHaveCount(202);
-  expect(await activeIndex(dialog)).toBe(100);
+  const { dialog, opener } = await openGalleryPhoto(page, lateNight, 50, 103);
+  await expect(dialog.locator('.portfolio-dot')).toHaveCount(103);
+  expect(await activeIndex(dialog)).toBe(50);
 
   const measurements = [];
   for (let index = 0; index < 5; index++) {
     const result = await scrubDots(dialog);
     expect(result.scrubbing).toBe(true);
-    expect(result.active).toBe(102 + index * 2);
+    expect(result.active).toBe(52 + index * 2);
     expect(result.frameDuration).toBeGreaterThanOrEqual(0);
     measurements.push(result.frameDuration);
   }
   const ordered = [...measurements].sort((a, b) => a - b);
   const median = ordered[Math.floor(ordered.length / 2)];
   console.log(
-    `202-photo scrub-to-next-frame (${testInfo.project.name}, development machine): samples ${measurements.map((value) => value.toFixed(2)).join(', ')} ms; median ${median.toFixed(2)} ms`,
+    `103-photo scrub-to-next-frame (${testInfo.project.name}, development machine): samples ${measurements.map((value) => value.toFixed(2)).join(', ')} ms; median ${median.toFixed(2)} ms`,
   );
   await dialog.locator('[data-portfolio-close]').click();
   await expect(opener).toBeFocused();

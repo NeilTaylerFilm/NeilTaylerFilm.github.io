@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const article = '/post-production/20261009-astbmb-scenebreakdown/';
-const photoProject = '/photography/20260809-late-night-drive-bts/';
+const photoProject = '/photography/20260801-late-night-drive-short-film-day-01/';
 
 async function openImage(page, route, selector, index = 0) {
   await page.goto(route);

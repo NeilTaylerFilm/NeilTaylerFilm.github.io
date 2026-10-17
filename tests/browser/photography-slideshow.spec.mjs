@@ -12,7 +12,7 @@ test('the shared Photography slideshow announces photographs and keeps its proje
         src: source,
         alt: 'Wat Arun temple',
         caption: 'Wat Arun',
-        project: '20260809-late-night-drive-bts',
+        project: '20260801-late-night-drive-short-film-day-01',
         width: 4,
         height: 3,
       },
@@ -36,7 +36,7 @@ test('the shared Photography slideshow announces photographs and keeps its proje
         <button type="button" data-slide-prev>Previous</button>
         <button type="button" data-slide-next>Next</button>
         <p data-slide-caption>Wat Arun</p>
-        <a data-photo-project href="/photography/20260809-late-night-drive-bts/">View project →</a>
+        <a data-photo-project href="/photography/20260801-late-night-drive-short-film-day-01/">View project →</a>
         <span data-slide-count>01 / 02</span>
         <div data-photo-filmstrip>
           <button type="button" data-photo-index="0" tabindex="0"></button>
@@ -60,7 +60,7 @@ test('the shared Photography slideshow announces photographs and keeps its proje
   const slideshow = page.locator('[data-test-photography-viewer]');
   const projectLink = slideshow.locator('[data-photo-project]');
   await expect(projectLink).toHaveText('View project →');
-  await expect(projectLink).toHaveAttribute('href', '/photography/20260809-late-night-drive-bts/');
+  await expect(projectLink).toHaveAttribute('href', '/photography/20260801-late-night-drive-short-film-day-01/');
 
   await slideshow.locator('[data-slide-next]').click();
   await expect

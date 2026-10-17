@@ -33,7 +33,11 @@ export default defineConfig({
   // 🔗 Always add a trailing slash (e.g. /about/)
   trailingSlash: 'always',
   // 🔀 Send visitors from /blog to homepage
-  redirects: { '/blog': '/' },
+  redirects: {
+    '/blog': '/',
+    '/photography/20260809-late-night-drive-bts/':
+      '/photography/20260801-late-night-drive-short-film-day-01/',
+  },
   // Local recovery copies and package caches are not application source.
   vite: {
     server: {

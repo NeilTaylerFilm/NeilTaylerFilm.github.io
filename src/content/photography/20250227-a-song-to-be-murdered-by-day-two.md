@@ -1,7 +1,7 @@
 ---
 {
-  "title": "A Song To Be Murdered By - Day Two",
-  "subtitle": "2nd filming day for A Song To Be Murdered By.",
+  "title": "A Song To Be Murdered By - Day 02",
+  "subtitle": "2nd filming day for A Song To Be Murdered By. This was the busiest day of filming, it required serious planning from all departments. We had complex camera movements, many extras, and a lot of shots to get through as this was the last day we were allowed to film in this location.",
   "date": "2025-02-27",
   "type": "Behind The Scenes",
   "draft": false,

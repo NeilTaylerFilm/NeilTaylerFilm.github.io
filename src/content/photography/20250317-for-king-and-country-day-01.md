@@ -1,7 +1,7 @@
 ---
 {
   "title": "For King & Country - Day 01",
-  "subtitle": "1st day of BTS photography for the regency short film 'For King & Country'.",
+  "subtitle": "1st day of BTS photography for the regency short film 'For King & Country', shot in the beautiful Parham House in West Sussex.",
   "date": "2025-03-17",
   "type": "Behind The Scenes",
   "draft": false,
