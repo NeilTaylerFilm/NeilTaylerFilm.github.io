@@ -134,7 +134,8 @@ const structuredData = {
   <RelatedContent
     title="Related posts"
     headingId="related-blog-heading"
-    layout="list"
+    layout="grid"
+    gridColumns={3}
     items={related}
   >
     {related.map((relatedPost, index) => (

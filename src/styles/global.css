@@ -2125,6 +2125,114 @@ picture {
   grid-template-columns: minmax(0, 700px);
 }
 
+/* Blog view controls are progressively enhanced and hidden until their script is ready. */
+.blog-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 3px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.blog-view-toggle[hidden] {
+  display: none;
+}
+.blog-view-toggle button {
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: max(2px, calc(var(--radius) - 2px));
+  background: transparent;
+  color: var(--muted);
+  font: 11px var(--mono);
+  cursor: pointer;
+}
+.blog-view-toggle button[aria-pressed='true'] {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+.blog-view-toggle button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* The index and Related Posts share BlogCard markup; only their parent controls presentation. */
+html[data-blog-view='grid'] .blog-feed {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 46px 30px;
+  margin-top: 32px;
+}
+@media (max-width: 1050px) {
+  html[data-blog-view='grid'] .blog-feed {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 540px) {
+  html[data-blog-view='grid'] .blog-feed {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  padding: 0 0 24px;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card > .card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card > .card-content,
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid)
+  > .blog-card:not(.has-image)
+  > .card-content {
+  width: 100%;
+  max-width: none;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid)
+  > .blog-card:not(.has-image)
+  > .card-content {
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card .metadata {
+  gap: 8px 10px;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card h2 {
+  max-width: none;
+  margin-top: 12px;
+  font-size: 24px;
+  line-height: 1.16;
+  letter-spacing: -0.7px;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card .excerpt {
+  max-width: none;
+  font-size: 14px;
+  line-height: 1.65;
+}
+:is(html[data-blog-view='grid'] .blog-feed, .related-grid--grid) > .blog-card > .item-number {
+  display: none;
+}
+@media (max-width: 767px) {
+  .feed-toolbar:has(.blog-view-toggle:not([hidden])) {
+    flex-wrap: wrap;
+  }
+  .feed-toolbar:has(.blog-view-toggle:not([hidden])) .feed-controls {
+    flex: 1 1 100%;
+  }
+  .feed-toolbar:has(.blog-view-toggle:not([hidden])) .blog-view-toggle {
+    margin-left: auto;
+  }
+}
+
 /* Post-Production video support */
 .video-container {
   margin: 20px 0;

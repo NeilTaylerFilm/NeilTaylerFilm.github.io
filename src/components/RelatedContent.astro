@@ -3,11 +3,19 @@ interface Props {
   title: string;
   items: readonly unknown[];
   layout?: 'grid' | 'list';
+  // Optional fixed grid width; fewer cards remain left-aligned instead of stretching.
+  gridColumns?: 1 | 2 | 3;
   headingId?: string;
 }
 
-const { title, items, layout = 'grid', headingId = 'related-content-heading' } = Astro.props;
-const columns = Math.min(items.length, 3);
+const {
+  title,
+  items,
+  layout = 'grid',
+  gridColumns,
+  headingId = 'related-content-heading',
+} = Astro.props;
+const columns = Math.min(gridColumns ?? items.length, 3);
 ---
 
 {items.length > 0 && (

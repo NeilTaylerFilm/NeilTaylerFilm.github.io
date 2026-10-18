@@ -66,6 +66,8 @@ import { categoryKey } from '../lib/feed';
     </label>
   </form>
 
+  <slot name="toolbar-actions" />
+
   {/* 🔢 Live count text (e.g. "08 articles") */}
   {/* role="status" and aria-live="polite" announce count changes to screen readers */}
   <p class="feed-count mono" data-feed-count data-noun={noun} role="status" aria-live="polite">

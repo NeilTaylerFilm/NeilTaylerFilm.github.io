@@ -31,6 +31,15 @@ const classifications = getClassifications(allPosts, 'tags');
   title="Blog"
   description="Blog posts by Neil Tayler on photography, film, post-production, technology and the things that catch his attention."
 >
+  {/* Restore Grid before the first paint; invalid or unavailable storage keeps the List default. */}
+  <script is:inline slot="head">
+    try {
+      if (localStorage.getItem('neil-blog-view') === 'grid') {
+        document.documentElement.dataset.blogView = 'grid';
+      }
+    } catch {}
+  </script>
+
   {/* The main stage for our blog articles. We give it an aria-label so screen readers describe it clearly to visually impaired visitors. */}
   <section class="content-start" aria-label="Blog articles">
     {/* 🏷️ Top Section Heading: "Latest posts" */}
@@ -48,12 +57,24 @@ const classifications = getClassifications(allPosts, 'tags');
         count={allPosts.length}
         filterLabel="Tags"
         allLabel="All tags"
-      />
+      >
+        <div
+          class="blog-view-toggle"
+          role="group"
+          aria-label="Blog view"
+          data-blog-view-controls
+          hidden
+          slot="toolbar-actions"
+        >
+          <button type="button" data-blog-view="list" aria-pressed="true">List</button>
+          <button type="button" data-blog-view="grid" aria-pressed="false">Grid</button>
+        </div>
+      </FeedControls>
     )}
 
     {/* 📰 Grid list of blog cards */}
     {/* The magazine rack: a grid container holding all the blog article cards. */}
-    <div class="blog-feed" data-feed>
+    <div class="blog-feed" data-feed data-blog-feed>
       {/* We loop through each post in our list like flipping through index cards, creating a neat preview card for each one. */}
       {allPosts.map((post, index) => (
         <BlogCard post={post} index={index} />
@@ -72,4 +93,46 @@ const classifications = getClassifications(allPosts, 'tags');
       </div>
     )}
   </section>
+
+  <script>
+    const controls = document.querySelector<HTMLElement>('[data-blog-view-controls]');
+    const feed = document.querySelector<HTMLElement>('[data-blog-feed]');
+
+    if (controls && feed) {
+      const buttons = Array.from(
+        controls.querySelectorAll<HTMLButtonElement>('button[data-blog-view]'),
+      );
+
+      function setView(view: 'list' | 'grid', persist = false) {
+        document.documentElement.dataset.blogView = view;
+
+        for (const button of buttons) {
+          button.setAttribute('aria-pressed', String(button.dataset.blogView === view));
+        }
+
+        if (persist) {
+          try {
+            localStorage.setItem('neil-blog-view', view);
+          } catch {}
+        }
+      }
+
+      let initialView: 'list' | 'grid' =
+        document.documentElement.dataset.blogView === 'grid' ? 'grid' : 'list';
+      try {
+        const savedView = localStorage.getItem('neil-blog-view');
+        if (savedView === 'list' || savedView === 'grid') initialView = savedView;
+      } catch {}
+
+      setView(initialView);
+      controls.hidden = false;
+
+      for (const button of buttons) {
+        button.addEventListener('click', () => {
+          const view = button.dataset.blogView;
+          if (view === 'list' || view === 'grid') setView(view, true);
+        });
+      }
+    }
+  </script>
 </BaseLayout>
