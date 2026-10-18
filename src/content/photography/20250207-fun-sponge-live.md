@@ -1,7 +1,7 @@
 ---
 title: "Fun Sponge - Live"
 date: "2025-02-07"
-type: "Concert"
+category: "Concert"
 description: >-
   Fun Sponge opened for Fake Empire at a live event organised by our graduate film group to raise funds for the project.
 draft: false

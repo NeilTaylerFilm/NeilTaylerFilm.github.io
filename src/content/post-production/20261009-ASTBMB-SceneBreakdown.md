@@ -3,8 +3,8 @@ title: A Song To Be Murdered By - Scene Breakdown
 subtitle: Vanity Fair inspired scene by scene breakdown of "A Song To Be Murdered By", a short film I edited and colour graded in my last year of university.
 date: 2026-10-10
 updated:
-type: Explainer
-categories:
+category: Explainer
+tags:
   - YouTube
   - Short Film
   - Colour Grading

@@ -4,9 +4,9 @@
 // This file is like a prep station in a kitchen:
 // - It slices blog posts into bite-sized preview teasers.
 // - It puts items in order (newest first or oldest first).
-// - It cleans up tags and categories so they match easily.
+// - It normalizes primary categories and secondary tags for consistent filtering.
 
-// Helpers for dates, categories, excerpts and sorting
+// Helpers for dates, classifications, excerpts and sorting
 
 // 📅 HELPER 1: Date Stamper
 // Converts any complex date into a simple "YYYY-MM-DD" text string.
@@ -14,8 +14,8 @@
 // Slicing the first 10 letters leaves just the clean calendar day.
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);
 
-// 🏷️ HELPER 2: Tag Tidier
-// Removes accidental extra spaces and makes words lowercase so "Film" and "film " match!
+// 🏷️ HELPER 2: Classification Key
+// Removes accidental extra spaces and makes labels lowercase so "Film" and "film " match!
 // Using the English locale ensures letters like 'I' lowercase consistently across all computers.
 export const categoryKey = (category: string) => category.trim().toLocaleLowerCase('en');
 
@@ -67,43 +67,78 @@ export function projectTimestamp(data: { date?: Date; year?: string | number }) 
   return data.date?.getTime() ?? (data.year ? Date.parse(`${data.year}-01-01`) : 0);
 }
 
-// 🏷️ HELPER 6: Unique Category Finder
-// Collects all category tags on an article and removes accidental duplicates.
-export function postCategories(data: { categories?: string[]; category?: string }) {
-  const values = data.categories ?? (data.category ? [data.category] : []);
+export type ClassificationMetadata = { category?: string; tags?: string[] };
+export type ClassificationField = 'category' | 'tags';
+
+function uniqueLabels(values: (string | undefined)[]) {
   const unique = new Map<string, string>();
   for (const value of values) {
-    const label = value.trim();
+    const label = value?.trim();
     if (label && !unique.has(categoryKey(label))) unique.set(categoryKey(label), label);
   }
   return [...unique.values()];
 }
 
-export function types(entries: { type?: string }[]) {
+// Read one semantic field without treating category and tags as aliases.
+export function filterValues(data: ClassificationMetadata, field: ClassificationField) {
+  return uniqueLabels(field === 'category' ? [data.category] : (data.tags ?? []));
+}
+
+// 🏷️ HELPER 6: Classification Values
+// Returns the primary category and secondary tags together where a feature needs all facets.
+export function classificationValues(data: ClassificationMetadata) {
+  return uniqueLabels([data.category, ...(data.tags ?? [])]);
+}
+
+export function classificationOptions(
+  entries: ClassificationMetadata[],
+  field: ClassificationField,
+) {
   const unique = new Map<string, string>();
-  for (const { type } of entries) {
-    const label = type?.trim();
-    if (label && !unique.has(categoryKey(label))) unique.set(categoryKey(label), label);
+  for (const entry of entries) {
+    for (const label of filterValues(entry, field)) {
+      if (!unique.has(categoryKey(label))) unique.set(categoryKey(label), label);
+    }
   }
   return [...unique.values()].sort();
 }
 
 // 🏷️ HELPER 6b: Card Label
-// Returns the `type` (shown as an outlined pill) and only the FIRST category
-// from frontmatter (shown as plain text), e.g. { type: "Explainer", category: "Editing" }.
-// All categories still power the filter; this only controls what is displayed.
-export function displayLabel(data: { type?: string; categories?: string[]; category?: string }) {
-  const [first] = postCategories(data);
-  // Skip the category if it just repeats the type
-  const category =
-    first && (!data.type || categoryKey(first) !== categoryKey(data.type)) ? first : undefined;
-  return { type: data.type, category };
+// The primary category is the pill; the first distinct tag remains the plain-text label.
+export function displayLabel(data: ClassificationMetadata) {
+  const category = data.category?.trim() || undefined;
+  const firstTag = data.tags?.map((tag) => tag.trim()).find(Boolean);
+  const tag =
+    firstTag && (!category || categoryKey(firstTag) !== categoryKey(category))
+      ? firstTag
+      : undefined;
+  return { category, tag };
 }
 
 // 🎯 HELPER 7: Filter Matcher
 // Checks whether a value matches the visitor's selected filter.
 export function matchesFilter(values: string[], selected: string) {
-  return (
-    !selected || values.some((value) => categoryKey(value) === categoryKey(selected))
-  );
+  return !selected || values.some((value) => categoryKey(value) === categoryKey(selected));
+}
+
+// Prefer the canonical query parameter when present; otherwise read one legacy alias.
+export function selectedFilterValue(
+  searchParams: URLSearchParams,
+  filterParam: string,
+  legacyParam?: string,
+) {
+  if (searchParams.has(filterParam)) return searchParams.get(filterParam) ?? '';
+  return legacyParam ? (searchParams.get(legacyParam) ?? '') : '';
+}
+
+// New filter interactions write only the canonical parameter and retire its alias.
+export function updateFilterSearchParams(
+  searchParams: URLSearchParams,
+  filterParam: string,
+  value: string,
+  legacyParam?: string,
+) {
+  if (value) searchParams.set(filterParam, value);
+  else searchParams.delete(filterParam);
+  if (legacyParam) searchParams.delete(legacyParam);
 }

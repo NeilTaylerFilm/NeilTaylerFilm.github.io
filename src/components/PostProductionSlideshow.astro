@@ -159,9 +159,9 @@ const firstProjectLink = first
 
         <div class="photo-details">
           <div class="work-actions">
-            {first.type?.trim() && (
-              <span class="type-pill" data-slide-type>
-                {first.type.trim()}
+            {first.category?.trim() && (
+              <span class="category-pill" data-slide-category>
+                {first.category.trim()}
               </span>
             )}
             <p class="work-title" data-slide-caption>
@@ -258,7 +258,7 @@ const firstProjectLink = first
       embedUrl?: string;
       blogUrl?: string;
       caption?: string;
-      type?: string;
+      category?: string;
       subtitle?: string;
       role?: string[];
       video?: string;
@@ -309,7 +309,7 @@ const firstProjectLink = first
     // The label text saying "YouTube" or "Vimeo"
     const platformName = watchLink.querySelector<HTMLSpanElement>('[data-platform-name]')!;
     const title = root.querySelector<HTMLElement>('[data-slide-caption]')!;
-    let typeLabel = root.querySelector<HTMLElement>('[data-slide-type]');
+    let categoryLabel = root.querySelector<HTMLElement>('[data-slide-category]');
     let subtitle = root.querySelector<HTMLElement>('[data-slide-subtitle]');
     // A stopwatch timer ID so we can alert the visitor if video loading stalls
     let playerTimer = 0;
@@ -329,18 +329,18 @@ const firstProjectLink = first
       resetPlayback(index);
       const work = slides[index];
       play.setAttribute('aria-label', `Watch ${work.caption || 'film'}`);
-      const typeText = work.type?.trim();
-      if (typeText) {
-        if (!typeLabel) {
-          typeLabel = document.createElement('span');
-          typeLabel.className = 'type-pill';
-          typeLabel.dataset.slideType = '';
-          title.before(typeLabel);
+      const categoryText = work.category?.trim();
+      if (categoryText) {
+        if (!categoryLabel) {
+          categoryLabel = document.createElement('span');
+          categoryLabel.className = 'category-pill';
+          categoryLabel.dataset.slideCategory = '';
+          title.before(categoryLabel);
         }
-        typeLabel.textContent = typeText;
+        categoryLabel.textContent = categoryText;
       } else {
-        typeLabel?.remove();
-        typeLabel = null;
+        categoryLabel?.remove();
+        categoryLabel = null;
       }
       const subtitleText = roleLine(work.role, work.subtitle);
       if (subtitleText) {
@@ -723,10 +723,10 @@ const firstProjectLink = first
     max-width: min(70ch, calc(100% - 56px));
     min-width: 0;
   }
-  :global(.work-actions [data-slide-type]) {
+  :global(.work-actions [data-slide-category]) {
     align-self: flex-start;
   }
-  :global(.work-actions .type-pill) {
+  :global(.work-actions .category-pill) {
     border-color: var(--stage-border);
     color: var(--stage-muted);
     font: 400 11px / 1.4 var(--sans);

@@ -1,12 +1,13 @@
 ---
 title: "Canon R6 III Long-Term Review: The Camera That Made Me Stop Caring About Cameras"
 date: 2026-09-14
-category: Photography
+tags:
+  - Photography
 description: My long term thoughts after using the R6 III every day for 5 months.
 coverImage: https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/44b41c15fa5df5f69c741f6c27236606-2560.jpeg
 excerpt:
 draft: true
-type: Review
+category: Review
 ---
 ## TL;DR 
 The Canon R6 III is near perfect camera. It has become my preferred camera for all my photography and videography needs. CLOG2 and Open Gate are the headline features of this camera release (in my opinion). This camera will handle anything you throw at it and do it well. Any complaints I have are really just nitpicks. 

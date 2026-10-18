@@ -45,7 +45,7 @@ test('post-production slideshow shows featured roles without an unconfigured pro
     );
   });
 
-  await expect(slideshow.locator('[data-slide-type]')).toHaveText('Short Film');
+  await expect(slideshow.locator('[data-slide-category]')).toHaveText('Short Film');
   await expect(slideshow.locator('[data-slide-caption]')).toHaveText('A Song To Be Murdered By');
   await expect(slideshow.locator('[data-slide-subtitle]')).toHaveText(
     'Editor · Colourist · BTS Photographer',

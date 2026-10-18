@@ -107,12 +107,22 @@ assert.ok(!(await stat(path.join(root, 'rss.xml')).catch(() => null)), 'RSS must
 const sitemap = await readFile(path.join(root, 'sitemap.xml'), 'utf8');
 for (const link of sitemap.matchAll(/<loc>(.*?)<\/loc>/g)) await resolveURL(link[1], origin);
 assert.ok(!sitemap.includes('/404'));
-for (const collection of ['blog', 'photography']) {
+for (const collection of ['blog', 'photography', 'post-production']) {
   for (const name of await readdir(`src/content/${collection}`)) {
-    if (!name.endsWith('.md')) continue;
+    if (!/\.mdx?$/i.test(name)) continue;
     const body = await readFile(`src/content/${collection}/${name}`, 'utf8');
-    if (/^draft:\s*true\s*$/m.test(body.split('---')[1] || '')) {
-      const url = `/${collection}/${name.replace(/\.md$/, '')}/`;
+    const frontmatter = body.match(/^---[ \t]*\r?\n([\s\S]*?)^---[ \t]*$/m)?.[1] || '';
+    let isDraft = /^draft:\s*true\s*$/m.test(frontmatter);
+    if (frontmatter.trimStart().startsWith('{')) {
+      try {
+        isDraft = JSON.parse(frontmatter).draft === true;
+      } catch {
+        // Astro reports malformed frontmatter during check/build; don't hide that error here.
+      }
+    }
+    if (isDraft) {
+      const slug = name.replace(/\.mdx?$/i, '').toLowerCase();
+      const url = `/${collection}/${slug}/`;
       if (sitemap.includes(url)) errors.push(`Draft leaked: ${url}`);
       if (await stat(path.join(root, url, 'index.html')).catch(() => null))
         errors.push(`Draft route generated: ${url}`);

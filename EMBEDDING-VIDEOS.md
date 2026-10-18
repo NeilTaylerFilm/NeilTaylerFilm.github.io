@@ -25,14 +25,16 @@ The site places the video player directly below the subtitle and above the post 
 title: A Song To Be Murdered By - Scene Breakdown
 subtitle: Vanity Fair inspired scene by scene breakdown of "A Song To Be Murdered By", a short film I edited and colour graded in my last year of university.
 date: 2026-10-09
-categories:
-  - Explainer
+category: Explainer
+tags:
   - Editing
 video: "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
 poster: "/images/your-poster.jpg"
 draft: true
 ---
 ```
+
+Use `category` for the optional primary kind of project and `tags` for optional secondary topics or crafts. For example, this scene breakdown can use `category: Explainer` and `tags: [Editing]`. Post-Production credits use the existing singular array field `role`, for example `role: [Editor, Colourist]`; keep professional contributions separate from tags.
 
 ## Accepted video formats
 

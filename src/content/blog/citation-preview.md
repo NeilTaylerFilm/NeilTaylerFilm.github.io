@@ -3,7 +3,8 @@ title: 'Inline citation preview'
 subtitle: 'A small local mockup of source links in blog writing.'
 description: 'Preview compact inline citations written as ordinary Markdown links in Obsidian.'
 date: 2026-10-07
-category: 'Post-production'
+tags:
+  - 'Post-production'
 draft: true
 demo: true
 ---

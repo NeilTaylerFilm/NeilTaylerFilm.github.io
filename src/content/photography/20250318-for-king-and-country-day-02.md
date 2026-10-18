@@ -3,7 +3,7 @@
   "title": "For King & Country - Day 02",
   "subtitle": "2nd day of filming for the regency short film 'For King & Country'.",
   "date": "2025-03-18",
-  "type": "Behind The Scenes",
+  "category": "Behind The Scenes",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/2119d076271473480137943a0df20bf8-2560.jpeg",

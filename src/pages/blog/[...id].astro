@@ -23,7 +23,7 @@ import { posts, isoDate, excerpt } from '../../lib/content';
 // imageInfo: Helper to find picture dimensions and paths.
 import { imageInfo } from '../../lib/images';
 // categoryKey: Normalizes category names like "Post-Production" to match consistently.
-import { categoryKey, displayLabel } from '../../lib/feed';
+import { categoryKey, displayLabel, filterValues } from '../../lib/feed';
 // site: Global website info like the author's name and default social image.
 import { site } from '../../config/site';
 
@@ -37,19 +37,18 @@ export async function getStaticPaths() {
 // Grab this specific post's metadata and render its headings and content.
 const { post } = Astro.props;
 const { data } = post;
-// Type pill + first category shown in the article header
+// Primary category pill + first secondary tag shown in the article header
 const label = displayLabel(data);
 const { Content, headings } = await render(post);
 
-// 🔗 Find up to 3 related articles sharing matching categories
-// Looks for other published articles that talk about the same topics so readers can keep reading.
+// 🔗 Find up to 3 existing same-section suggestions sharing a category or tag.
+// This pre-existing Blog behavior is separate from the paused universal recommendation feature.
+const ownTags = new Set(filterValues(data, 'tags').map(categoryKey));
 const related = (await posts())
   .filter(
     (p) =>
       p.id !== post.id &&
-      p.data.categories.some((category) =>
-        data.categories.some((own) => categoryKey(own) === categoryKey(category)),
-      ),
+      filterValues(p.data, 'tags').some((value) => ownTags.has(categoryKey(value))),
   )
   .slice(0, 3);
 
@@ -63,7 +62,8 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
   headline: data.title,
-  articleSection: data.categories,
+  // Preserve the previous topic-oriented structured data; those values now live in tags.
+  articleSection: data.tags,
   description: data.description || excerpt(post.body, data.excerpt),
   datePublished: isoDate(data.date),
   dateModified: isoDate(data.updated || data.date),
@@ -93,11 +93,11 @@ const structuredData = {
     ← Back to blog
   </a>
   <article>
-    {/* Article header: displays categories, publication date, title, and author byline. */}
+    {/* Article header: displays primary category, first tag, publication date, title, and author. */}
     <header class="article-header">
       <div class="metadata">
-        {label.type && <span class="type-pill">{label.type}</span>}
-        {label.category && <span class="category">{label.category}</span>}
+        {label.category && <span class="category-pill">{label.category}</span>}
+        {label.tag && <span class="tag-label">{label.tag}</span>}
         <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       </div>
       <h1>{data.title}</h1>

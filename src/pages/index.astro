@@ -4,7 +4,7 @@
 // ==========================================
 // This is the front door of your website! When people visit
 // https://neiltaylerfilm.com, this is the page they see.
-// It fetches your published blog posts, displays the category filter
+// It fetches your published blog posts, displays the tag filter
 // toolbar, and arranges your posts into neat magazine cards.
 
 // Blog archive page.
@@ -13,18 +13,17 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 // BlogCard: A neat little preview card for a single article, showing its photo, title, date, and excerpt.
 import BlogCard from '../components/BlogCard.astro';
-// FeedControls: The toolbar for filtering by category and sorting by date.
+// FeedControls: The toolbar for filtering by tags and sorting by date.
 import FeedControls from '../components/FeedControls.astro';
-// posts & categories: Helper functions from our content library that fetch articles and list all topic tags.
-import { posts, categories as getCategories } from '../lib/content';
+// posts & classifications: Helpers that fetch articles and collect secondary tags for the archive filter.
+import { posts, classifications as getClassifications } from '../lib/content';
 
 // 📚 Fetch all published articles (sorted newest first)
 // Think of this like opening the filing cabinet and pulling out every finished article folder.
 const allPosts = await posts();
 
-// 🏷️ Find all categories used across these articles
-// This scans each article's tags so we can build filter buttons for topics like "Photography" or "Tech".
-const categories = getCategories(allPosts);
+// 🏷️ Find the secondary tags used across these articles.
+const classifications = getClassifications(allPosts, 'tags');
 ---
 
 {/* We wrap the entire page in BaseLayout, like putting our canvas inside an ornate picture frame. */}
@@ -41,9 +40,16 @@ const categories = getCategories(allPosts);
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
 
-    {/* 🎛️ Filter dropdowns (Category and Sort) */}
-    {/* Question: Are there any posts to display? If yes (count > 0), show the filter buttons so users can filter by category. */}
-    {allPosts.length > 0 && <FeedControls options={categories} count={allPosts.length} />}
+    {/* 🎛️ Filter dropdowns (Tags and Sort) */}
+    {/* Show the tag filter and sorting controls when there are posts to display. */}
+    {allPosts.length > 0 && (
+      <FeedControls
+        options={classifications}
+        count={allPosts.length}
+        filterLabel="Tags"
+        allLabel="All tags"
+      />
+    )}
 
     {/* 📰 Grid list of blog cards */}
     {/* The magazine rack: a grid container holding all the blog article cards. */}

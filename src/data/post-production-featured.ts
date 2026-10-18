@@ -18,7 +18,7 @@ type FeaturedWork = {
   alt: string;
   // Title / caption shown on screen
   caption?: string;
-  type?: string;
+  category?: string;
   subtitle?: string;
   role?: string[];
   // Project page link (optional)
@@ -42,7 +42,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://www.youtube.com/watch?v=HAkxnRaTW2Q',
     width: 480,
     height: 360,
-    type: 'Short Film',
+    category: 'Short Film',
     role: ['Editor', 'Colourist', 'BTS Photographer'],
     // blogPost: 'your-blog-post-filename',
   },
@@ -53,7 +53,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://youtu.be/dnJWWsIn_nY',
     width: 480,
     height: 360,
-    type: 'Music Video',
+    category: 'Music Video',
     role: ['Editor', 'Colourist'],
   },
   {
@@ -63,7 +63,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://youtu.be/WHF_J4mL3oc',
     width: 480,
     height: 360,
-    type: 'Music Video',
+    category: 'Music Video',
     role: ['Editor', 'Colourist'],
   },
   {
@@ -73,7 +73,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://youtu.be/3GgTC-an6Mw',
     width: 480,
     height: 360,
-    type: 'Visual Poem',
+    category: 'Visual Poem',
     role: ['Editor', 'Colourist', 'Camera Operator'],
   },
   {
@@ -83,7 +83,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://youtu.be/6RO60JMBuQc',
     width: 480,
     height: 360,
-    type: 'Short Film',
+    category: 'Short Film',
     role: ['Editor', 'Colourist'],
   },
   {
@@ -93,7 +93,7 @@ export const featured: FeaturedWork[] = [
     video: 'https://youtu.be/v0dJIPj3vX0',
     width: 480,
     height: 360,
-    type: 'Documentary',
+    category: 'Documentary',
     role: ['Editor', 'Colourist'],
   },
   {

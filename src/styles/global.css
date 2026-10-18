@@ -396,7 +396,7 @@ h1 {
 .card-content {
   min-width: 0;
 }
-/* Keep category, date, and type labels together when the line wraps on small screens. */
+/* Keep category, tag, and date labels together when the line wraps on small screens. */
 .metadata {
   display: flex;
   gap: 12px;
@@ -408,11 +408,11 @@ h1 {
   font-size: 11px;
   line-height: 1.6;
 }
-.category {
+.tag-label {
   color: var(--accent);
 }
-/* Post type: small outlined pill, the first thing a reader should register */
-.type-pill {
+/* Primary category: small outlined pill, the first thing a reader should register */
+.category-pill {
   color: var(--accent);
   border: 1px solid currentColor;
   border-radius: 999px;

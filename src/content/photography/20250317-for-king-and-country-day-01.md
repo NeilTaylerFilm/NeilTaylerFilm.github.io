@@ -3,7 +3,7 @@
   "title": "For King & Country - Day 01",
   "subtitle": "1st day of BTS photography for the regency short film 'For King & Country'.",
   "date": "2025-03-17",
-  "type": "Behind The Scenes",
+  "category": "Behind The Scenes",
   "draft": false,
   "coverImage": https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/2ee16ec9e761ba9556d4ca11684f20fd-1708.jpeg,
   "galleryLayout": "justified",

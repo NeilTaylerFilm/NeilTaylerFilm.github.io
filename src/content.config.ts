@@ -14,8 +14,6 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 // z (Zod): A schema validation library that acts like a strict security guard checking forms.
 import { z } from 'astro/zod';
-// postCategories: Normalizes category names and merges single or multiple category fields.
-import { postCategories } from './lib/feed';
 // projectDate, projectYear, matchingProjectYear: Custom date validators ensuring consistent timeline years.
 import { projectDate, projectYear, matchingProjectYear } from './lib/project-date';
 import { roleMetadataSchema } from './lib/role-metadata';
@@ -38,8 +36,13 @@ const common = {
   title: z.string().min(1),
   // Optional subtitle
   subtitle: optionalText,
-  // Optional post type shown on cards (e.g. 'Explainer', 'Essay', 'Album')
-  type: optionalText,
+  // Optional primary classification shown on cards.
+  category: optionalText,
+  // Optional secondary classifications used for topic/context filtering.
+  tags: z.preprocess(
+    (val) => (val === null || val === '' ? [] : val),
+    z.array(z.string().trim().min(1)).default([]),
+  ),
   // Optional summary description
   description: optionalText,
   // Optional social sharing photo
@@ -61,25 +64,6 @@ const blog = defineCollection({
       date: z.coerce.date(),
       // Date last updated (optional)
       updated: optionalDate,
-      // Single category (e.g. 'Writing')
-      category: optionalText,
-      // Or list of categories
-      categories: z.preprocess(
-        (val) => (val === null || val === '' ? undefined : val),
-        z.array(z.string().trim().min(1)).min(1).optional(),
-      ),
-      // Format type (e.g. 'essay')
-      format: optionalText,
-      // Keyword tags
-      tags: z.preprocess(
-        (val) => (val === null || val === '' ? [] : val),
-        z.array(z.string()).default([]),
-      ),
-      // Slugs of related posts
-      related: z.preprocess(
-        (val) => (val === null || val === '' ? [] : val),
-        z.array(z.string()).default([]),
-      ),
       coverImage: optionalText,
       // Cover photo path
       image: optionalText,
@@ -91,12 +75,6 @@ const blog = defineCollection({
       // Custom summary teaser
       excerpt: optionalText,
     })
-    // 🔍 Rule: Must have at least one category tag
-    .refine((data) => postCategories(data).length > 0, {
-      message: 'Add at least one category using categories or category',
-      path: ['categories'],
-    })
-    .transform((data) => ({ ...data, categories: postCategories(data) }))
     // 🔍 Rule: An "updated" date cannot happen before the original publish date!
     .refine((data) => !data.updated || data.updated >= data.date, {
       message: 'updated must not precede date',
@@ -119,13 +97,6 @@ const photography = defineCollection({
       year: projectYear.optional(),
       // City or country (e.g. 'Kyoto, Japan')
       location: optionalText,
-      // Photography style (e.g. 'Street')
-      category: optionalText,
-      // Multiple categories support
-      categories: z.preprocess(
-        (val) => (val === null || val === '' ? undefined : val),
-        z.array(z.string().trim().min(1)).min(1).optional(),
-      ),
       // Cover photo link
       cover: optionalText,
       // Alternative cover image property
@@ -135,8 +106,6 @@ const photography = defineCollection({
         .string()
         .nullish()
         .transform((v) => v?.trim() || ''),
-      // Put this album on the homepage?
-      featured: z.boolean().default(false),
       images: z
         .array(
           z.object({
@@ -162,9 +131,7 @@ const photography = defineCollection({
         .default([]),
     })
     // 🔍 Rule: If both year and date are given, they must agree!
-    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] })
-    // Merge category/categories into one deduplicated list
-    .transform((data) => ({ ...data, categories: postCategories(data) })),
+    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] }),
 });
 
 // 🎬 COLLECTION 3: The Post-Production & Film Rulebook
@@ -178,25 +145,14 @@ const postProduction = defineCollection({
       date: projectDate.optional(),
       // Year (e.g. 2024)
       year: projectYear.optional(),
-      // Discipline (e.g. 'Editing', 'VFX')
-      category: optionalText,
-      // Multiple categories support
-      categories: z.preprocess(
-        (val) => (val === null || val === '' ? undefined : val),
-        z.array(z.string().trim().min(1)).min(1).optional(),
-      ),
       // Cover image
       cover: optionalText,
       // Cover image alternate
       coverImage: optionalText,
       // Optional ordered project roles (e.g. ['Editor', 'Colourist'])
       role: roleMetadataSchema,
-      // Type of project (e.g. 'Music Video')
-      projectType: optionalText,
       video: optionalText, // URL or ID for video (YouTube, Vimeo, etc.)
       poster: optionalText, // Custom poster image for video
-      // Feature on showcase carousel?
-      featured: z.boolean().default(false),
       images: z
         .array(
           z.object({
@@ -211,15 +167,9 @@ const postProduction = defineCollection({
           }),
         )
         .default([]),
-      relatedPosts: z.preprocess(
-        (val) => (val === null || val === '' ? [] : val),
-        z.array(z.string()).default([]),
-      ), // Array of blog post slugs
     })
     // 🔍 Rule: Year and date must not contradict each other
-    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] })
-    // Merge category/categories into one deduplicated list
-    .transform((data) => ({ ...data, categories: postCategories(data) })),
+    .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] }),
 });
 
 // 📦 Export all collections so Astro knows about them

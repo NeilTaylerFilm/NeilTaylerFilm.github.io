@@ -1,7 +1,7 @@
 ---
 title: "'Only The Saved Can Save' Song Recording"
 date: "2025-02-11"
-type: "Behind The Scenes"
+category: "Behind The Scenes"
 description: >-
   I photographed musician Asha Menon during the recording session for "Only The Saved Can Save", an original song for our final-year university short film, "A Song To Be Murdered By". Asha had written most of the song before the session; we discussed how it would sit in the film as she continued working on it, with ideas from our director, Daniel Sawyer.
 draft: false

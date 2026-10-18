@@ -41,7 +41,8 @@ test('post command makes a safe filename and a draft with every uploaded photo',
     ).split('---')[1],
   );
   assert.equal(post.draft, true);
-  assert.equal(post.type, 'Behind The Scenes');
+  assert.equal(post.category, 'Behind The Scenes');
+  assert.equal('type' in post, false);
   assert.equal(post.coverImage, first);
   assert.deepEqual(
     post.images.map(({ src }) => src),

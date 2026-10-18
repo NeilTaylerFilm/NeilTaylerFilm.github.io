@@ -75,26 +75,97 @@ test('photography sorting accepts exact dates, years and undated projects', asyn
   );
 });
 
-test('multiple categories retain legacy support and normalize duplicates', async () => {
-  const { postCategories, matchesFilter } = await import('../src/lib/feed.ts');
-  assert.deepEqual(postCategories({ category: ' Film ' }), ['Film']);
-  const categories = postCategories({
-    categories: ['Photography', ' Technology ', 'photography', 'Film / TV'],
-    category: 'Ignored',
+test('category and tags remain distinct while both contribute filter values', async () => {
+  const { classificationValues, classificationOptions, filterValues, displayLabel, matchesFilter } =
+    await import('../src/lib/feed.ts');
+  const metadata = {
+    category: ' Review ',
+    tags: ['Photography', ' Technology ', 'photography', 'Review', 'Film / TV'],
+  };
+  assert.deepEqual(classificationValues(metadata), [
+    'Review',
+    'Photography',
+    'Technology',
+    'Film / TV',
+  ]);
+  assert.deepEqual(classificationOptions([metadata, { category: 'Travel' }], 'category'), [
+    'Review',
+    'Travel',
+  ]);
+  assert.deepEqual(classificationOptions([metadata, { category: 'Travel' }], 'tags'), [
+    'Film / TV',
+    'Photography',
+    'Review',
+    'Technology',
+  ]);
+  assert.deepEqual(filterValues(metadata, 'category'), ['Review']);
+  assert.deepEqual(filterValues(metadata, 'tags'), [
+    'Photography',
+    'Technology',
+    'Review',
+    'Film / TV',
+  ]);
+  for (const selected of ['', 'photography', 'technology', 'film / tv', 'review'])
+    assert.ok(matchesFilter(classificationValues(metadata), selected));
+  assert.equal(matchesFilter(classificationValues(metadata), 'Notebook'), false);
+  assert.deepEqual(displayLabel(metadata), { category: 'Review', tag: 'Photography' });
+  assert.deepEqual(displayLabel({ category: 'Travel', tags: ['travel', 'Thailand'] }), {
+    category: 'Travel',
+    tag: undefined,
   });
-  assert.deepEqual(categories, ['Photography', 'Technology', 'Film / TV']);
-  for (const selected of ['', 'photography', 'technology', 'film / tv'])
-    assert.ok(matchesFilter(categories, selected));
-  assert.equal(matchesFilter(categories, 'Notebook'), false);
-  assert.deepEqual(postCategories({}), []);
+  assert.deepEqual(classificationValues({}), []);
 });
 
-test('photography type options are trimmed, unique, and sorted from content data', async () => {
-  const { types } = await import('../src/lib/feed.ts');
+test('category and tag options are trimmed, unique, and sorted from content data', async () => {
+  const { classificationOptions } = await import('../src/lib/feed.ts');
   assert.deepEqual(
-    types([{ type: ' Travel ' }, { type: 'travel' }, { type: 'Sports' }, {}, { type: '' }]),
+    classificationOptions(
+      [
+        { category: ' Travel ', tags: ['Nature'] },
+        { category: 'travel' },
+        { category: 'Sports' },
+        {},
+        { category: '' },
+      ],
+      'tags',
+    ),
+    ['Nature'],
+  );
+  assert.deepEqual(
+    classificationOptions(
+      [
+        { category: ' Travel ', tags: ['Nature'] },
+        { category: 'travel' },
+        { category: 'Sports' },
+        {},
+        { category: '' },
+      ],
+      'category',
+    ),
     ['Sports', 'Travel'],
   );
+});
+
+test('canonical filter parameters win over legacy aliases and new interactions remove aliases', async () => {
+  const { selectedFilterValue, updateFilterSearchParams } = await import('../src/lib/feed.ts');
+  assert.equal(
+    selectedFilterValue(new URLSearchParams('category=Sports&type=Travel'), 'category', 'type'),
+    'Sports',
+  );
+  assert.equal(
+    selectedFilterValue(new URLSearchParams('type=Travel'), 'category', 'type'),
+    'Travel',
+  );
+  assert.equal(
+    selectedFilterValue(new URLSearchParams('category=&type=Travel'), 'category', 'type'),
+    '',
+  );
+
+  const params = new URLSearchParams('type=Travel&sort=oldest');
+  updateFilterSearchParams(params, 'category', 'travel', 'type');
+  assert.equal(params.toString(), 'sort=oldest&category=travel');
+  updateFilterSearchParams(params, 'category', '', 'type');
+  assert.equal(params.toString(), 'sort=oldest');
 });
 
 test('project calendar dates reject ambiguous and impossible input', async () => {
