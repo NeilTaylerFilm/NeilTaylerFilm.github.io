@@ -11,7 +11,7 @@ async function addTemporaryProjectLink(page) {
     .locator('[data-portfolio-photo]')
     .first()
     .evaluate((photo) => {
-      photo.dataset.projectUrl = '/photography/20260809-late-night-drive-bts/';
+      photo.dataset.projectUrl = '/photography/20260801-late-night-drive-short-film-day-01/';
     });
   await page.locator('[data-portfolio-controls]').evaluate((controls) => {
     controls.dataset.hasProjectLinks = 'true';
