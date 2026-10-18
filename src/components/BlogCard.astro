@@ -21,10 +21,12 @@ interface Props {
   post: CollectionEntry<'blog'>;
   // Where this card sits in the list (0, 1, 2...)
   index: number;
+  // Optional image-loading override for below-the-fold card reuse.
+  imagePriority?: boolean;
 }
 
 // Unpack props: post content and sequence number
-const { post, index } = Astro.props;
+const { post, index, imagePriority = index === 0 } = Astro.props;
 const { data } = post;
 // Web address to read the full article
 const url = `/blog/${post.id}/`;
@@ -52,8 +54,8 @@ const label = displayLabel(data);
         src={coverImage}
         alt=""
         sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1440px) 32vw, 420px"
-        loading={index === 0 ? 'eager' : 'lazy'}
-        priority={index === 0}
+        loading={imagePriority ? 'eager' : 'lazy'}
+        priority={imagePriority}
       />
     </a>
   )}

@@ -1256,15 +1256,30 @@ h1 {
 /* Related articles are shown in three columns on wide screens. */
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 30px;
   margin: 20px 0 60px;
 }
-.related h3 {
-  font-size: 24px;
-  line-height: 1.2;
-  letter-spacing: -0.5px;
-  margin-top: 10px;
+.related-grid--list,
+.related-grid--grid.related-grid--1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.related-grid--grid.related-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.related-grid--grid.related-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 1050px) {
+  .related-grid--grid.related-grid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 540px) {
+  .related-grid--grid.related-grid--1,
+  .related-grid--grid.related-grid--2,
+  .related-grid--grid.related-grid--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 /* A thin line at the top of the screen fills as the reader moves through an article. */
 .reading-progress {
@@ -1730,10 +1745,6 @@ a.contact-email-action {
   .prose blockquote {
     font-size: 24px;
   }
-  .related-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-  }
   .about-grid {
     grid-template-columns: 1fr 1.2fr;
     gap: 30px;
@@ -1860,12 +1871,6 @@ a.contact-email-action {
   }
   .article-hero {
     margin-bottom: 30px;
-  }
-  .related-grid {
-    grid-template-columns: 1fr;
-  }
-  .related h3 {
-    font-size: 26px;
   }
   .article-signoff {
     font-size: 10px;

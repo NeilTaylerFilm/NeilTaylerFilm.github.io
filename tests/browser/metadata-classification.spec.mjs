@@ -16,7 +16,7 @@ test('Blog and Post Production cards and detail pages use category and tags', as
   await expect(projectCard.locator('.category-pill')).toHaveText('Explainer');
   await expect(projectCard.locator('.tag-label')).toHaveText('YouTube');
   await projectCard.locator('h2 a').click();
-  await expect(page.locator('main .category-pill')).toHaveText('Explainer');
+  await expect(page.locator('.article-header .category-pill')).toHaveText('Explainer');
 });
 
 test('photography category filter accepts legacy type URLs and writes category URLs', async ({

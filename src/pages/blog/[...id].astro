@@ -16,6 +16,8 @@ import { render } from 'astro:content';
 // BaseLayout: The outer website framework (navbar, footer, SEO tags).
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleReader from '../../components/ArticleReader.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
 // ResponsiveImage: An image loader that serves properly sized pictures.
 import ResponsiveImage from '../../components/ResponsiveImage.astro';
 // posts, isoDate, excerpt: Content helpers for getting articles, clean dates, and short summaries.
@@ -23,34 +25,32 @@ import { posts, isoDate, excerpt } from '../../lib/content';
 // imageInfo: Helper to find picture dimensions and paths.
 import { imageInfo } from '../../lib/images';
 // categoryKey: Normalizes category names like "Post-Production" to match consistently.
-import { categoryKey, displayLabel, filterValues } from '../../lib/feed';
+import { displayLabel } from '../../lib/feed';
+import { relatedContentIndex, relatedContentKey } from '../../lib/related-content';
 // site: Global website info like the author's name and default social image.
 import { site } from '../../config/site';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each blog post file
 // Astro calls this during build time: "Make a page for every single article in our blog drawer!"
 export async function getStaticPaths() {
-  return (await posts()).map((post) => ({ params: { id: post.id }, props: { post } }));
+  const allPosts = await posts();
+  const recommendations = relatedContentIndex(allPosts);
+  return allPosts.map((post) => ({
+    params: { id: post.id },
+    props: {
+      post,
+      related: recommendations.get(relatedContentKey(post)) ?? [],
+    },
+  }));
 }
 
 // 📦 Extract current article data and Markdown body renderer
 // Grab this specific post's metadata and render its headings and content.
-const { post } = Astro.props;
+const { post, related } = Astro.props;
 const { data } = post;
 // Primary category pill + first secondary tag shown in the article header
 const label = displayLabel(data);
 const { Content, headings } = await render(post);
-
-// 🔗 Find up to 3 existing same-section suggestions sharing a category or tag.
-// This pre-existing Blog behavior is separate from the paused universal recommendation feature.
-const ownTags = new Set(filterValues(data, 'tags').map(categoryKey));
-const related = (await posts())
-  .filter(
-    (p) =>
-      p.id !== post.id &&
-      filterValues(p.data, 'tags').some((value) => ownTags.has(categoryKey(value))),
-  )
-  .slice(0, 3);
 
 // 🖼️ Pick social sharing card image
 // Chooses the best picture to show when this article is shared on iMessage, Twitter, or Slack.
@@ -131,32 +131,14 @@ const structuredData = {
       <Content />
     </ArticleReader>
   </article>
-  {/* Related articles shelf: Suggests up to 3 similar stories sharing the same topics. */}
-  {related.length > 0 && (
-    <section class="related" aria-labelledby="related-heading">
-      <div class="section-heading">
-        <h2 id="related-heading" class="eyebrow">
-          Related posts
-        </h2>
-        <span class="line-decoration" aria-hidden="true"></span>
-      </div>
-      <div class="related-grid">
-        {related.map((p) => (
-          <article>
-            <time class="mono small muted" datetime={isoDate(p.data.date)}>
-              {isoDate(p.data.date)}
-            </time>
-            <h3>
-              <a href={`/blog/${p.id}/`}>
-                {p.data.title}{' '}
-                <span class="accent" aria-hidden="true">
-                  →
-                </span>
-              </a>
-            </h3>
-          </article>
-        ))}
-      </div>
-    </section>
-  )}
+  <RelatedContent
+    title="Related posts"
+    headingId="related-blog-heading"
+    layout="list"
+    items={related}
+  >
+    {related.map((relatedPost, index) => (
+      <BlogCard post={relatedPost} index={index} imagePriority={false} />
+    ))}
+  </RelatedContent>
 </BaseLayout>

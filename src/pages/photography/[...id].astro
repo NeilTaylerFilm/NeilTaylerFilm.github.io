@@ -21,19 +21,30 @@ import ProjectMetadata from '../../components/ProjectMetadata.astro';
 import Lightbox from '../../components/Lightbox.astro';
 // Gallery: The responsive wall of images arranged in editorial rows or masonry.
 import Gallery from '../../components/Gallery.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
 // site: Website configuration like the author's name and default images.
 import { site } from '../../config/site';
 // projects: Helper to fetch all published photo projects.
 import { projects } from '../../lib/content';
+import { relatedContentIndex, relatedContentKey } from '../../lib/related-content';
 
 // 🗺️ THE TOUR GUIDE (Dynamic Route Generator):
 // Tells Astro to create a unique webpage for EVERY photo project in your folder!
 export async function getStaticPaths() {
-  return (await projects()).map((project) => ({ params: { id: project.id }, props: { project } }));
+  const allProjects = await projects();
+  const recommendations = relatedContentIndex(allProjects);
+  return allProjects.map((project) => ({
+    params: { id: project.id },
+    props: {
+      project,
+      related: recommendations.get(relatedContentKey(project)) ?? [],
+    },
+  }));
 }
 
 // Unpack the current project's data and render its written Markdown story
-const { project } = Astro.props;
+const { project, related } = Astro.props;
 const { data } = project;
 const { Content } = await render(project);
 ---
@@ -79,6 +90,14 @@ const { Content } = await render(project);
   {/* Listens for image clicks and opens a high-resolution lightbox viewer */}
   <Lightbox label={`${data.title} — photographs`} />
 
+  <RelatedContent
+    title="Related photography projects"
+    headingId="related-photography-heading"
+    items={related}
+  >
+    {related.map((relatedProject) => <ProjectCard project={relatedProject} />)}
+  </RelatedContent>
+
   {/* 🏁 Polite sign-off at the end of the album */}
   <div class="project-end">
     <p class="serif-word">Thanks for looking.</p>
@@ -86,4 +105,5 @@ const { Content } = await render(project);
       Back to the project index →
     </a>
   </div>
+
 </BaseLayout>

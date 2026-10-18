@@ -1,0 +1,32 @@
+---
+interface Props {
+  title: string;
+  items: readonly unknown[];
+  layout?: 'grid' | 'list';
+  headingId?: string;
+}
+
+const { title, items, layout = 'grid', headingId = 'related-content-heading' } = Astro.props;
+const columns = Math.min(items.length, 3);
+---
+
+{items.length > 0 && (
+  <section class="related" aria-labelledby={headingId} data-related-content>
+    <div class="section-heading">
+      <h2 id={headingId} class="eyebrow">
+        {title}
+      </h2>
+      <span class="line-decoration" aria-hidden="true"></span>
+    </div>
+    <div
+      class:list={[
+        'related-grid',
+        `related-grid--${layout}`,
+        layout === 'grid' && `related-grid--${columns}`,
+      ]}
+      data-related-count={items.length}
+    >
+      <slot />
+    </div>
+  </section>
+)}

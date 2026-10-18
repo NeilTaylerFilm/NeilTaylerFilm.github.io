@@ -19,6 +19,8 @@ import ArticleReader from '../../components/ArticleReader.astro';
 import PlayIcon from '../../components/PlayIcon.astro';
 // ProjectMetadata: Displays project tags like year, role (Director, Colorist), and client.
 import ProjectMetadata from '../../components/ProjectMetadata.astro';
+import PostProductionCard from '../../components/PostProductionCard.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
 // Gallery: Displays behind-the-scenes photo stills.
 import Gallery from '../../components/Gallery.astro';
 // site: Global website configuration.
@@ -26,18 +28,24 @@ import { site } from '../../config/site';
 // postProjects: Helper to fetch all film projects from disk.
 import { isoDate, postProjects } from '../../lib/content';
 import { imageInfo } from '../../lib/images';
+import { relatedContentIndex, relatedContentKey } from '../../lib/related-content';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each post-production project
 // Tells Astro: "Look through our film shelf and create a dedicated theater page for each one!"
 export async function getStaticPaths() {
-  return (await postProjects()).map((project) => ({
+  const allProjects = await postProjects();
+  const recommendations = relatedContentIndex(allProjects);
+  return allProjects.map((project) => ({
     params: { id: project.id },
-    props: { project },
+    props: {
+      project,
+      related: recommendations.get(relatedContentKey(project)) ?? [],
+    },
   }));
 }
 
 // Unpack this project's metadata and render its written Markdown story
-const { project } = Astro.props;
+const { project, related } = Astro.props;
 const { data } = project;
 const { Content, headings } = await render(project);
 const socialImage =
@@ -145,6 +153,14 @@ const structuredData = {
     </ArticleReader>
   </article>
 
+  <RelatedContent
+    title="Related post-production projects"
+    headingId="related-post-production-heading"
+    items={related}
+  >
+    {related.map((relatedProject) => <PostProductionCard project={relatedProject} />)}
+  </RelatedContent>
+
   {/* 🏁 Polite sign-off at bottom */}
   <div class="project-end">
     <p class="serif-word">Thanks for looking.</p>
@@ -152,6 +168,7 @@ const structuredData = {
       Back to the project index →
     </a>
   </div>
+
 </BaseLayout>
 
 <script>
