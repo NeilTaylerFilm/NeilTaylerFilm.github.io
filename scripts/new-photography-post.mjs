@@ -76,10 +76,7 @@ export function latestPhotoDate(report, filenames) {
 
     const date = `${match[1]}-${match[2]}-${match[3]}`;
     const parsedDate = new Date(`${date}T00:00:00.000Z`);
-    if (
-      Number.isNaN(parsedDate.getTime()) ||
-      parsedDate.toISOString().slice(0, 10) !== date
-    ) {
+    if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
       throw new Error(
         `The date in ${filename} is not a valid calendar date. Correct it, then run photos:upload again.`,
       );
@@ -94,7 +91,7 @@ export function photographyPost(title, date, photos) {
   const project = {
     title,
     date,
-    type: 'Behind The Scenes',
+    category: 'Behind The Scenes',
     draft: true,
     galleryLayout: 'justified',
     coverImage: photos[0].src,

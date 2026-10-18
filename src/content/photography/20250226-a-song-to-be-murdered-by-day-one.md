@@ -1,7 +1,7 @@
 ---
 title: "A Song To Be Murdered By - Day One"
 date: "2025-02-26"
-type: "Behind The Scenes"
+category: "Behind The Scenes"
 subtitle: "Behind the scenes on the first day of shooting our graduate film."
 draft: false
 galleryLayout: "justified"

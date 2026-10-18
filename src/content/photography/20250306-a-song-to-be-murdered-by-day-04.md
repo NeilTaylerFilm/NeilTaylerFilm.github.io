@@ -3,7 +3,7 @@
   "title": "A Song To Be Murdered By - Day Four",
   "subtitle": "4th scheduled filming day for A Song To Be Murdered By. This was an interesting shoot to witness because we got to work with Gareth Henry, a great stunt co-ordinator, who helped us choreograph filming this particular fight scene.",
   "date": "2025-03-06",
-  "type": "Behind The Scenes",
+  "category": "Behind The Scenes",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/cd44f7e1aef4bd441658547956c51649-2560.jpeg",

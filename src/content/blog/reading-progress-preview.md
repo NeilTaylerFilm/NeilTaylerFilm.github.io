@@ -2,7 +2,8 @@
 title: 'Reading progress preview'
 subtitle: 'A draft sample for trying the existing reading progress bar.'
 date: 2026-10-07
-category: 'Post-production'
+tags:
+  - 'Post-production'
 draft: true
 demo: true
 ---

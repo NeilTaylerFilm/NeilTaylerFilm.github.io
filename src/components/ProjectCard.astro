@@ -15,8 +15,9 @@ import type { CollectionEntry } from 'astro:content';
 import ProjectMetadata from './ProjectMetadata.astro';
 // ResponsiveImage: Our smart photo frame that serves lightweight WebP images at exact visitor screen sizes.
 import ResponsiveImage from './ResponsiveImage.astro';
-// projectTimestamp & categoryKey: Helpers that calculate sortable timestamps and URL-friendly category filter keys.
-import { projectTimestamp, categoryKey } from '../lib/content';
+// projectTimestamp and filterValues: Helpers for sorting and category filtering.
+import { projectTimestamp } from '../lib/content';
+import { filterValues } from '../lib/feed';
 
 // 📋 What this card needs to show an album:
 // Like a recipe checklist, declaring this component requires one photography project album.
@@ -39,7 +40,7 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
 <article
   class="project-card"
   data-feed-item
-  data-type={categoryKey(data.type ?? '')}
+  data-filter-values={JSON.stringify(filterValues(data, 'category'))}
   data-date={projectTimestamp(data)}
   data-id={project.id}
 >

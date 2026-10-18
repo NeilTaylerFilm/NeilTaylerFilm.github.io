@@ -1,7 +1,7 @@
 ---
 title: "Fake Empire - Live"
 date: "2025-02-07"
-type: "Concert"
+category: "Concert"
 description: "I photographed Fake Empire playing live at the fundraiser gig for \"A Song To Be Murdered By\". The event was a huge success."
 draft: false
 galleryLayout: "justified"

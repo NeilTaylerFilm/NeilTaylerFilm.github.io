@@ -3,10 +3,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PhotographyPortfolio from '../../components/PhotographyPortfolio.astro';
 import FeedControls from '../../components/FeedControls.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
-import { projects, types as getTypes } from '../../lib/content';
+import { projects, classifications as getClassifications } from '../../lib/content';
 
 const allProjects = await projects();
-const types = getTypes(allProjects.map(({ data }) => data));
+const classifications = getClassifications(allProjects, 'category');
 ---
 
 <BaseLayout
@@ -31,7 +31,12 @@ const types = getTypes(allProjects.map(({ data }) => data));
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
     {allProjects.length > 0 && (
-      <FeedControls options={types} filterBy="type" count={allProjects.length} noun="projects" />
+      <FeedControls
+        options={classifications}
+        legacyFilterBy="type"
+        count={allProjects.length}
+        noun="projects"
+      />
     )}
     <div class="project-grid" data-feed>
       {allProjects.map((project) => (

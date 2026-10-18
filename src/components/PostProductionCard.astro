@@ -13,8 +13,9 @@ import type { CollectionEntry } from 'astro:content';
 import ProjectMetadata from './ProjectMetadata.astro';
 // ResponsiveImage: Our smart photo frame that loads lightweight WebP sizes automatically.
 import ResponsiveImage from './ResponsiveImage.astro';
-// projectTimestamp & categoryKey: Helpers that calculate sortable timestamps and URL-safe category names.
-import { projectTimestamp, categoryKey } from '../lib/content';
+// projectTimestamp and filterValues: Helpers for sorting and tag filtering.
+import { projectTimestamp } from '../lib/content';
+import { filterValues } from '../lib/feed';
 
 // 📋 What this card needs to show a film project:
 // Like an order slip handed to a chef, specifying exactly what ingredients this card expects.
@@ -38,7 +39,7 @@ const cover = data.poster || data.coverImage || data.cover || data.images[0]?.sr
 <article
   class="project-card"
   data-feed-item
-  data-categories={JSON.stringify(data.categories.map(categoryKey))}
+  data-filter-values={JSON.stringify(filterValues(data, 'tags'))}
   data-date={projectTimestamp(data)}
   data-id={project.id}
 >

@@ -3,7 +3,7 @@
   "title": "A Song To Be Murdered By - Day Two",
   "subtitle": "2nd filming day for A Song To Be Murdered By.",
   "date": "2025-02-27",
-  "type": "Behind The Scenes",
+  "category": "Behind The Scenes",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/334f26f551b9938162753831cb7ec326-2560.jpeg",

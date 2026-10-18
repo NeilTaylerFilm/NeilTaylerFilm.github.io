@@ -6,7 +6,7 @@
 // It features:
 // 1. The top video player carousel where visitors can watch short films and reels.
 // 2. A catalog grid of all your editing, coloring, and VFX projects.
-// 3. Category filters and sort options.
+// 3. Tag filters and sort options.
 
 // Post-production project index page.
 // --- BORROWED TOOLS (Imports) ---
@@ -14,20 +14,19 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 // PostProductionSlideshow: The top video reel projector where featured clips can be watched.
 import PostProductionSlideshow from '../../components/PostProductionSlideshow.astro';
-// FeedControls: The filter and sorting toolbar for categories.
+// FeedControls: The filter and sorting toolbar for project tags.
 import FeedControls from '../../components/FeedControls.astro';
 // PostProductionCard: An individual film project preview tile with a video/image poster.
 import PostProductionCard from '../../components/PostProductionCard.astro';
-// postProjects & categories: Content helpers to load all film projects and their genre tags.
-import { postProjects, categories as getCategories } from '../../lib/content';
+// postProjects & classifications: Helpers to load projects and collect tag filters.
+import { postProjects, classifications as getClassifications } from '../../lib/content';
 
 // 📚 Fetch all published film / post-production projects
 // Like opening the film canisters drawer and pulling out every finished project.
 const allProjects = await postProjects();
 
-// 🏷️ Find all categories used across these film projects
-// Extracts tags like "Editing", "Color Grading", or "Commercial" for filter buttons.
-const categories = getCategories(allProjects);
+// 🏷️ Find secondary tags used across these film projects.
+const classifications = getClassifications(allProjects, 'tags');
 ---
 
 {/* The master website frame wrapping the film screening room */}
@@ -52,10 +51,16 @@ const categories = getCategories(allProjects);
       <span class="line-decoration" aria-hidden="true"></span>
     </div>
 
-    {/* 🎛️ Category filter and sorting toolbar */}
-    {/* Shows category and sort menus if there is at least one film project. */}
+    {/* 🎛️ Tag filter and sorting toolbar */}
+    {/* Shows tag and sort menus if there is at least one film project. */}
     {allProjects.length > 0 && (
-      <FeedControls options={categories} count={allProjects.length} noun="projects" />
+      <FeedControls
+        options={classifications}
+        count={allProjects.length}
+        noun="projects"
+        filterLabel="Tags"
+        allLabel="All tags"
+      />
     )}
 
     {/* 🧱 Grid of film project cards */}

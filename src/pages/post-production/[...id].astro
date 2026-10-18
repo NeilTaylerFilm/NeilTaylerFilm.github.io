@@ -7,7 +7,7 @@
 // - Movie poster with click-to-play video player.
 // - Project backstory and roles (Director, Editor, Colorist).
 // - Behind-the-scenes photo stills gallery.
-// - Direct links to related blog articles.
+// - Project roles, media, and gallery.
 
 // Individual post-production project page with video embed and gallery.
 // --- BORROWED TOOLS (Imports) ---
@@ -24,7 +24,7 @@ import Gallery from '../../components/Gallery.astro';
 // site: Global website configuration.
 import { site } from '../../config/site';
 // postProjects: Helper to fetch all film projects from disk.
-import { isoDate, postProjects, posts } from '../../lib/content';
+import { isoDate, postProjects } from '../../lib/content';
 import { imageInfo } from '../../lib/images';
 
 // 🗺️ ROUTE GENERATOR: Creates a webpage for each post-production project
@@ -40,9 +40,6 @@ export async function getStaticPaths() {
 const { project } = Astro.props;
 const { data } = project;
 const { Content, headings } = await render(project);
-const relatedPosts = data.relatedPosts.length
-  ? (await posts()).filter((post) => data.relatedPosts.includes(post.id))
-  : [];
 const socialImage =
   data.socialImage ||
   data.poster ||
@@ -60,7 +57,7 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'Article',
   headline: data.title,
-  articleSection: data.categories,
+  articleSection: data.tags,
   description,
   ...(data.date ? { datePublished: isoDate(data.date) } : {}),
   author: {
@@ -147,34 +144,6 @@ const structuredData = {
       {data.images.length > 0 && <Gallery slot="after" images={data.images} />}
     </ArticleReader>
   </article>
-
-  {relatedPosts.length > 0 && (
-    <section class="related" aria-labelledby="related-heading">
-      <div class="section-heading">
-        <h2 id="related-heading" class="eyebrow">
-          Related posts
-        </h2>
-        <span class="line-decoration" aria-hidden="true"></span>
-      </div>
-      <div class="related-grid">
-        {relatedPosts.map((post) => (
-          <article>
-            <time class="mono small muted" datetime={isoDate(post.data.date)}>
-              {isoDate(post.data.date)}
-            </time>
-            <h3>
-              <a href={`/blog/${post.id}/`}>
-                {post.data.title}{' '}
-                <span class="accent" aria-hidden="true">
-                  →
-                </span>
-              </a>
-            </h3>
-          </article>
-        ))}
-      </div>
-    </section>
-  )}
 
   {/* 🏁 Polite sign-off at bottom */}
   <div class="project-end">

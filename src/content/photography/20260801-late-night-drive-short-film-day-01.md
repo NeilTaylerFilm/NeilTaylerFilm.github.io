@@ -3,7 +3,7 @@
   "title": "Late Night Drive - Short Film - Day 01",
   "subtitle": "BTS Photographer for the short film 'Late Night Drive', where I was present for all 3 night shoots.",
   "date": "2026-08-01",
-  "type": "Behind The Scenes",
+  "category": "Behind The Scenes",
   "draft": false,
   "galleryLayout": "justified",
   "coverImage": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/fbe06386fb00558c580142479eb7848c-2560.jpeg",

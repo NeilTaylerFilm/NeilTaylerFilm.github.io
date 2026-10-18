@@ -11,10 +11,17 @@
 // --- BORROWED TOOLS (Imports) ---
 // getCollection: Astro's master key to open content folders and fetch all markdown files.
 import { getCollection } from 'astro:content';
-// categoryKey, projectTimestamp, postCategories: Feed helpers for sorting, slugifying, and categorizing.
-import { categoryKey, projectTimestamp, postCategories } from './feed';
+// ClassificationField, classificationOptions, projectTimestamp: Feed helpers for sorting/filtering.
+import { classificationOptions, projectTimestamp, type ClassificationField } from './feed';
 // Re-export helpers so other files can grab them from one convenient place
-export { excerpt, isoDate, categoryKey, comparators, projectTimestamp, types } from './feed';
+export {
+  classificationValues,
+  excerpt,
+  isoDate,
+  categoryKey,
+  comparators,
+  projectTimestamp,
+} from './feed';
 
 // 📝 FETCH BLOG POSTS:
 // Gets all blog articles.
@@ -47,15 +54,13 @@ export async function postProjects() {
   ).sort((a, b) => projectTimestamp(b.data) - projectTimestamp(a.data) || a.id.localeCompare(b.id));
 }
 
-// 🏷️ GET ALL UNIQUE CATEGORIES:
-// Looks through a list of articles, finds every category label used,
-// removes duplicates, and sorts them A-to-Z.
-export function categories(entries: { data: { category?: string; categories?: string[] } }[]) {
-  return [
-    ...new Map(
-      entries.flatMap(({ data }) =>
-        postCategories(data).map((category) => [categoryKey(category), category] as const),
-      ),
-    ).values(),
-  ].sort();
+// 🏷️ GET UNIQUE OPTIONS FOR THE SELECTED CLASSIFICATION FIELD:
+export function classifications(
+  entries: { data: { category?: string; tags?: string[] } }[],
+  field: ClassificationField,
+) {
+  return classificationOptions(
+    entries.map(({ data }) => data),
+    field,
+  );
 }

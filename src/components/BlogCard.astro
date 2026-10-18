@@ -10,9 +10,9 @@
 import type { CollectionEntry } from 'astro:content';
 // ResponsiveImage: Picture frame component that serves the right image size.
 import ResponsiveImage from './ResponsiveImage.astro';
-// excerpt, isoDate, categoryKey: Helper tools to trim summaries, format dates, and normalize categories.
-import { excerpt, isoDate, categoryKey } from '../lib/content';
-import { displayLabel } from '../lib/feed';
+// excerpt and isoDate: Helpers to trim summaries and format dates.
+import { excerpt, isoDate } from '../lib/content';
+import { displayLabel, filterValues } from '../lib/feed';
 
 // 📋 What this card needs to build itself:
 // Requires the blog post object and its index number in the list.
@@ -30,7 +30,7 @@ const { data } = post;
 const url = `/blog/${post.id}/`;
 // A dedicated cover wins; older posts can keep using the original `image` field.
 const coverImage = data.coverImage || data.image;
-// Type pill + first category shown in the metadata row
+// Primary category pill + first secondary tag shown in the metadata row
 const label = displayLabel(data);
 ---
 
@@ -39,7 +39,7 @@ const label = displayLabel(data);
 <article
   class:list={['blog-card', { 'has-image': coverImage }]}
   data-feed-item
-  data-categories={JSON.stringify(data.categories.map(categoryKey))}
+  data-filter-values={JSON.stringify(filterValues(data, 'tags'))}
   data-date={data.date.getTime()}
   data-id={post.id}
 >
@@ -59,11 +59,10 @@ const label = displayLabel(data);
   )}
 
   <div class="card-content">
-    {/* 🏷️ Category tags, date stamp, and optional demo badge */}
-    {/* Displays formatted categories and publication date */}
+    {/* 🏷️ Primary category, first tag, date stamp, and optional demo badge */}
     <div class="metadata">
-      {label.type && <span class="type-pill">{label.type}</span>}
-      {label.category && <span class="category">{label.category}</span>}
+      {label.category && <span class="category-pill">{label.category}</span>}
+      {label.tag && <span class="tag-label">{label.tag}</span>}
       <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
       {data.demo && <span class="demo-tag">Example</span>}
     </div>
