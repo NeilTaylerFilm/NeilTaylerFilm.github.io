@@ -41,6 +41,12 @@ test('Blog recommendations reuse BlogCard grid cards and keep images lazy', asyn
 
   const cards = grid.locator(':scope > .blog-card');
   await expect(cards).toHaveCount(2);
+  const textCard = grid.locator(':scope > .blog-card:not(.has-image)');
+  const imageCard = grid.locator(':scope > .blog-card.has-image');
+  await expect(textCard).toHaveCount(1);
+  await expect(imageCard).toHaveCount(1);
+  await expect(textCard.locator('.card-reading-cue')).toBeVisible();
+  await expect(imageCard.locator('.card-reading-cue')).toHaveCount(0);
   await page.setViewportSize({ width: 1440, height: 900 });
   const columns = () =>
     grid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(/\s+/).length);

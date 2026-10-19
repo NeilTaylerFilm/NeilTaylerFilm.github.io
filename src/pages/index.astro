@@ -31,46 +31,66 @@ const classifications = getClassifications(allPosts, 'tags');
   title="Blog"
   description="Blog posts by Neil Tayler on photography, film, post-production, technology and the things that catch his attention."
 >
-  {/* Restore Grid before the first paint; invalid or unavailable storage keeps the List default. */}
+  {/* Restore saved Grid before first paint on wider screens; mobile remains List. */}
   <script is:inline slot="head">
     try {
-      if (localStorage.getItem('neil-blog-view') === 'grid') {
+      if (
+        localStorage.getItem('neil-blog-view') === 'grid' &&
+        !window.matchMedia('(max-width: 767px)').matches
+      ) {
         document.documentElement.dataset.blogView = 'grid';
       }
     } catch {}
   </script>
-
   {/* The main stage for our blog articles. We give it an aria-label so screen readers describe it clearly to visually impaired visitors. */}
   <section class="content-start" aria-label="Blog articles">
-    {/* 🏷️ Top Section Heading: "Latest posts" */}
-    {/* A decorative header with a small title and a stylish horizontal divider line. */}
-    <div class="section-heading">
-      <h1 class="eyebrow">Latest posts</h1>
-      <span class="line-decoration" aria-hidden="true"></span>
-    </div>
+    <div class="blog-archive-controls">
+      {/* 🏷️ Top Section Heading: "Latest posts" */}
+      {/* A decorative header with a small title and a stylish horizontal divider line. */}
+      <div class="section-heading">
+        <h1 class="eyebrow">Latest posts</h1>
+        <span class="line-decoration" aria-hidden="true"></span>
+      </div>
 
-    {/* 🎛️ Filter dropdowns (Tags and Sort) */}
-    {/* Show the tag filter and sorting controls when there are posts to display. */}
-    {allPosts.length > 0 && (
-      <FeedControls
-        options={classifications}
-        count={allPosts.length}
-        filterLabel="Tags"
-        allLabel="All tags"
-      >
-        <div
-          class="blog-view-toggle"
-          role="group"
-          aria-label="Blog view"
-          data-blog-view-controls
-          hidden
-          slot="toolbar-actions"
-        >
-          <button type="button" data-blog-view="list" aria-pressed="true">List</button>
-          <button type="button" data-blog-view="grid" aria-pressed="false">Grid</button>
+      {/* 🎛️ Filter dropdowns (Tags and Sort) */}
+      {/* Show the tag filter and sorting controls when there are posts to display. */}
+      {allPosts.length > 0 && (
+        <div class="blog-control-row">
+          <FeedControls
+            options={classifications}
+            count={allPosts.length}
+            filterLabel="Tags"
+            allLabel="All tags"
+          />
+          <div
+            class="blog-view-toggle"
+            role="group"
+            aria-label="Blog view"
+            data-blog-view-controls
+            hidden
+          >
+            <button type="button" data-blog-view="list" aria-pressed="true">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <circle cx="3" cy="4" r="0.75" fill="currentColor" />
+                <circle cx="3" cy="8" r="0.75" fill="currentColor" />
+                <circle cx="3" cy="12" r="0.75" fill="currentColor" />
+                <path d="M6 4h8M6 8h8M6 12h8" stroke="currentColor" stroke-linecap="round" />
+              </svg>
+              <span>List</span>
+            </button>
+            <button type="button" data-blog-view="grid" aria-pressed="false">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <rect x="2" y="2" width="5" height="5" rx="0.75" stroke="currentColor" />
+                <rect x="9" y="2" width="5" height="5" rx="0.75" stroke="currentColor" />
+                <rect x="2" y="9" width="5" height="5" rx="0.75" stroke="currentColor" />
+                <rect x="9" y="9" width="5" height="5" rx="0.75" stroke="currentColor" />
+              </svg>
+              <span>Grid</span>
+            </button>
+          </div>
         </div>
-      </FeedControls>
-    )}
+      )}
+    </div>
 
     {/* 📰 Grid list of blog cards */}
     {/* The magazine rack: a grid container holding all the blog article cards. */}
@@ -102,12 +122,17 @@ const classifications = getClassifications(allPosts, 'tags');
       const buttons = Array.from(
         controls.querySelectorAll<HTMLButtonElement>('button[data-blog-view]'),
       );
+      const mobileViewport = window.matchMedia('(max-width: 767px)');
+      let preferredView: 'list' | 'grid' = 'list';
 
       function setView(view: 'list' | 'grid', persist = false) {
-        document.documentElement.dataset.blogView = view;
+        if (persist) preferredView = view;
+        // Keep the saved preference for desktop, but present the archive as a list on mobile.
+        const activeView = mobileViewport.matches ? 'list' : view;
+        document.documentElement.dataset.blogView = activeView;
 
         for (const button of buttons) {
-          button.setAttribute('aria-pressed', String(button.dataset.blogView === view));
+          button.setAttribute('aria-pressed', String(button.dataset.blogView === activeView));
         }
 
         if (persist) {
@@ -124,8 +149,10 @@ const classifications = getClassifications(allPosts, 'tags');
         if (savedView === 'list' || savedView === 'grid') initialView = savedView;
       } catch {}
 
+      preferredView = initialView;
       setView(initialView);
       controls.hidden = false;
+      mobileViewport.addEventListener('change', () => setView(preferredView));
 
       for (const button of buttons) {
         button.addEventListener('click', () => {

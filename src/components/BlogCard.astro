@@ -61,25 +61,34 @@ const label = displayLabel(data);
   )}
 
   <div class="card-content">
-    {/* 🏷️ Primary category, first tag, date stamp, and optional demo badge */}
-    <div class="metadata">
-      {label.category && <span class="category-pill">{label.category}</span>}
-      {label.tag && <span class="tag-label">{label.tag}</span>}
-      <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
-      {data.demo && <span class="demo-tag">Example</span>}
+    <div class="card-copy">
+      {/* 🏷️ Primary category, first tag, date stamp, and optional demo badge */}
+      <div class="metadata">
+        {label.category && <span class="category-pill">{label.category}</span>}
+        {label.tag && <span class="tag-label">{label.tag}</span>}
+        <time datetime={isoDate(data.date)}>{isoDate(data.date)}</time>
+        {data.demo && <span class="demo-tag">Example</span>}
+      </div>
+
+      {/* 📰 Article Headline Title */}
+      {/* Clickable article title linked to the reading page */}
+      <h2>
+        <a href={url}>{data.title}</a>
+      </h2>
+
+      {/* 📝 Optional subtitle */}
+      {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
+
+      {/* A custom summary is used when present; otherwise show up to two opening sentences. */}
+      <p class="excerpt">{excerpt(post.body, data.excerpt || data.description)}</p>
     </div>
 
-    {/* 📰 Article Headline Title */}
-    {/* Clickable article title linked to the reading page */}
-    <h2>
-      <a href={url}>{data.title}</a>
-    </h2>
-
-    {/* 📝 Optional subtitle */}
-    {data.subtitle && <p class="card-subtitle">{data.subtitle}</p>}
-
-    {/* A custom summary is used when present; otherwise show up to two opening sentences. */}
-    <p class="excerpt">{excerpt(post.body, data.excerpt || data.description)}</p>
+    {/* Grid-only text cards get a clear reading action; the title remains the shared primary link. */}
+    {!coverImage && (
+      <a class="card-reading-cue" href={url} aria-label={`Read article: ${data.title}`}>
+        Read article <span aria-hidden="true">&rarr;</span>
+      </a>
+    )}
   </div>
 
   {/* 🔢 Card numbering badge (e.g. "01", "02") */}

@@ -28,6 +28,10 @@ test('Blog index defaults to List and switches one shared card set to responsive
   await expect(cards).toHaveCount(3);
   await expect(listButton).toHaveAttribute('aria-pressed', 'true');
   await expect(gridButton).toHaveAttribute('aria-pressed', 'false');
+  await expect(listButton).toHaveAccessibleName('List');
+  await expect(gridButton).toHaveAccessibleName('Grid');
+  await expect(listButton.locator('svg[aria-hidden="true"]')).toBeVisible();
+  await expect(gridButton.locator('svg[aria-hidden="true"]')).toBeVisible();
   await expect(feed).not.toHaveCSS('display', 'grid');
 
   const originalIds = await cards.evaluateAll((items) => items.map((item) => item.dataset.id));
@@ -45,12 +49,26 @@ test('Blog index defaults to List and switches one shared card set to responsive
   expect(await cards.locator('h2 a').allTextContents()).toEqual(originalOrder);
 
   await page.setViewportSize({ width: 1440, height: 900 });
+  const filterBounds = await page.locator('.feed-controls').boundingBox();
+  const toggleBounds = await page.locator('[data-blog-view-controls]').boundingBox();
+  const countBounds = await page.locator('[data-feed-count]').boundingBox();
+  expect(filterBounds.x + filterBounds.width).toBeLessThan(toggleBounds.x);
+  expect(toggleBounds.x + toggleBounds.width).toBeLessThan(countBounds.x);
   await expect.poll(() => columnCount(feed)).toBe(3);
   await page.setViewportSize({ width: 1024, height: 900 });
   await expect.poll(() => columnCount(feed)).toBe(2);
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect.poll(() => columnCount(feed)).toBe(1);
+  await expect(page.locator('[data-blog-view-controls]')).toBeHidden();
+  await expect(feed).not.toHaveCSS('display', 'grid');
+  await expect(listButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(gridButton).toHaveAttribute('aria-pressed', 'false');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+  // The saved Grid preference returns when the viewport is wide enough for the toggle.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.locator('[data-blog-view-controls]')).toBeVisible();
+  await expect(gridButton).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => columnCount(feed)).toBe(3);
 
   await expect(page.locator(`${cardSelector}:not(.has-image)`)).toHaveCount(2);
   await expect(page.locator(`${cardSelector} .card-image`)).toHaveCount(1);
@@ -58,9 +76,60 @@ test('Blog index defaults to List and switches one shared card set to responsive
     'border-top-style',
     'solid',
   );
+  const textCards = page.locator(`${cardSelector}:not(.has-image)`);
+  const imageCard = page.locator(`${cardSelector}.has-image`);
+  await expect(page.locator(`${cardSelector} .card-reading-cue:visible`)).toHaveCount(2);
+  await expect(textCards.first().locator(':scope > .card-content')).toHaveCSS('display', 'flex');
+  await expect(textCards.first().locator('.card-content > .card-copy')).toHaveCSS('display', 'flex');
+  const textTitle = await textCards.first().locator('h2 a').innerText();
+  const metadata = textCards.first().locator('.metadata');
+  const headline = textCards.first().locator('h2');
+  const subtitle = textCards.first().locator('.card-subtitle');
+  await expect(subtitle).toHaveCount(1);
+  const metadataTitleGap = await metadata.evaluate((element) => {
+    const current = element.getBoundingClientRect();
+    const next = element.parentElement.querySelector('h2').getBoundingClientRect();
+    return next.top - current.bottom;
+  });
+  const titleSubtitleGap = await headline.evaluate((element) => {
+    const title = element.getBoundingClientRect();
+    const next = element.parentElement.querySelector('.card-subtitle').getBoundingClientRect();
+    return next.top - title.bottom;
+  });
+  const subtitleExcerptGap = await subtitle.evaluate((element) => {
+    const current = element.getBoundingClientRect();
+    const next = element.parentElement.querySelector('.excerpt').getBoundingClientRect();
+    return next.top - current.bottom;
+  });
+  expect(metadataTitleGap).toBeGreaterThanOrEqual(0);
+  expect(metadataTitleGap).toBeLessThanOrEqual(15);
+  expect(titleSubtitleGap).toBeGreaterThanOrEqual(0);
+  expect(titleSubtitleGap).toBeLessThanOrEqual(15);
+  expect(subtitleExcerptGap).toBeGreaterThanOrEqual(0);
+  expect(subtitleExcerptGap).toBeLessThanOrEqual(15);
+  const titleHref = await textCards.first().locator('h2 a').getAttribute('href');
+  const readingCue = textCards.first().getByRole('link', { name: `Read article: ${textTitle}` });
+  await expect(readingCue).toBeVisible();
+  await expect(readingCue).toHaveAttribute('aria-label', `Read article: ${textTitle}`);
+  expect(await readingCue.getAttribute('href')).toBe(titleHref);
+  const textTitleSize = await textCards.first().locator('h2').evaluate((title) =>
+    Number.parseFloat(getComputedStyle(title).fontSize),
+  );
+  const imageTitleSize = await imageCard.locator('h2').evaluate((title) =>
+    Number.parseFloat(getComputedStyle(title).fontSize),
+  );
+  expect(textTitleSize).toBeGreaterThan(imageTitleSize);
+  await expect(imageCard.locator('.card-reading-cue')).toHaveCount(0);
+  const accentMarker = await textCards.first().locator('.card-content').evaluate((element) => {
+    const marker = getComputedStyle(element, '::before');
+    return { width: marker.width, color: marker.backgroundColor };
+  });
+  expect(accentMarker.width).toBe('34px');
+  expect(accentMarker.color).not.toBe('rgba(0, 0, 0, 0)');
 
   await listButton.click();
   await expect(feed).not.toHaveCSS('display', 'grid');
+  await expect(page.locator(`${cardSelector} .card-reading-cue:visible`)).toHaveCount(0);
   expect(await cards.evaluateAll((items) => items.map((item) => item.dataset.id))).toEqual(
     originalIds,
   );
