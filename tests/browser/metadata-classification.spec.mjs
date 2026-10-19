@@ -65,41 +65,54 @@ test('photography category takes precedence when both filter parameters are supp
   expect(results).toBe(true);
 });
 
-test('Blog and Post Production archive filters continue matching migrated tags', async ({
+test('Blog archive filters by primary category, independently of secondary tags', async ({
   page,
 }) => {
-  for (const archive of ['/', '/post-production/']) {
-    await page.goto(archive);
-    const filter = page.getByLabel('Filter by tags');
-    await expect(page.getByText('Tags', { exact: true })).toBeVisible();
-    const options = await filter
-      .locator('option')
-      .evaluateAll((items) =>
-        items
-          .slice(1)
-          .map((item) => ({ value: item.value, label: item.textContent?.trim() ?? '' })),
-      );
+  await page.goto('/');
+  const filter = page.getByLabel('Filter by category');
+  await expect(page.getByText('Category', { exact: true })).toBeVisible();
 
-    expect(options.length).toBeGreaterThan(0);
-    const expectedTag = archive === '/' ? 'Photography' : 'YouTube';
-    const oldPrimaryCategory = archive === '/' ? 'Review' : 'Explainer';
-    expect(options.map((option) => option.label)).toContain(expectedTag);
-    expect(options.map((option) => option.label)).not.toContain(oldPrimaryCategory);
-    for (const option of options) {
-      await filter.selectOption(option.value);
-      const cards = page.locator('[data-feed-item]:not([hidden])');
-      await expect(cards).not.toHaveCount(0);
-      const match = await cards.evaluateAll(
-        (items, selected) =>
-          items.every((item) =>
-            JSON.parse(item.dataset.filterValues || '[]').some(
-              (value) => value.trim().toLocaleLowerCase('en') === selected,
-            ),
+  const options = await filter
+    .locator('option')
+    .evaluateAll((items) =>
+      items.slice(1).map((item) => ({ value: item.value, label: item.textContent?.trim() ?? '' })),
+    );
+  expect(options.map((option) => option.label)).toContain('Review');
+  expect(options.map((option) => option.label)).not.toContain('Photography');
+
+  await filter.selectOption('review');
+  const cards = page.locator('[data-feed-item]:not([hidden])');
+  await expect(cards).toHaveCount(1);
+  await expect(cards.first().locator('.category-pill')).toHaveText('Review');
+});
+
+test('Post Production archive filter continues matching secondary tags', async ({ page }) => {
+  await page.goto('/post-production/');
+  const filter = page.getByLabel('Filter by tags');
+  await expect(page.getByText('Tags', { exact: true })).toBeVisible();
+  const options = await filter
+    .locator('option')
+    .evaluateAll((items) =>
+      items.slice(1).map((item) => ({ value: item.value, label: item.textContent?.trim() ?? '' })),
+    );
+
+  expect(options.length).toBeGreaterThan(0);
+  expect(options.map((option) => option.label)).toContain('YouTube');
+  expect(options.map((option) => option.label)).not.toContain('Explainer');
+  for (const option of options) {
+    await filter.selectOption(option.value);
+    const cards = page.locator('[data-feed-item]:not([hidden])');
+    await expect(cards).not.toHaveCount(0);
+    const match = await cards.evaluateAll(
+      (items, selected) =>
+        items.every((item) =>
+          JSON.parse(item.dataset.filterValues || '[]').some(
+            (value) => value.trim().toLocaleLowerCase('en') === selected,
           ),
-        option.value,
-      );
-      expect(match, `${archive} filter option ${option.label}`).toBe(true);
-    }
+        ),
+      option.value,
+    );
+    expect(match, `/post-production/ filter option ${option.label}`).toBe(true);
   }
 });
 

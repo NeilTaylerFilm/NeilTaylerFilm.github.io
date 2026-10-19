@@ -71,7 +71,7 @@ test('Blog recommendations reuse BlogCard grid cards and keep images lazy', asyn
   expect(imageLoading.every((loading) => loading === 'lazy')).toBe(true);
 });
 
-test('Related Posts stay in Grid regardless of the saved Blog index view', async ({ page }) => {
+test('Related Posts stay Grid across saved Blog views @desktop-regression', async ({ page }) => {
   for (const view of ['list', 'grid']) {
     await page.goto('/');
     await page.locator(`[data-blog-view-controls] button[data-blog-view="${view}"]`).click();

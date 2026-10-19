@@ -41,7 +41,7 @@ const label = displayLabel(data);
 <article
   class:list={['blog-card', { 'has-image': coverImage }]}
   data-feed-item
-  data-filter-values={JSON.stringify(filterValues(data, 'tags'))}
+  data-filter-values={JSON.stringify(filterValues(data, 'category'))}
   data-date={data.date.getTime()}
   data-id={post.id}
 >

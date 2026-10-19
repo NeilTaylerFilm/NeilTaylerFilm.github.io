@@ -15,9 +15,54 @@ async function columnCount(locator) {
   );
 }
 
-test('Blog index defaults to List and switches one shared card set to responsive Grid', async ({
+test('Blog filtering uses primary categories, leaving secondary tags out of the category list', async ({
   page,
 }) => {
+  await page.goto('/');
+
+  const filter = page.locator('select[name="category"]');
+  await expect(page.locator('.feed-controls label').first().locator('span')).toHaveText('Category');
+  await expect(filter.locator('option').first()).toHaveText('All categories');
+  await expect(filter.locator('option')).toHaveText(['All categories', 'Review']);
+
+  const categoryCard = page
+    .locator(`${cardSelector}`)
+    .filter({ has: page.locator('.category-pill') });
+  await expect(categoryCard).toHaveCount(1);
+  await expect(categoryCard.locator('.category-pill')).toHaveText('Review');
+  await expect(categoryCard.locator('.tag-label')).toHaveText('Photography');
+
+  const uncategorized = page.locator(`${cardSelector}[data-filter-values="[]"]`);
+  await expect(uncategorized).toHaveCount(2);
+  await expect(page.locator(`${cardSelector}:visible`)).toHaveCount(3);
+
+  await filter.selectOption('review');
+  await expect(page.locator(`${cardSelector}:visible`)).toHaveCount(1);
+  await expect(categoryCard).toBeVisible();
+  await expect(page.locator(`${cardSelector}[data-filter-values="[]"]:visible`)).toHaveCount(0);
+
+  await filter.selectOption('');
+  await expect(page.locator(`${cardSelector}:visible`)).toHaveCount(3);
+  await expect(uncategorized).toHaveCount(2);
+});
+
+test('Blog category URLs resolve categories without reinterpreting former tag values', async ({
+  page,
+}) => {
+  await page.goto('/?category=Photography');
+
+  const filter = page.locator('select[name="category"]');
+  await expect(filter).toHaveValue('');
+  await expect(page.locator(`${cardSelector}:visible`)).toHaveCount(3);
+
+  await page.goto('/?category=Review&sort=oldest');
+  await expect(filter).toHaveValue('review');
+  await expect(page.locator('select[name="sort"]')).toHaveValue('oldest');
+  await expect(page.locator(`${cardSelector}:visible`)).toHaveCount(1);
+  await expect(page.locator(`${cardSelector}:visible .category-pill`)).toHaveText('Review');
+});
+
+test('Blog index responsive List/Grid presentation @desktop-regression', async ({ page }) => {
   await page.goto('/');
 
   const feed = page.locator('[data-blog-feed]');
@@ -135,7 +180,7 @@ test('Blog index defaults to List and switches one shared card set to responsive
   );
 });
 
-test('view changes preserve the active Blog filter, order, and query string', async ({ page }) => {
+test('view changes preserve filter, order, and URL @desktop-regression', async ({ page }) => {
   await page.goto('/');
 
   const filter = page.locator('select[name="category"]');
@@ -158,7 +203,7 @@ test('view changes preserve the active Blog filter, order, and query string', as
   expect(await visibleIds(page)).toEqual(activeIds);
 });
 
-test('view preference survives navigating away and back to the Blog index', async ({ page }) => {
+test('view preference persists across navigation @desktop-regression', async ({ page }) => {
   await page.goto('/');
   await page.locator(viewButtonSelector('grid')).click();
 
@@ -171,7 +216,7 @@ test('view preference survives navigating away and back to the Blog index', asyn
   await expect(page.locator('[data-blog-feed]')).toHaveCSS('display', 'grid');
 });
 
-test('toggle remains keyboard operable and exposes a visible focus state', async ({ page }) => {
+test('view toggle is keyboard accessible @desktop-regression', async ({ page }) => {
   await page.goto('/');
   const listButton = page.locator(viewButtonSelector('list'));
   const gridButton = page.locator(viewButtonSelector('grid'));
@@ -186,9 +231,7 @@ test('toggle remains keyboard operable and exposes a visible focus state', async
   await expect(page.locator('[data-blog-feed]')).toHaveCSS('display', 'grid');
 });
 
-test('invalid or blocked localStorage does not prevent the index or toggle from working', async ({
-  browser,
-}) => {
+test('invalid storage keeps the view toggle working @desktop-regression', async ({ browser }) => {
   const invalidContext = await browser.newContext();
   await invalidContext.addInitScript(() => localStorage.setItem('neil-blog-view', 'cards'));
   const invalidPage = await invalidContext.newPage();
