@@ -29,6 +29,7 @@
     {
       "video": "https://www.youtube.com/shorts/M7lc1UVf-VE",
       "title": "Widescreen video",
+      "poster": "https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/9f5388f16ee9d62a7ba2534b94f8f966-2560.jpeg",
       "width": 2390,
       "height": 1000,
       "caption": "An ultrawide test video."

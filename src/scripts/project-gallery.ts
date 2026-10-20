@@ -26,6 +26,10 @@ export function setupJustifiedGallery(gallery: HTMLElement) {
       nextEnds.length === rowEnds.length && nextEnds.every((end, index) => end === rowEnds[index]);
 
     if (!boundariesMatch) {
+      // Browsers restart iframe playback when a justified tile changes rows.
+      gallery
+        .querySelector<HTMLElement>('.gallery-item--video[data-video-playing]')
+        ?.dispatchEvent(new Event('gallery-will-reflow'));
       const focused = gallery.contains(document.activeElement)
         ? (document.activeElement as HTMLElement)
         : undefined;

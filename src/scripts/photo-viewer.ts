@@ -1,4 +1,4 @@
-import { youtubeEmbedUrl } from '../lib/youtube.ts';
+import { isYoutubeThumbnailPlaceholder, youtubeEmbedUrl } from '../lib/youtube.ts';
 
 let viewerSequence = 0;
 
@@ -123,8 +123,19 @@ export function createPhotoViewer(
   let activeHistorySession: number | null = null;
   let awaitingBack = false;
   let closingFromHistory = false;
-  let queuedOpen: { trigger: HTMLAnchorElement; viaPointer: boolean } | undefined;
+  let queuedOpen:
+    { trigger: HTMLAnchorElement; viaPointer: boolean; startVideo: boolean } | undefined;
   let closeCleaned = true;
+  let inlinePlayer:
+    | {
+        trigger: HTMLAnchorElement;
+        figure: HTMLElement;
+        player: HTMLElement;
+        iframe: HTMLIFrameElement;
+        ariaHidden: string | null;
+        tabIndex: string | null;
+      }
+    | undefined;
 
   function isVideo(index: number) {
     return items[index]?.dataset.mediaType === 'video' || Boolean(items[index]?.dataset.videoId);
@@ -194,6 +205,20 @@ export function createPhotoViewer(
       iframe.src = 'about:blank';
       iframe.remove();
     });
+  }
+
+  function stopInlineVideo() {
+    if (!inlinePlayer) return;
+    const restoreFocus = inlinePlayer.player.contains(document.activeElement);
+    inlinePlayer.iframe.src = 'about:blank';
+    inlinePlayer.player.remove();
+    if (inlinePlayer.ariaHidden === null) inlinePlayer.trigger.removeAttribute('aria-hidden');
+    else inlinePlayer.trigger.setAttribute('aria-hidden', inlinePlayer.ariaHidden);
+    if (inlinePlayer.tabIndex === null) inlinePlayer.trigger.removeAttribute('tabindex');
+    else inlinePlayer.trigger.setAttribute('tabindex', inlinePlayer.tabIndex);
+    inlinePlayer.figure.removeAttribute('data-video-playing');
+    if (restoreFocus) inlinePlayer.trigger.focus({ preventScroll: true });
+    inlinePlayer = undefined;
   }
 
   function finishClose() {
@@ -419,6 +444,61 @@ export function createPhotoViewer(
     );
   }
 
+  function createVideoFrame(videoId: string, title: string) {
+    const iframe = document.createElement('iframe');
+    iframe.title = title;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.allow =
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    iframe.loading = 'eager';
+    iframe.setAttribute('frameborder', '0');
+    iframe.src = youtubeEmbedUrl(videoId);
+    return iframe;
+  }
+
+  function shouldPlayInline(trigger: HTMLAnchorElement) {
+    const { width, height } = trigger.getBoundingClientRect();
+    const galleryWidth =
+      trigger.closest('.gallery')?.getBoundingClientRect().width || window.innerWidth;
+    return (width >= 480 && height >= 270) || (width >= galleryWidth * 0.85 && height >= 180);
+  }
+
+  function playInlineVideo(trigger: HTMLAnchorElement) {
+    const figure = trigger.closest<HTMLElement>('.gallery-item--video');
+    const videoId = trigger.dataset.videoId;
+    if (!figure || !videoId) return false;
+
+    stopInlineVideo();
+    const iframe = createVideoFrame(
+      videoId,
+      trigger.dataset.title || trigger.dataset.alt || 'YouTube video',
+    );
+    const player = document.createElement('div');
+    player.className = 'gallery-video-player';
+    player.append(iframe);
+    trigger.insertAdjacentElement('afterend', player);
+    figure.setAttribute('data-video-playing', '');
+    const ariaHidden = trigger.getAttribute('aria-hidden');
+    const tabIndex = trigger.getAttribute('tabindex');
+    trigger.setAttribute('aria-hidden', 'true');
+    trigger.tabIndex = -1;
+    inlinePlayer = { trigger, figure, player, iframe, ariaHidden, tabIndex };
+    figure.addEventListener('gallery-will-reflow', stopInlineVideo, { once: true });
+    iframe.focus({ preventScroll: true });
+    return true;
+  }
+
+  function activate(trigger: HTMLAnchorElement, viaPointer: boolean) {
+    stopInlineVideo();
+    if (awaitingBack) {
+      queuedOpen = { trigger, viaPointer, startVideo: true };
+      return;
+    }
+    if (trigger.dataset.videoId && shouldPlayInline(trigger) && playInlineVideo(trigger)) return;
+    open(trigger, viaPointer, undefined, true);
+  }
+
   function sizeVideoBox(box: HTMLElement, index: number) {
     const bounds = imageStage.getBoundingClientRect();
     const ratio = Number(items[index].dataset.ratio) || 16 / 9;
@@ -468,8 +548,23 @@ export function createPhotoViewer(
       image.alt = '';
       image.setAttribute('aria-hidden', 'true');
       image.draggable = false;
+      image.addEventListener(
+        'load',
+        () => {
+          if (image.hasAttribute('data-youtube-thumbnail') && isYoutubeThumbnailPlaceholder(image))
+            image.hidden = true;
+        },
+        { once: true },
+      );
       image.src = tileImage.currentSrc || tileImage.src;
       image.addEventListener('error', () => (image.hidden = true), { once: true });
+      if (
+        image.complete &&
+        (image.naturalWidth === 0 ||
+          (image.hasAttribute('data-youtube-thumbnail') && isYoutubeThumbnailPlaceholder(image)))
+      ) {
+        image.hidden = true;
+      }
       box.append(image);
     }
 
@@ -492,15 +587,7 @@ export function createPhotoViewer(
     const box = slidesByPhoto.get(index)?.querySelector<HTMLElement>('[data-video-preview]');
     if (!box || box.querySelector('iframe')) return;
 
-    const iframe = document.createElement('iframe');
-    iframe.title = videoTitle(index);
-    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    iframe.allow =
-      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    iframe.allowFullscreen = true;
-    iframe.loading = 'eager';
-    iframe.setAttribute('frameborder', '0');
-    iframe.src = youtubeEmbedUrl(videoId);
+    const iframe = createVideoFrame(videoId, videoTitle(index));
     box.replaceChildren(iframe);
     iframe.focus({ preventScroll: true });
   }
@@ -778,11 +865,17 @@ export function createPhotoViewer(
     }
   }
 
-  function open(trigger: HTMLAnchorElement, viaPointer: boolean, restoredSession?: number) {
+  function open(
+    trigger: HTMLAnchorElement,
+    viaPointer: boolean,
+    restoredSession?: number,
+    startVideo = false,
+  ) {
     if (awaitingBack && restoredSession === undefined) {
-      queuedOpen = { trigger, viaPointer };
+      queuedOpen = { trigger, viaPointer, startVideo };
       return;
     }
+    stopInlineVideo();
     if (!dialog.open && !closeCleaned) finishClose();
     items = getPhotos();
     visibleCount = items.length;
@@ -827,17 +920,18 @@ export function createPhotoViewer(
     show(index, 0);
 
     close.focus({ preventScroll: true });
+    if (startVideo && isVideo(index)) playVideo(index);
   }
 
   function bind(trigger: HTMLAnchorElement, options: { space?: boolean } = {}) {
-    trigger.setAttribute('aria-haspopup', 'dialog');
+    if (!trigger.dataset.videoId) trigger.setAttribute('aria-haspopup', 'dialog');
 
     trigger.addEventListener('click', (event) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0)
         return;
 
       event.preventDefault();
-      open(trigger, event.detail > 0);
+      activate(trigger, event.detail > 0);
     });
 
     if (options.space) {
@@ -848,7 +942,7 @@ export function createPhotoViewer(
 
         if (event.repeat || dialog.open) return;
 
-        open(trigger, false);
+        activate(trigger, false);
       });
     }
   }
@@ -939,7 +1033,15 @@ export function createPhotoViewer(
         awaitingBack = false;
         const pending = queuedOpen;
         queuedOpen = undefined;
-        if (pending) open(pending.trigger, pending.viaPointer);
+        if (pending) {
+          if (
+            pending.startVideo &&
+            pending.trigger.dataset.videoId &&
+            shouldPlayInline(pending.trigger)
+          )
+            playInlineVideo(pending.trigger);
+          else open(pending.trigger, pending.viaPointer, undefined, pending.startVideo);
+        }
         return;
       }
 
@@ -962,6 +1064,7 @@ export function createPhotoViewer(
         dialog.close();
       }
     });
+  window.addEventListener('pagehide', stopInlineVideo);
   const updateViewport = () => {
     const height = window.visualViewport?.height;
     if (height) dialog.style.setProperty('--lightbox-h', `${height}px`);

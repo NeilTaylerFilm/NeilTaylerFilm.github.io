@@ -58,5 +58,11 @@ export function youtubeWatchUrl(videoId: string) {
 
 export function youtubeThumbnailUrl(videoId: string) {
   assertVideoId(videoId);
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+}
+
+export function isYoutubeThumbnailPlaceholder(
+  image: Pick<HTMLImageElement, 'naturalWidth' | 'naturalHeight'>,
+) {
+  return image.naturalWidth === 120 && image.naturalHeight === 90;
 }

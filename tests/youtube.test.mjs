@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   youtubeEmbedUrl,
+  isYoutubeThumbnailPlaceholder,
   youtubeThumbnailUrl,
   youtubeVideoId,
   youtubeWatchUrl,
@@ -50,8 +51,13 @@ test('derives privacy-enhanced embed, YouTube fallback, and thumbnail URLs from 
   assert.equal(embed.searchParams.get('playsinline'), '1');
   assert.equal(embed.searchParams.get('rel'), '0');
   assert.equal(youtubeWatchUrl(validId), `https://www.youtube.com/watch?v=${validId}`);
-  assert.equal(youtubeThumbnailUrl(validId), `https://i.ytimg.com/vi/${validId}/hqdefault.jpg`);
+  assert.equal(youtubeThumbnailUrl(validId), `https://i.ytimg.com/vi/${validId}/mqdefault.jpg`);
   assert.throws(() => youtubeEmbedUrl('bad-id'), TypeError);
+});
+
+test('recognizes YouTube’s valid 120×90 missing-thumbnail placeholder', () => {
+  assert.equal(isYoutubeThumbnailPlaceholder({ naturalWidth: 120, naturalHeight: 90 }), true);
+  assert.equal(isYoutubeThumbnailPlaceholder({ naturalWidth: 320, naturalHeight: 180 }), false);
 });
 
 test('gallery section grouping preserves authored order across photos and videos', () => {
