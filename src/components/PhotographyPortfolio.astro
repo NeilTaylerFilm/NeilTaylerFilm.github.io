@@ -21,6 +21,7 @@ if (TEST_GRID && !Astro.props.photos) {
   const featuredSources = new Set(displayPhotos.map((photo) => photo.src));
   const galleryPhotos = galleryProjects.flatMap((project) =>
     project.data.images.flatMap((photo, index) => {
+      if (photo.type === 'video') return [];
       const info = imageInfo(photo.src);
       if (!info || featuredSources.has(photo.src)) return [];
       return [

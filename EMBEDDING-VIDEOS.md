@@ -5,8 +5,8 @@ Add two fields to the frontmatter at the top of your post in `src/content/post-p
 ## Frontmatter fields
 
 ```yaml
-video: "https://www.youtube.com/watch?v=VIDEO_ID"
-poster: "https://assets.neiltaylerfilm.com/photos/your-poster.webp"
+video: 'https://www.youtube.com/watch?v=VIDEO_ID'
+poster: 'https://assets.neiltaylerfilm.com/photos/your-poster.webp'
 ```
 
 The site places the video player directly below the subtitle and above the post body.
@@ -28,8 +28,8 @@ date: 2026-10-09
 category: Explainer
 tags:
   - Editing
-video: "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
-poster: "/images/your-poster.jpg"
+video: 'https://www.youtube.com/watch?v=YOUR_VIDEO_ID'
+poster: '/images/your-poster.jpg'
 draft: true
 ---
 ```
@@ -45,3 +45,34 @@ Use any of these formats for `video`:
 - Raw YouTube ID: `HAkxnRaTW2Q`
 - Full Vimeo URL: `https://vimeo.com/12345678`
 - Raw Vimeo ID: `12345678`
+
+## YouTube videos in photography galleries
+
+Photography albums use the existing ordered `images` list. Keep photo items in their current
+`src:` format. Add a video item with `video:`; use an 11-character YouTube ID or a supported HTTPS
+YouTube watch, short, live, or embed URL. Items stay in the order written.
+
+```yaml
+images:
+  - src: 'https://assets.neiltaylerfilm.com/photos/your-photo.jpeg'
+    alt: 'A quiet moment on set'
+    caption: 'Between takes.'
+  - video: 'https://youtu.be/VIDEO_ID'
+    title: 'Behind the scenes'
+    caption: 'A short film-set moment.'
+    poster: '/assets/behind-the-scenes-poster.jpg'
+    width: 1920
+    height: 1080
+  - src: 'https://assets.neiltaylerfilm.com/photos/another-photo.jpeg'
+    alt: 'The crew resetting the scene'
+```
+
+`poster`, `title`, `alt`, `caption`, `section`, `width`, and `height` are optional. A custom poster
+uses the site's existing responsive image manifest when available; the site otherwise falls back to
+a YouTube thumbnail. Without `width` and `height`, the gallery uses the poster's known ratio or
+16:9. If you declare dimensions, provide both and use the video's actual pixel ratio. The thumbnail
+is only a preview; the privacy-enhanced YouTube player is created after a visitor presses Play.
+
+The authoring field is `video:` inside an `images` item, never an iframe or HTML string. URLs are
+validated and the embed URL is generated from the normalized video ID. YouTube unlisted videos are
+publicly accessible to anyone with the link; they are not access-controlled.

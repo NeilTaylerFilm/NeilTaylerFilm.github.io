@@ -14,26 +14,35 @@ import ResponsiveImage from './ResponsiveImage.astro';
 import { imageInfo } from '../lib/images';
 // gallerySections: Organizes photo lists into grouped chapters based on markdown headings.
 import { gallerySections } from '../lib/gallery-sections';
+import { youtubeThumbnailUrl, youtubeWatchUrl } from '../lib/youtube';
+
+type GalleryPhoto = {
+  type?: 'photo';
+  src: string;
+  section?: string;
+  full?: string;
+  alt?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+};
+
+type GalleryVideo = {
+  type: 'video';
+  videoId: string;
+  poster?: string;
+  title?: string;
+  section?: string;
+  alt?: string;
+  caption?: string;
+  width?: number;
+  height?: number;
+};
 
 // 📋 What this gallery accepts:
 // An array of photograph objects and an optional layout design choice.
 interface Props {
-  images: {
-    // Picture web address
-    src: string;
-    // Optional chapter heading
-    section?: string;
-    // High-res version for zooming
-    full?: string;
-    // Screen reader description
-    alt?: string;
-    // Optional caption text
-    caption?: string;
-    // Pixel width
-    width?: number;
-    // Pixel height
-    height?: number;
-  }[];
+  images: (GalleryPhoto | GalleryVideo)[];
   // The display style
   layout?: 'editorial' | 'justified';
 }
@@ -56,11 +65,25 @@ const { images, layout = 'editorial' } = Astro.props;
     >
       {group.images.map((image, localIndex) => {
         const index = group.start + localIndex;
-        const info = imageInfo(image.src);
+        const isVideo = image.type === 'video';
+        const previewSource = isVideo
+          ? image.poster || youtubeThumbnailUrl(image.videoId)
+          : image.src;
+        const info = imageInfo(previewSource);
 
         // 📐 Calculate the aspect ratio (width divided by height) so rows don't distort
         // Ratio calculation: prevents image jumping and controls mosaic expansion
-        const ratio = (info?.width || image.width || 1) / (info?.height || image.height || 1);
+        const ratio = isVideo
+          ? (image.width || info?.width || 16) / (image.height || info?.height || 9)
+          : (info?.width || image.width || 1) / (info?.height || image.height || 1);
+        const full = !isVideo ? image.full || info?.full || image.src : undefined;
+        const thumbnailWidth = image.width || info?.width || Math.round(480 * ratio);
+        const thumbnailHeight = image.height || info?.height || 480;
+        const label = isVideo
+          ? `Play video${image.title ? `: ${image.title}` : image.alt ? `: ${image.alt}` : image.caption ? `: ${image.caption}` : ''}`
+          : image.alt
+            ? `Enlarge photograph: ${image.alt}`
+            : 'Enlarge photograph';
         // A complete row can reach 1.25 times its target height.
         const tileSizes = [
           `(max-width: 359px) min(${Math.ceil(ratio * 237.5)}px, calc(100vw - 32px))`,
@@ -74,38 +97,69 @@ const { images, layout = 'editorial' } = Astro.props;
 
         return (
           <figure
-            style={
-              layout === 'justified'
-                ? `--ratio: ${(info?.width || image.width || 1) / (info?.height || image.height || 1)}`
-                : undefined
-            }
-            class:list={[
-              'gallery-item',
-              { portrait: (info?.height || image.height || 0) > (info?.width || image.width || 0) },
-            ]}
+            style={isVideo || layout === 'justified' ? `--ratio: ${ratio}` : undefined}
+            class:list={['gallery-item', { 'gallery-item--video': isVideo, portrait: ratio < 1 }]}
           >
             {/* 🔍 Clickable link that triggers the full-screen Lightbox zoom */}
             {/* High-resolution zoom target passed to the Lightbox popover */}
             <a
-              href={image.full || info?.full || image.src}
+              href={isVideo ? youtubeWatchUrl(image.videoId) : full!}
               data-gallery-trigger
-              data-full={image.full || info?.full || image.src}
-              data-srcset={image.full ? undefined : info?.srcset}
+              data-media-type={isVideo ? 'video' : 'photo'}
+              data-video-id={isVideo ? image.videoId : undefined}
+              data-ratio={ratio}
+              data-title={isVideo ? image.title || undefined : undefined}
+              data-alt={image.alt || undefined}
+              data-full={full}
+              data-srcset={!isVideo && !image.full ? info?.srcset : undefined}
               data-caption={image.caption || undefined}
-              aria-label={image.alt ? `Enlarge photograph: ${image.alt}` : 'Enlarge photograph'}
+              aria-label={label}
             >
-              <ResponsiveImage
-                {...image}
-                alt={image.alt || ''}
-                sizes={
-                  layout === 'justified'
-                    ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
-                    : index % 3 === 0
-                      ? '(max-width: 1440px) 90vw, 1248px'
-                      : '(max-width: 540px) 90vw, 45vw'
-                }
-                loading={index === 0 ? 'eager' : 'lazy'}
-              />
+              {isVideo ? (
+                <>
+                  {image.poster ? (
+                    <ResponsiveImage
+                      src={image.poster}
+                      width={thumbnailWidth}
+                      height={thumbnailHeight}
+                      alt=""
+                      sizes={
+                        layout === 'justified'
+                          ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
+                          : '(max-width: 540px) 90vw, 45vw'
+                      }
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                    />
+                  ) : (
+                    <img
+                      src={previewSource}
+                      alt=""
+                      width={thumbnailWidth}
+                      height={thumbnailHeight}
+                      loading={index === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  )}
+                  <span class="gallery-video-play" aria-hidden="true">
+                    ▶
+                  </span>
+                </>
+              ) : (
+                <ResponsiveImage
+                  src={image.src}
+                  width={image.width}
+                  height={image.height}
+                  alt={image.alt || ''}
+                  sizes={
+                    layout === 'justified'
+                      ? `${index === 0 ? '' : 'auto, '}${tileSizes}`
+                      : index % 3 === 0
+                        ? '(max-width: 1440px) 90vw, 1248px'
+                        : '(max-width: 540px) 90vw, 45vw'
+                  }
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              )}
             </a>
             {/* 📝 Photo caption underneath */}
             {image.caption && <figcaption>{image.caption}</figcaption>}
@@ -123,6 +177,48 @@ const { images, layout = 'editorial' } = Astro.props;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
     font-size: 1.25rem;
+  }
+  .gallery-item--video > a {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: var(--ratio);
+    background: var(--surface-raised);
+  }
+  .gallery-item--video > a > :global(picture) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .gallery-item--video img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  :global(.gallery.gallery-justified[data-enhanced] .gallery-item--video img),
+  :global(.gallery.gallery-justified:not([data-enhanced]) .gallery-item--video img) {
+    height: 100%;
+    object-fit: cover;
+  }
+  .gallery-item--video[data-thumbnail-failed] img {
+    visibility: hidden;
+  }
+  .gallery-video-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: 48px;
+    height: 48px;
+    place-items: center;
+    padding-left: 3px;
+    border: 1px solid rgb(255 255 255 / 55%);
+    border-radius: 50%;
+    background: rgb(18 19 17 / 68%);
+    color: #fff;
+    font-size: 17px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
   }
   .gallery.gallery-justified {
     --gallery-gap: 6px;
@@ -206,4 +302,11 @@ const { images, layout = 'editorial' } = Astro.props;
   import { setupJustifiedGallery } from '../scripts/project-gallery';
 
   document.querySelectorAll<HTMLElement>('[data-justified-gallery]').forEach(setupJustifiedGallery);
+  document.querySelectorAll<HTMLImageElement>('.gallery-item--video img').forEach((image) => {
+    image.addEventListener(
+      'error',
+      () => image.closest('.gallery-item--video')?.setAttribute('data-thumbnail-failed', ''),
+      { once: true },
+    );
+  });
 </script>

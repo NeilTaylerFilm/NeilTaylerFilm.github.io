@@ -17,6 +17,7 @@ import { z } from 'astro/zod';
 // projectDate, projectYear, matchingProjectYear: Custom date validators ensuring consistent timeline years.
 import { projectDate, projectYear, matchingProjectYear } from './lib/project-date';
 import { roleMetadataSchema } from './lib/role-metadata';
+import { youtubeVideoId } from './lib/youtube';
 
 // 🛠️ HELPER: Resilient optional text and date (accepts undefined, null, or empty string from Obsidian)
 const optionalText = z
@@ -29,6 +30,53 @@ const optionalDate = z.preprocess(
   (val) => (val === null || val === '' ? undefined : val),
   z.coerce.date().optional(),
 );
+
+const galleryMedia = z
+  .object({
+    // Photos keep the existing `src` format. Video entries use `video` instead.
+    src: optionalText,
+    video: optionalText,
+    full: optionalText,
+    poster: optionalText,
+    title: optionalText,
+    section: optionalText,
+    alt: z
+      .string()
+      .nullish()
+      .transform((value) => value?.trim() || ''),
+    caption: optionalText,
+    width: z.number().positive().optional(),
+    height: z.number().positive().optional(),
+  })
+  .superRefine((media, context) => {
+    if (Boolean(media.src) === Boolean(media.video)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'Gallery media must contain exactly one of src (photo) or video (YouTube).',
+        path: ['src'],
+      });
+    }
+    if (media.video && !youtubeVideoId(media.video)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'video must be an 11-character YouTube ID or supported HTTPS YouTube URL.',
+        path: ['video'],
+      });
+    }
+    if (media.video && (media.width === undefined) !== (media.height === undefined)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'width and height must be provided together.',
+        path: ['height'],
+      });
+    }
+  })
+  .transform((media) => {
+    const { src, video, ...metadata } = media;
+    return video
+      ? { ...metadata, type: 'video' as const, videoId: youtubeVideoId(video)! }
+      : { ...metadata, type: 'photo' as const, src: src! };
+  });
 
 // 📝 COMMON CHECKLIST: Rules that apply to all content items
 const common = {
@@ -106,29 +154,7 @@ const photography = defineCollection({
         .string()
         .nullish()
         .transform((v) => v?.trim() || ''),
-      images: z
-        .array(
-          z.object({
-            // Web address or path to the photo
-            src: z.string(),
-            // High-res version for zooming
-            full: optionalText,
-            // Chapter heading
-            section: optionalText,
-            // Accessibility alt text
-            alt: z
-              .string()
-              .nullish()
-              .transform((v) => v?.trim() || ''),
-            // Caption text
-            caption: optionalText,
-            // Pixel width
-            width: z.number().positive().optional(),
-            // Pixel height
-            height: z.number().positive().optional(),
-          }),
-        )
-        .default([]),
+      images: z.array(galleryMedia).default([]),
     })
     // 🔍 Rule: If both year and date are given, they must agree!
     .refine(matchingProjectYear, { message: 'year must match date, or omit year', path: ['year'] }),

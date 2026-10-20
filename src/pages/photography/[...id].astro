@@ -28,6 +28,7 @@ import { site } from '../../config/site';
 // projects: Helper to fetch all published photo projects.
 import { projects } from '../../lib/content';
 import { relatedContentIndex, relatedContentKey } from '../../lib/related-content';
+import { youtubeThumbnailUrl } from '../../lib/youtube';
 
 // 🗺️ THE TOUR GUIDE (Dynamic Route Generator):
 // Tells Astro to create a unique webpage for EVERY photo project in your folder!
@@ -47,6 +48,23 @@ export async function getStaticPaths() {
 const { project, related } = Astro.props;
 const { data } = project;
 const { Content } = await render(project);
+const firstMedia = data.images[0];
+const galleryPreview =
+  firstMedia?.type === 'video'
+    ? firstMedia.poster || youtubeThumbnailUrl(firstMedia.videoId)
+    : firstMedia?.src;
+const photoCount = data.images.filter((media) => media.type !== 'video').length;
+const videoCount = data.images.length - photoCount;
+const mediaLabel =
+  photoCount > 0 && videoCount > 0
+    ? 'photographs and videos'
+    : videoCount === 1
+      ? 'video'
+      : videoCount > 1
+        ? 'videos'
+        : photoCount === 1
+          ? 'photograph'
+          : 'photographs';
 ---
 
 {/* The master website frame wrapping this project's gallery room */}
@@ -55,7 +73,7 @@ const { Content } = await render(project);
   description={
     data.description || data.subtitle || `${data.title}: a photography project by ${site.author}.`
   }
-  image={data.socialImage || data.coverImage || data.cover}
+  image={data.socialImage || data.coverImage || data.cover || galleryPreview}
   noindex={data.draft}
 >
   {/* 🔙 Back button (remembers previous filters) */}
@@ -88,14 +106,16 @@ const { Content } = await render(project);
 
   {/* 🔍 The full-screen zoom pop-up widget */}
   {/* Listens for image clicks and opens a high-resolution lightbox viewer */}
-  <Lightbox label={`${data.title} — photographs`} />
+  <Lightbox label={`${data.title} — ${mediaLabel}`} />
 
   <RelatedContent
     title="Related photography projects"
     headingId="related-photography-heading"
     items={related}
   >
-    {related.map((relatedProject) => <ProjectCard project={relatedProject} />)}
+    {related.map((relatedProject) => (
+      <ProjectCard project={relatedProject} />
+    ))}
   </RelatedContent>
 
   {/* 🏁 Polite sign-off at the end of the album */}
@@ -105,5 +125,4 @@ const { Content } = await render(project);
       Back to the project index →
     </a>
   </div>
-
 </BaseLayout>

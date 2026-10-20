@@ -18,6 +18,8 @@ import ResponsiveImage from './ResponsiveImage.astro';
 // projectTimestamp and filterValues: Helpers for sorting and category filtering.
 import { projectTimestamp } from '../lib/content';
 import { filterValues } from '../lib/feed';
+import { imageInfo } from '../lib/images';
+import { youtubeThumbnailUrl } from '../lib/youtube';
 
 // 📋 What this card needs to show an album:
 // Like a recipe checklist, declaring this component requires one photography project album.
@@ -33,7 +35,22 @@ const { data } = project;
 
 // 🖼️ Pick the cover photo: use coverImage, or cover, or fallback to photo #1 in the album
 // Like picking the prettiest photo to put on the cover of a physical photo book!
-const cover = data.coverImage || data.cover || data.images[0]?.src;
+const firstMedia = data.images[0];
+const firstPreview =
+  firstMedia?.type === 'video'
+    ? firstMedia.poster || youtubeThumbnailUrl(firstMedia.videoId)
+    : firstMedia?.src;
+const cover = data.coverImage || data.cover || firstPreview;
+const coverMedia = data.images.find((media) =>
+  media.type === 'video'
+    ? (media.poster || youtubeThumbnailUrl(media.videoId)) === cover
+    : media.src === cover,
+);
+const coverInfo = cover ? imageInfo(cover) : undefined;
+const photoCount = data.images.filter((media) => media.type !== 'video').length;
+const videoCount = data.images.length - photoCount;
+const photoLabel = photoCount === 1 ? 'photograph' : 'photographs';
+const videoLabel = videoCount === 1 ? 'video' : 'videos';
 ---
 
 {/* 📦 Card wrapper with filtering tags for category and date */}
@@ -49,8 +66,8 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
     <a class="project-cover" href={`/photography/${project.id}/`} tabindex="-1" aria-hidden="true">
       <ResponsiveImage
         src={cover}
-        width={data.images.find((image) => image.src === cover)?.width}
-        height={data.images.find((image) => image.src === cover)?.height}
+        width={coverInfo?.width || coverMedia?.width || 480}
+        height={coverInfo?.height || coverMedia?.height || 360}
         alt=""
         sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1050px) 45vw, 420px"
       />
@@ -72,8 +89,12 @@ const cover = data.coverImage || data.cover || data.images[0]?.src;
   {/* 📝 Optional album subtitle */}
   {(data.description || data.subtitle) && <p class="muted">{data.description || data.subtitle}</p>}
 
-  {/* 🔢 Count of photographs inside this album */}
+  {/* 🔢 Count of photographs and videos inside this album */}
   {data.images.length > 0 && (
-    <p class="mono small">{String(data.images.length).padStart(2, '0')} photographs</p>
+    <p class="mono small">
+      {photoCount > 0 && `${String(photoCount).padStart(2, '0')} ${photoLabel}`}
+      {photoCount > 0 && videoCount > 0 && ' · '}
+      {videoCount > 0 && `${String(videoCount).padStart(2, '0')} ${videoLabel}`}
+    </p>
   )}
 </article>
