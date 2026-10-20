@@ -161,6 +161,28 @@ test('mixed gallery routes large and small video playback by rendered tile size 
   await expect.poll(embedRequests).toBe(3);
 });
 
+test('reflowing a previous tile does not stop the current inline player @desktop-regression', async ({
+  page,
+}) => {
+  await stubExternalMedia(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(mixedGallery);
+  const videos = page.locator('[data-gallery-trigger][data-video-id]');
+  const previousFigure = videos.first().locator('xpath=..');
+  const currentFigure = videos.nth(2).locator('xpath=..');
+
+  await videos.first().click();
+  await expect(page.locator('.gallery-video-player iframe')).toHaveCount(1);
+  await videos.nth(2).click();
+  await expect(page.locator('.gallery-video-player iframe')).toHaveCount(1);
+  await expect(currentFigure).toHaveAttribute('data-video-playing', '');
+
+  await previousFigure.evaluate((figure) => figure.dispatchEvent(new Event('gallery-will-reflow')));
+
+  await expect(page.locator('.gallery-video-player iframe')).toHaveCount(1);
+  await expect(currentFigure).toHaveAttribute('data-video-playing', '');
+});
+
 test('a resized inline player stays aligned with its tile without restarting @desktop-regression', async ({
   page,
 }) => {

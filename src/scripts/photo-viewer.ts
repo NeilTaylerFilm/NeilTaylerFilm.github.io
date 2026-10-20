@@ -210,6 +210,7 @@ export function createPhotoViewer(
   function stopInlineVideo() {
     if (!inlinePlayer) return;
     const restoreFocus = inlinePlayer.player.contains(document.activeElement);
+    inlinePlayer.figure.removeEventListener('gallery-will-reflow', stopInlineVideo);
     inlinePlayer.iframe.src = 'about:blank';
     inlinePlayer.player.remove();
     if (inlinePlayer.ariaHidden === null) inlinePlayer.trigger.removeAttribute('aria-hidden');
