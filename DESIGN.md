@@ -9,6 +9,7 @@ The photography gallery and PhotoViewer reuse the site's current editorial visua
 
 ## Blog video embeds
 
+- Article text stays 700px wide; centered images and videos extend 60px beyond it on each side. At 1050px and narrower, media returns to the article text width.
 - The poster fills a responsive article figure with a 16:9 ratio by default; `aspectRatio` sets another width-to-height ratio without changing the surrounding layout.
 - A keyboard-focusable Play button contains the poster image. Activation replaces it with a privacy-enhanced iframe in the same frame.
 - The poster uses `ResponsiveImage`, and the caption area keeps a Watch on YouTube link available. Focus uses the existing `--accent` token.

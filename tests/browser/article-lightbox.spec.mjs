@@ -15,6 +15,7 @@ test('blog images open in order at responsive high resolution and restore focus 
       full: link.dataset.full,
       srcset: link.dataset.srcset,
       alt: image.alt,
+      caption: link.dataset.caption,
     };
   });
   expect(nextAlt).not.toBeFalsy();
@@ -22,6 +23,9 @@ test('blog images open in order at responsive high resolution and restore focus 
   expect(source.full).toMatch(/-(?:1440|1692)\.jpeg$/);
   expect(source.srcset).toContain('1440w');
   expect(source.alt).toBe('Late night drive behind the scenes');
+  expect(source.caption).toBe(
+    'This deliberately long draft image caption checks that a small photograph stays compact while its caption wraps within the image width.',
+  );
 
   await opener.scrollIntoViewIfNeeded();
   const scrollBeforeOpen = await page.evaluate(() => scrollY);

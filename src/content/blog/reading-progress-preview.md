@@ -14,6 +14,8 @@ This is placeholder writing for a local preview. Scroll down slowly and watch th
 
 ![Late night drive behind the scenes](https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/31478d01b2c105197ee2cbf77c561a51-1692.jpeg)
 
+*This deliberately long draft image caption checks that a small photograph stays compact while its caption wraps within the image width.*
+
 ![Another shot](https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/15fba868ed69929d3eb081e906e3a9b7-2560.jpeg)
 
 The first pass through an edit is about noticing what is already there. A quiet moment might carry more weight than an elaborate transition. A glance can establish a relationship before anyone speaks. For this fictional example, imagine a short film assembled from a morning walk, a conversation in a kitchen, and a journey home. The scenes give us a simple way to think about pace, attention, and the space between images.

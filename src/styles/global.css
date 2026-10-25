@@ -45,6 +45,11 @@
   --max-width: 1248px;
   /* Comfortable narrow reading width for blog articles */
   --reading-width: 700px;
+  /* Article media extends 60px beyond the reading column on each side */
+  --article-media-outset: 60px;
+  --article-media-width: calc(
+    var(--reading-width) + var(--article-media-outset) + var(--article-media-outset)
+  );
   /* Breathing room padding on left and right screen edges */
   --gutter: 48px;
   /* Tiny gap */
@@ -796,7 +801,7 @@ h1 {
 .article-reading-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, var(--reading-width)) minmax(0, 1fr);
-  column-gap: 36px;
+  column-gap: calc(var(--article-media-outset) + var(--space-2));
 }
 /* On wide screens, the chapter list stays beside the article while the reader scrolls. */
 .chapter-nav-desktop {
@@ -1042,12 +1047,12 @@ h1 {
   height: auto;
   border: 1px solid var(--subtle-border);
 }
-.prose figure {
+.prose:not(.article-body) figure {
   width: calc(100% + 120px);
   margin-left: -60px;
   max-width: calc(100vw - var(--gutter) * 2);
 }
-.prose figure img {
+.prose:not(.article-body) figure img {
   width: 100%;
 }
 .prose a.article-image-trigger {
@@ -1064,6 +1069,32 @@ h1 {
   font: 11px/1.6 var(--mono);
   color: var(--muted);
   margin-top: 10px;
+}
+.article-body :is(.youtube-embed, [data-article-media]) {
+  width: var(--article-media-width);
+  margin-inline: calc((100% - var(--article-media-width)) / 2);
+}
+.article-body [data-article-media] > .article-media-figure {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.article-body [data-article-media] > .article-media-figure > a {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+.article-body [data-article-media] > .article-media-figure > img {
+  margin-inline: auto;
+}
+.article-body [data-article-media] figcaption {
+  width: 0;
+  min-width: 100%;
+  font: inherit;
+  color: inherit;
+  margin-top: 1.4em;
+  overflow-wrap: anywhere;
 }
 .article-signoff {
   max-width: var(--reading-width);
@@ -1564,9 +1595,13 @@ a.contact-email-action {
   .about-grid {
     gap: 40px;
   }
-  .prose figure {
+  .prose:not(.article-body) figure {
     width: 100%;
     margin-left: 0;
+  }
+  .article-body :is(.youtube-embed, [data-article-media]) {
+    width: 100%;
+    margin-inline: 0;
   }
   .footer-links {
     gap: 20px;
