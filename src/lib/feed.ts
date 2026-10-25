@@ -33,6 +33,33 @@ export const comparators = {
     a.date - b.date || a.id.localeCompare(b.id),
 };
 
+function stripMdxComponents(body: string) {
+  let result = '';
+  for (let index = 0; index < body.length;) {
+    const nameStart = body[index] === '<' ? index + (body[index + 1] === '/' ? 2 : 1) : -1;
+    if (nameStart >= 0 && /[A-Z]/.test(body[nameStart] || '')) {
+      let quote = '';
+      let braces = 0;
+      let end = nameStart;
+      for (; end < body.length; end++) {
+        const character = body[end];
+        if (quote) {
+          if (character === '\\') end++;
+          else if (character === quote) quote = '';
+        } else if (character === '"' || character === "'") quote = character;
+        else if (character === '{') braces++;
+        else if (character === '}' && braces) braces--;
+        else if (character === '>' && braces === 0) break;
+      }
+      result += ' ';
+      index = end < body.length ? end + 1 : body.length;
+    } else {
+      result += body[index++];
+    }
+  }
+  return result;
+}
+
 // ✂️ HELPER 4: Teaser Snippet Cutter
 // Takes a whole article and creates a lovely 1-2 sentence preview for your cards.
 export function excerpt(body = '', manual?: string) {
@@ -40,8 +67,14 @@ export function excerpt(body = '', manual?: string) {
   if (manual?.trim()) return manual.trim();
 
   // Otherwise, clean up the text: strip out code blocks, pictures, links, hashtags, and stars
-  const plain = body
-    .replace(/```[\s\S]*?```/g, '')
+  const plain = stripMdxComponents(
+    body
+      .replace(
+        /^\s*import\b(?:[ \t]*(['"])[^'"\r\n]+\1|[\s\S]*?\bfrom[ \t]+(['"])[^'"\r\n]+\2)[ \t]*;?[ \t]*(?:\/\/[^\r\n]*)?[ \t]*$/gm,
+        '',
+      )
+      .replace(/```[\s\S]*?```/g, ''),
+  )
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/<[^>]+>/g, '')

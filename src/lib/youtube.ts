@@ -41,13 +41,18 @@ function assertVideoId(videoId: string) {
   if (!VIDEO_ID.test(videoId)) throw new TypeError('Expected an 11-character YouTube video ID.');
 }
 
-export function youtubeEmbedUrl(videoId: string) {
+export function youtubeEmbedUrl(videoId: string, startSeconds?: number) {
   assertVideoId(videoId);
+  if (startSeconds !== undefined && (!Number.isSafeInteger(startSeconds) || startSeconds < 0)) {
+    throw new TypeError('Expected a non-negative whole number of seconds.');
+  }
+
   const url = new URL(`https://www.youtube-nocookie.com/embed/${videoId}`);
   url.searchParams.set('autoplay', '1');
   url.searchParams.set('controls', '1');
   url.searchParams.set('playsinline', '1');
   url.searchParams.set('rel', '0');
+  if (startSeconds !== undefined) url.searchParams.set('start', String(startSeconds));
   return url.toString();
 }
 

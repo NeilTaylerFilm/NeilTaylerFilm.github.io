@@ -1,0 +1,187 @@
+---
+import PlayIcon from './PlayIcon.astro';
+import ResponsiveImage from './ResponsiveImage.astro';
+import {
+  youtubeEmbedUrl,
+  youtubeThumbnailUrl,
+  youtubeVideoId,
+  youtubeWatchUrl,
+} from '../lib/youtube';
+
+interface Props {
+  url: string;
+  caption?: string;
+  poster?: string;
+  aspectRatio?: number;
+  start?: number;
+}
+
+const { url, caption, poster, aspectRatio = 16 / 9, start } = Astro.props;
+const videoId = typeof url === 'string' ? youtubeVideoId(url) : undefined;
+
+if (!videoId)
+  throw new TypeError('YouTubeEmbed url must be a valid YouTube URL or 11-character video ID.');
+if (start !== undefined && (!Number.isSafeInteger(start) || start < 0))
+  throw new TypeError('YouTubeEmbed start must be a non-negative whole number of seconds.');
+if (!Number.isFinite(aspectRatio) || aspectRatio <= 0)
+  throw new TypeError('YouTubeEmbed aspectRatio must be a positive width-to-height number.');
+
+const posterSrc = typeof poster === 'string' ? poster.trim() : undefined;
+if (poster !== undefined && !posterSrc)
+  throw new TypeError('YouTubeEmbed poster must be a non-empty site path or HTTPS URL.');
+if (posterSrc) {
+  const sitePath = posterSrc.startsWith('/') && !posterSrc.startsWith('//');
+  let secureUrl = false;
+  try {
+    const parsed = new URL(posterSrc);
+    secureUrl = parsed.protocol === 'https:' && !parsed.username && !parsed.password;
+  } catch {}
+  if (!sitePath && !secureUrl)
+    throw new TypeError('YouTubeEmbed poster must be a site path or HTTPS URL.');
+}
+
+const description = caption?.trim();
+const posterUrl = posterSrc || youtubeThumbnailUrl(videoId);
+const embedUrl = youtubeEmbedUrl(videoId, start);
+const watchUrl = youtubeWatchUrl(videoId);
+---
+
+<figure class="youtube-embed" style={`--youtube-aspect-ratio: ${aspectRatio}`}>
+  <div class="youtube-frame">
+    <button
+      class="youtube-play"
+      type="button"
+      aria-label={description ? `Play video: ${description}` : 'Play video'}
+      data-youtube-embed-play
+      data-youtube-default-poster={posterSrc ? undefined : ''}
+      data-embed-url={embedUrl}
+      data-embed-title={description ? `YouTube video: ${description}` : 'YouTube video player'}
+    >
+      <ResponsiveImage
+        src={posterUrl}
+        alt=""
+        width={1600}
+        height={900}
+        sizes="(max-width: 767px) 90vw, 820px"
+        loading="lazy"
+      />
+      <span class="youtube-play-mark">
+        <PlayIcon size={48} />
+      </span>
+    </button>
+  </div>
+  <figcaption class="youtube-caption">
+    {description && <span>{description}</span>}
+    <a href={watchUrl}>Watch on YouTube</a>
+  </figcaption>
+</figure>
+
+<script>
+  import { isYoutubeThumbnailPlaceholder } from '../lib/youtube';
+
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-youtube-default-poster]')
+    .forEach((button) => {
+      const image = button.querySelector('img');
+      const hidePlaceholder = () => {
+        if (image && isYoutubeThumbnailPlaceholder(image))
+          button.setAttribute('data-thumbnail-failed', '');
+      };
+      if (image?.complete) hidePlaceholder();
+      else image?.addEventListener('load', hidePlaceholder, { once: true });
+    });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-youtube-embed-play]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const url = button.dataset.embedUrl;
+      if (!url) return;
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'youtube-player';
+      iframe.title = button.dataset.embedTitle || 'YouTube video player';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'eager';
+      iframe.src = url;
+      button.replaceWith(iframe);
+    });
+  });
+</script>
+
+<style>
+  .youtube-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--youtube-aspect-ratio);
+    overflow: hidden;
+    background: var(--surface-raised);
+  }
+
+  .youtube-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .youtube-play :global(picture) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .youtube-play :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .youtube-play-mark {
+    z-index: 1;
+    display: grid;
+    width: 64px;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--control-border);
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .youtube-play[data-thumbnail-failed] :global(img) {
+    visibility: hidden;
+  }
+
+  .youtube-play:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -4px;
+  }
+
+  .youtube-frame :global(.youtube-player) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .youtube-caption {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .youtube-caption a {
+    text-decoration: underline;
+  }
+</style>

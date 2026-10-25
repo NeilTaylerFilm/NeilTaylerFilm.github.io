@@ -1,0 +1,29 @@
+---
+title: 'Blog video embed preview'
+date: 2026-10-25
+draft: true
+demo: true
+---
+
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro'
+
+This draft checks inline video playback. The player stays inside the article.
+
+<YouTubeEmbed
+  url="https://youtu.be/M7lc1UVf-VE"
+  caption="A default YouTube thumbnail."
+/>
+
+![Draft article photograph](https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.jpeg)
+
+An [article source](https://example.com "cite") keeps the site's citation treatment. The image remains part of the article lightbox.
+
+<script data-mdx-raw-script>window.__mdxRawScriptRan = true;</script>
+
+<YouTubeEmbed
+  url="https://www.youtube.com/watch?v=M7lc1UVf-VE"
+  poster="https://neiltaylerfilm-images.neiltayler2003.workers.dev/photos/ca38db138f024b663b39e003b5ec1eb3-2560.jpeg"
+  aspectRatio={4 / 3}
+  start={90}
+  caption="A sequence > another scene."
+/>

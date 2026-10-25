@@ -39,6 +39,26 @@ test('manual excerpts win; automatic previews remove Markdown markup and image p
   assert.ok(excerpt('A short sentence. '.repeat(50)).length <= 330);
 });
 
+test('MDX excerpts omit component imports and multiline JSX syntax', () => {
+  const body = `import {
+  YouTubeEmbed,
+} from '../../components/YouTubeEmbed.astro'; // video player component
+import 'some-module'; // side-effect import
+
+First paragraph sentence one. Sentence two stays in the preview.
+
+<YouTubeEmbed
+  url="https://youtu.be/M7lc1UVf-VE"
+  start={90}
+  caption="A sequence > another scene"
+/>
+
+![Article photograph](https://example.com/photo.jpg)
+`;
+
+  assert.equal(excerpt(body), 'First paragraph sentence one. Sentence two stays in the preview.');
+});
+
 // 🏷️ TEST 3: Category names support accents, slashes, and ampersands
 test('new user-defined categories work, including punctuation and Unicode', () => {
   for (const category of ['Travel', 'Film / TV', 'Café', 'Colour & light']) {

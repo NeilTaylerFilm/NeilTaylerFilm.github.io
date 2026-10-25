@@ -1,4 +1,41 @@
-# Embedding videos in post-production posts
+# Embedding videos
+
+## YouTube videos in blog posts
+
+Keep Markdown posts as `.md`. Create an `.mdx` post in `src/content/blog/` when you need a video,
+then import the component from that folder with `../../components/YouTubeEmbed.astro`.
+
+```mdx
+---
+title: 'A post with a video'
+date: 2026-10-25
+draft: true
+---
+
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+
+The article can introduce the video here.
+
+<YouTubeEmbed
+  url="https://youtu.be/VIDEO_ID"
+  start={90}
+  caption="A sequence from the finished film."
+/>
+
+Continue the article here.
+```
+
+Only `url` is required. It accepts a raw 11-character YouTube ID or a supported HTTPS YouTube URL.
+Use `start` for a non-negative whole number of seconds; timestamps in the URL are ignored. `caption`
+adds text below the player. `poster` accepts a site path or HTTPS image URL and uses the site's
+responsive image manifest when available. `aspectRatio` is a width-to-height number, such as
+`aspectRatio={4 / 3}`; it defaults to 16:9. The Play button loads the privacy-enhanced iframe only
+after activation, and the caption area includes a Watch on YouTube link as a fallback.
+
+Set `draft: true` while you preview a new article locally. Draft routes appear in development and
+stay out of production builds.
+
+## Videos in post-production posts
 
 Add two fields to the frontmatter at the top of your post in `src/content/post-production/`.
 

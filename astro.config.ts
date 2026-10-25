@@ -13,6 +13,7 @@
 // --- BORROWED TOOLS (Imports) ---
 // unified: The Markdown processing pipeline factory.
 import { unified } from '@astrojs/markdown-remark';
+import type { Root } from 'hast';
 // mdx: Allows embedding interactive components directly inside Markdown articles.
 import mdx from '@astrojs/mdx';
 // rehypeRaw: Allows writing custom HTML elements inside Markdown files safely.
@@ -23,6 +24,66 @@ import rehypeSanitize from 'rehype-sanitize';
 import markdownImages, { sourceImagePaths } from './scripts/markdown-images.mjs';
 // defineConfig: Astro's official helper validating all configuration options.
 import { defineConfig } from 'astro/config';
+
+const mdxPassThrough = [
+  'mdxjsEsm',
+  'mdxJsxFlowElement',
+  'mdxJsxTextElement',
+  'mdxFlowExpression',
+  'mdxTextExpression',
+];
+
+type MdxAwareNode = {
+  type: string;
+  name?: string;
+  value?: unknown;
+  children?: MdxAwareNode[];
+  [key: string]: unknown;
+};
+
+export function rehypeSanitizeMdx() {
+  const sanitize = rehypeSanitize();
+  return (tree: Root) => {
+    const trustedNodes = new Map<string, MdxAwareNode>();
+    let nextId = 0;
+
+    function mask(node: MdxAwareNode): MdxAwareNode {
+      const trusted =
+        node.type === 'mdxjsEsm' ||
+        ((node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') &&
+          typeof node.name === 'string' &&
+          /^[A-Z]/.test(node.name));
+
+      if (trusted) {
+        const children = node.children?.map(mask);
+        const sanitizedChildren = children
+          ? (sanitize({ type: 'root', children } as unknown as Root) as unknown as Root).children
+          : undefined;
+        const preserved = sanitizedChildren
+          ? { ...node, children: sanitizedChildren as unknown as MdxAwareNode[] }
+          : node;
+        const token = `\u0000mdx-${nextId++}\u0000`;
+        trustedNodes.set(token, preserved);
+        return { type: 'text', value: token };
+      }
+
+      return node.children ? { ...node, children: node.children.map(mask) } : node;
+    }
+
+    function restore(node: MdxAwareNode): MdxAwareNode {
+      const value = node.value;
+      const original =
+        node.type === 'text' && typeof value === 'string' ? trustedNodes.get(value) : undefined;
+      const restored = original || node;
+      return restored.children
+        ? { ...restored, children: restored.children.map(restore) }
+        : restored;
+    }
+
+    const masked = mask(tree as unknown as MdxAwareNode) as unknown as Root;
+    return restore(sanitize(masked) as unknown as MdxAwareNode) as unknown as Root;
+  };
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -48,23 +109,19 @@ export default defineConfig({
   markdown: {
     processor: unified({
       remarkPlugins: [sourceImagePaths],
-      rehypePlugins: [
-        [
-          rehypeRaw,
-          {
-            passThrough: [
-              'mdxjsEsm',
-              'mdxJsxFlowElement',
-              'mdxJsxTextElement',
-              'mdxFlowExpression',
-              'mdxTextExpression',
-            ],
-          },
-        ],
-        rehypeSanitize,
-        markdownImages,
-      ],
+      rehypePlugins: [[rehypeRaw, { passThrough: mdxPassThrough }], rehypeSanitize, markdownImages],
     }),
   },
-  integrations: [mdx()],
+  integrations: [
+    mdx({
+      processor: unified({
+        remarkPlugins: [sourceImagePaths],
+        rehypePlugins: [
+          [rehypeRaw, { passThrough: mdxPassThrough }],
+          rehypeSanitizeMdx,
+          markdownImages,
+        ],
+      }),
+    }),
+  ],
 });

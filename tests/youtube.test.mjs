@@ -55,6 +55,13 @@ test('derives privacy-enhanced embed, YouTube fallback, and thumbnail URLs from 
   assert.throws(() => youtubeEmbedUrl('bad-id'), TypeError);
 });
 
+test('adds only an explicit non-negative whole-second start time', () => {
+  assert.equal(new URL(youtubeEmbedUrl(validId)).searchParams.has('start'), false);
+  assert.equal(new URL(youtubeEmbedUrl(validId, 90)).searchParams.get('start'), '90');
+  for (const start of [-1, 1.5, Number.POSITIVE_INFINITY])
+    assert.throws(() => youtubeEmbedUrl(validId, start), TypeError);
+});
+
 test('recognizes YouTube’s valid 120×90 missing-thumbnail placeholder', () => {
   assert.equal(isYoutubeThumbnailPlaceholder({ naturalWidth: 120, naturalHeight: 90 }), true);
   assert.equal(isYoutubeThumbnailPlaceholder({ naturalWidth: 320, naturalHeight: 180 }), false);
